@@ -133,7 +133,7 @@ int main(int argc, char* argv[])    {
 	model1.printgen(0);
 	cout<< "Allele for each position : "<<endl;
 	model1.printallelepos();
-	int v = model1.Meiosis(3);
+	int v = model1.Meiosis(3,1);
 	cout<< "populations : " << endl;
 	model1.printpop(2);
 	cout<<v<<endl;
@@ -163,7 +163,7 @@ int main(int argc, char* argv[])    {
 	temps2=(float)(t3-t2)/CLOCKS_PER_SEC;
 	printf("temps2 = %f\n", temps2);
 
-	
+
 
 return 0;
 }

@@ -19,7 +19,7 @@ using namespace std;
 //============================
 //         Constructors
 //============================
-Model::Model(): N_(1000), L_(100000), nbsite_(400), indPrdm9_(5), nballele_(1), parityIndex_(0), v_(1e-7), u_(1e-6), meanaff_(0.6), varaff_(1), nbDSB_(6), nbGenerations_(2), ismigration_(false) {
+Model::Model(): N_(1000), L_(100000), nbsite_(400), indPrdm9_(5), nballele_(1), parityIndex_(0), v_(1e-7), u_(1e-6), meanaff_(0.6), varaff_(1), nbDSB_(6), nbGenerations_(10), ismigration_(false) {
 	
 	//vector counting the number of failed meiosis per generation
 	nbfailedmeiosis_=vector<vector<int>>(nbGenerations_,vector<int>(4,0));
@@ -470,7 +470,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 		cout<<"\n";
 	}
 	cout<<endl;*/
-	cout<<"nblinksite "<<nblinksite<<endl;
+	//cout<<"nblinksite "<<nblinksite<<endl;
 	//DSB
 	double pDSB=double(nbDSB_)/nblinksite;
 	//cout<<"pDSB : "<<pDSB<<endl;
@@ -515,7 +515,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 				} // assert
 				catch(int const& error_nb){
 					if(error_nb==0){
-						cerr << "2 DSB on one site" << endl;
+						//cerr << "2 DSB on one site" << endl;
 					}
 					return-1;
 				}
@@ -567,9 +567,9 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 	} // assert
 	catch(int const& error_nb){
 		if(error_nb==1){
-			cerr << "No DSB" << endl;
+			//cerr << "No DSB" << endl;
 		}else if(error_nb==2){
-			cerr << "No symmetrical sites (binding + DSB)" << endl;
+			//cerr << "No symmetrical sites (binding + DSB)" << endl;
 		}
 		return-1;
 	}
@@ -581,16 +581,16 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 		}
 		cout<<"\n";
 	}
-	cout<<endl;*/
-	/*cout<<"vect_CO : "<<endl;
+	cout<<endl;
+	cout<<"vect_CO : "<<endl;
 		for(auto i : vect_CO){
 			for(auto j : i){
 				cout<<' '<<j;
 			}
 			cout<<"\n";
 		}
-	cout<<endl;*/
-	/*cout<<"vectsitedsb : "<<endl;
+	cout<<endl;
+	cout<<"vectsitedsb : "<<endl;
 	for(auto i : vectsitedsb){
 		for(auto j : i){
 			cout<<' '<<j;
@@ -600,8 +600,8 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 	cout<<endl;*/
 	
 	vector<int> index_CO=vect_CO[choose(vect_CO.size())];
-	//cout<<"index_CO : "<<endl;
-	/*for(auto i : index_CO){
+	/*cout<<"index_CO : "<<endl;
+	for(auto i : index_CO){
 		cout<<' '<<i;
 	}
 	cout<<'\n';*/
@@ -621,65 +621,23 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 		no_current_chrom=indiv+1;
 		no_homologue_chrom=indiv;
 	}
-	if(no_chromatide==index_CO[1] or no_chromatide==index_CO[2]){	
+	if(no_chromatide==index_CO[1] or no_chromatide==index_CO[2]){
 		//cout<<"chromatide with CO"<<endl;
-		//remplacement et crossing over
-		int indvectsite=0;
-		//faire d'abord CO
-		for (int ind_site_pop=0; ind_site_pop<index_CO[0]; ind_site_pop++){
-			if(indvectsite!=vectsitedsb.size() and ind_site_pop==summarysites[vectsitedsb[indvectsite][0]][0]){
-				if(vectsitedsb[indvectsite][1]==no_chromatide){
-					populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]=populations_[parityIndex_][no_homologue_chrom][ind_site_pop];
-					//cout<<"pop1 "<<populations_[parityIndex_][no_homologue_chrom][ind_site_pop]<<" pop2 "<<populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]<<endl;
-				}else{
-					populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]=populations_[parityIndex_][no_current_chrom][ind_site_pop];
-				//cout<<"pop1 "<<populations_[parityIndex_][no_current_chrom][ind_site_pop]<<" pop2 "<<populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]<<endl;
-				}
-				indvectsite++;
-			}else{
-				populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]=populations_[parityIndex_][no_current_chrom][ind_site_pop];
-				//cout<<"pop1 "<<populations_[parityIndex_][no_current_chrom][ind_site_pop]<<" pop2 "<<populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]<<endl;
-			}
-		}
-		if(no_chromatide==index_CO[1]){
-			no_chromatide==index_CO[2];
-		}else{
-			no_chromatide==index_CO[1];
-		}
-		for (int ind_site_pop=index_CO[0]; ind_site_pop<L_; ind_site_pop++){
-			if(indvectsite!=vectsitedsb.size() and ind_site_pop==summarysites[vectsitedsb[indvectsite][0]][0]){
-				if(vectsitedsb[indvectsite][1]==no_chromatide){
-					populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]=populations_[parityIndex_][no_current_chrom][ind_site_pop];
-					//cout<<"pop1 "<<populations_[parityIndex_][no_current_chrom][ind_site_pop]<<" pop2 "<<populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]<<endl;
-				}else{
-					populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]=populations_[parityIndex_][no_homologue_chrom][ind_site_pop];
-					//cout<<"pop1 "<<populations_[parityIndex_][no_homologue_chrom][ind_site_pop]<<" pop2 "<<populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]<<endl;
-				}
-				indvectsite++;
-			}else{
-				populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]=populations_[parityIndex_][no_homologue_chrom][ind_site_pop];
-				//cout<<"pop1 "<<populations_[parityIndex_][no_homologue_chrom][ind_site_pop]<<" pop2 "<<populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]<<endl;
+		copy( populations_[parityIndex_][no_current_chrom].begin(), populations_[parityIndex_][no_current_chrom].begin()+index_CO[0], populations_[(parityIndex_+1)%2][no_chrom_ind].begin() );
+		copy( populations_[parityIndex_][no_homologue_chrom].begin()+index_CO[0], populations_[parityIndex_][no_homologue_chrom].end(), populations_[(parityIndex_+1)%2][no_chrom_ind].begin()+index_CO[0] );
+		for(auto index_dsb : vectsitedsb){
+			if(index_dsb[1]==no_chromatide and summarysites[index_dsb[0]][0]<index_CO[0]){
+				populations_[(parityIndex_+1)%2][no_chrom_ind][summarysites[index_dsb[0]][0]]=populations_[parityIndex_][no_homologue_chrom][summarysites[index_dsb[0]][0]];
+			}else if((index_dsb[1]==index_CO[1] or index_dsb[1]==index_CO[2]) and summarysites[index_dsb[0]][0]>index_CO[0]){
+				populations_[(parityIndex_+1)%2][no_chrom_ind][summarysites[index_dsb[0]][0]]=populations_[parityIndex_][no_current_chrom][summarysites[index_dsb[0]][0]];
 			}
 		}
 	}else{
-		//remplacement
 		//cout<<"chromatide without CO"<<endl;
-		int indvectsite=0;
-		for (int ind_site_pop=0; ind_site_pop<L_; ind_site_pop++){
-			//cout<<"indvectsite "<<indvectsite<<endl;
-			//cout<<"ind_site_pop "<<ind_site_pop<<endl;
-			if(indvectsite!=vectsitedsb.size() and ind_site_pop==summarysites[vectsitedsb[indvectsite][0]][0]){
-				if(vectsitedsb[indvectsite][1]==no_chromatide){
-					populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]=populations_[parityIndex_][no_homologue_chrom][ind_site_pop];
-					//cout<<"pop1 "<<populations_[parityIndex_][no_homologue_chrom][ind_site_pop]<<" pop2 "<<populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]<<endl;
-				}else{
-					populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]=populations_[parityIndex_][no_current_chrom][ind_site_pop];
-					//cout<<"pop1 "<<populations_[parityIndex_][no_current_chrom][ind_site_pop]<<" pop2 "<<populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]<<endl;
-				}
-				indvectsite++;
-			}else{
-				populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]=populations_[parityIndex_][no_current_chrom][ind_site_pop];
-				//cout<<"pop1 "<<populations_[parityIndex_][no_current_chrom][ind_site_pop]<<" pop2 "<<populations_[(parityIndex_+1)%2][no_chrom_ind][ind_site_pop]<<endl;
+		copy( populations_[parityIndex_][no_current_chrom].begin(), populations_[parityIndex_][no_current_chrom].end(), populations_[(parityIndex_+1)%2][no_chrom_ind].begin() );
+		for(auto index_dsb : vectsitedsb){
+			if(index_dsb[1]==no_chromatide){
+				populations_[(parityIndex_+1)%2][no_chrom_ind][summarysites[index_dsb[0]][0]]=populations_[parityIndex_][no_homologue_chrom][summarysites[index_dsb[0]][0]];
 			}
 		}
 	}
@@ -733,15 +691,15 @@ void Model::manygenerations(){
 		printgen(parityIndex_);
 		cout<< "Allele for each position : "<<endl;
 		printallelepos();*/
-		cout<<"nb Failed meiosis : 2 DSB on one site, No DSB, No symmetrical sites (binding + DSB), Total"<<endl;
-		for(auto indgen : nbfailedmeiosis_){
-			for(auto indexfailed : indgen){
-				cout<<' '<<indexfailed;
-			}
-			cout<<'\n';
-		}
-		cout<<endl;
 	}
+	cout<<"nb Failed meiosis : 2 DSB on one site, No DSB, No symmetrical sites (binding + DSB), Total"<<endl;
+	for(auto indgen : nbfailedmeiosis_){
+		for(auto indexfailed : indgen){
+			cout<<' '<<indexfailed;
+		}
+		cout<<'\n';
+	}
+	cout<<endl;
 }
 
 void migration(){
@@ -750,4 +708,5 @@ void migration(){
 	//faire ce meme echange dans les genotypes
 }
 
-//vecteur : num generation ; nbtotalallele par generation ; diversite ; activite moy ; 
+//vecteur : num generation ; nbtotalallele par generation ; diversite ; activite moy 
+//tableau : generation ; no allele ; freq ; activite moy 
