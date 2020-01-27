@@ -165,6 +165,21 @@ int main(int argc, char* argv[])    {
 
 
 
+	/*ofstream os((name + ".trace").c_str());
+
+    for (int gen=0; gen<max_ngen; gen++)    {
+
+        // mutation
+        //
+        //
+        //
+
+        if (! gen % every)  {
+            os << gen << '\t' << get_allele_number() << '\t' << get_current_diversity() << '\t'  << get_current_activity() << '\n';
+            os.flush();
+        }
+    }*/
+
 return 0;
 }
 

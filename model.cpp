@@ -19,7 +19,7 @@ using namespace std;
 //============================
 //         Constructors
 //============================
-Model::Model(): N_(1000), L_(100000), nbsite_(400), indPrdm9_(5), nballele_(1), parityIndex_(0), v_(1e-7), u_(1e-6), meanaff_(0.6), varaff_(1), nbDSB_(6), nbGenerations_(10), ismigration_(false) {
+Model::Model(): N_(1000), L_(100000), nbsite_(400), indPrdm9_(5), nballele_(1), parityIndex_(0), v_(1e-7), u_(1e-4), meanaff_(0.6), varaff_(1), nbDSB_(6), nbGenerations_(10000), ismigration_(false), zygosity_(true), everygen_(10) {
 	
 	//vector counting the number of failed meiosis per generation
 	nbfailedmeiosis_=vector<vector<int>>(nbGenerations_,vector<int>(4,0));
@@ -154,6 +154,12 @@ int Model::nbGenerations(){
 }
 vector<vector<int>> Model::nbfailedmeiosis(){
 	return nbfailedmeiosis_;
+}
+bool Model::zygosity(){
+	return zygosity_;
+}
+int Model::everygen(){
+	return everygen_;
 }
 bool Model::ismigration(){
 	return ismigration_;
@@ -377,10 +383,10 @@ void Model::printgen(int n){
 void Model::printposallele(){
 	for (auto const &it : Siteforeacheallele_){
 		cout<<it.first<<"=>";
-		for(auto const &i : it.second){
+		/*for(auto const &i : it.second){
 			cout<<" "<<i;
 		}
-		cout<<endl;
+		cout<<endl;*/
 	}
 	cout<<'\n';
 }
@@ -415,7 +421,9 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 		for (auto j : i){cout<<"j"<<j;}
 	}*/
 	if(genotypes_[parityIndex_][indiv]!=genotypes_[parityIndex_][indiv+1]){
-		ind_gen=1;
+		if(zygosity_){
+			ind_gen=1;
+		}
 		zygote.push_back(genotypes_[parityIndex_][indiv+1]);
 	}
 	//cout<<"ind_gen : "<<ind_gen<<endl;
@@ -666,6 +674,12 @@ void Model::fillnewpop(int nb_gen){
 
 //methode qui repete tout ce au'on vient de faire pendant X generations
 void Model::manygenerations(){
+	ofstream generalfile ("general.txt");
+	generalfile << "Generation number" << '\t' << "Total number of allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\n';
+    generalfile.flush();
+    ofstream allelefile ("allele.txt");
+	allelefile << "Generation number" << '\t' << "Allele number" << '\t' << "Frequency" << '\t'  << "Activity" << '\n';
+    allelefile.flush();
 	for(int indgeneration=0; indgeneration<nbGenerations_; indgeneration++){
 		//cout<<"parity index : "<<parityIndex_<<endl;
 		cout<<"generation "<<indgeneration<<endl;
@@ -684,14 +698,28 @@ void Model::manygenerations(){
 		updatemissingallele();
 		/*cout<<"---------"<<endl;
 		cout<<"pop :"<<endl;
-		printpop(parityIndex_);
-		cout<<"map :"<<endl;
-		printposallele();
-		cout<< "genotypes : "<<endl;
-		printgen(parityIndex_);
-		cout<< "Allele for each position : "<<endl;
+		printpop(parityIndex_);*/
+		/*cout<<"map :"<<endl;
+		printposallele();*/
+		/*cout<< "genotypes : "<<endl;
+		printgen(parityIndex_);*/
+		/*cout<< "Allele for each position : "<<endl;
 		printallelepos();*/
+		//cout<<"a "<<indgeneration % everygen_<<endl;
+		if (indgeneration % everygen_ ==0)  {
+			//cout<<"b "<<indgeneration % everygen_<<endl;
+        	generalfile << indgeneration << '\t' << get_allele_number() << '\t' << get_current_diversity() << '\t'  << get_current_activity() << '\n';
+            generalfile.flush();
+            for (auto const &it : Siteforeacheallele_){
+				if(it.first!=-3 and it.first!=-2){
+            		allelefile << indgeneration << '\t' << it.first << '\t' << freqallele(it.first) << '\t'  << activitymoyallele(it.first) << '\n';
+            		allelefile.flush();
+            	}
+            }
+        }
 	}
+	generalfile.close();
+	allelefile.close();
 	cout<<"nb Failed meiosis : 2 DSB on one site, No DSB, No symmetrical sites (binding + DSB), Total"<<endl;
 	for(auto indgen : nbfailedmeiosis_){
 		for(auto indexfailed : indgen){
@@ -700,6 +728,58 @@ void Model::manygenerations(){
 		cout<<'\n';
 	}
 	cout<<endl;
+}
+
+int Model::get_allele_number(){
+	return Siteforeacheallele_.size()-2;
+}
+
+double Model::freqallele(int allelename){
+	if(allelename==0){
+		//cout<<"count : "<<count(genotypes_[parityIndex_].begin(), genotypes_[parityIndex_].end(), allelename)-1<<endl;
+		//cout<<"size genotype : "<<genotypes_[parityIndex_].size()-1<<endl;
+		return double(count(genotypes_[parityIndex_].begin(), genotypes_[parityIndex_].end(), allelename)-1)/(genotypes_[parityIndex_].size()-1);
+	}else{
+		return double (count(genotypes_[parityIndex_].begin(), genotypes_[parityIndex_].end(), allelename))/(genotypes_[parityIndex_].size()-1);
+	}
+}
+
+double Model::get_current_diversity(){
+	double sumfreq=0;
+	for (auto const &it : Siteforeacheallele_){
+		if(it.first!=-3 and it.first!=-2){
+			//cout<<"freqallele : "<<freqallele(it.first)<<endl;
+			sumfreq+=(freqallele(it.first))*(freqallele(it.first));
+		}
+	}
+	return 1/sumfreq;
+}
+
+double Model::activitymoyallele(int allele){
+	double moyact=0;
+	//cout<<"allele : "<<allele<<endl;
+	for(auto all : Siteforeacheallele_[allele]){
+		moyact+=Affinity_[all];
+		//cout<<"all : "<<all<<endl;
+		//cout<<"Affinity_[all] : "<<Affinity_[all]<<endl;
+	}
+	//cout<<"moyact : "<<moyact<<endl;
+	//cout<<"moyact/nbsite_ : "<<moyact/nbsite_<<endl;
+	return (moyact/nbsite_)*freqallele(allele);
+}
+
+double Model::get_current_activity(){
+	double moytotact=0;
+	for (auto const &it : Siteforeacheallele_){
+		if(it.first!=-3 and it.first!=-2){
+			//cout<<"it.first : "<<it.first<<endl;
+			//cout<<"activitymoyallele(it.first) : "<<activitymoyallele(it.first)<<endl;
+			moytotact+=activitymoyallele(it.first);
+			//cout<<"d"<<endl;
+		}
+	}
+	//cout<<"activity moy"<<moytotact/meanaff_<<endl;
+	return moytotact/meanaff_;
 }
 
 void migration(){

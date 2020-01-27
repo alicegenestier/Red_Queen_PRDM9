@@ -44,6 +44,8 @@ class Model {
 	float nbDSB();
 	int nbGenerations();
 	vector<vector<int>> nbfailedmeiosis();
+	bool zygosity();
+	int everygen();
 	bool ismigration();
 	//============================
 	//           Setters
@@ -70,6 +72,11 @@ class Model {
 	int Meiosis(int no_chrom_ind, int nb_gen);
 	void fillnewpop(int nb_gen);
 	void manygenerations();
+	int get_allele_number();
+	double freqallele(int allelename);
+	double get_current_diversity();
+	double activitymoyallele(int allele);
+	double get_current_activity();
 	void migration();
 	
 	protected:
@@ -97,5 +104,7 @@ class Model {
 	float nbDSB_; //nb of DSB
 	int nbGenerations_; //nb of generations
 	vector<vector<int>> nbfailedmeiosis_;
+	bool zygosity_;
+	int everygen_;
 	bool ismigration_;
 };
