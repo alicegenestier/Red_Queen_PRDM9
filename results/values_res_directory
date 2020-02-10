@@ -1,0 +1,10 @@
+res without activity 1
+
+N_(1000), L_(100000), nbsite_(400), indPrdm9_(5), nballele_(1), parityIndex_(0), v_(1e-7), u_(1e-4), meanaff_(0.6), varaff_(1), nbDSB_(6), nbGenerations_(10000), ismigration_(false), zygosity_(true), everygen_(10)
+
+res without activity 2
+
+N_(1000), L_(100000), nbsite_(400), indPrdm9_(5), nballele_(1), parityIndex_(0), v_(1e-6), u_(1e-4), meanaff_(0.6), varaff_(1), nbDSB_(6), nbGenerations_(10000), ismigration_(false), zygosity_(true), everygen_(10)
+
+res 1
+N_(1000), L_(100000), nbsite_(400), indPrdm9_(5), nballele_(1), parityIndex_(0), v_(1e-4), u_(1e-4), meanaff_(0.6), varaff_(1), nbDSB_(6), nbGenerations_(10000), ismigration_(false), zygosity_(true), everygen_(10)
