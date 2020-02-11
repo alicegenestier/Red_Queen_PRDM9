@@ -79,6 +79,9 @@ class Model {
 	double activitymoyallele(int allele);
 	double get_current_activity();
 	void migration();
+	vector<double> freqneutral();
+	double freqall(int allele);
+	double actall(int allele);
 	
 	protected:
 	//============================
