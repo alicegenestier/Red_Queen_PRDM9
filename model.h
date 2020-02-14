@@ -48,6 +48,8 @@ class Model {
 	int everygen();
 	bool ismigration();
 	double q();
+	bool withDSB();
+	double w();
 	//============================
 	//           Setters
 	//============================
@@ -61,7 +63,7 @@ class Model {
 	double chosegamma(double meanaff, double varaff);
 	vector<int> choosemany(int k, vector<int> vect);
 	vector<int> vectfreesites(vector<int> vect, int nb);
-	vector<int> occupiedsites(vector<int> vect);
+	vector<vector<int>> occupiedsites(vector<int> vect);
 	void sitemutation();
 	void allelemutation();
 	void updatemissingallele();
@@ -112,4 +114,6 @@ class Model {
 	int everygen_;
 	bool ismigration_;
 	double q_;
+	bool withDSB_;
+	double w_;
 };

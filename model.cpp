@@ -21,7 +21,7 @@ using namespace std;
 //============================
 //         Constructors
 //============================
-Model::Model(): N_(1000), L_(100000), nbsite_(400), indPrdm9_(5), nballele_(1), parityIndex_(0), v_(1e-4), u_(1e-4), meanaff_(0.6), varaff_(1), nbDSB_(6), nbGenerations_(10000), ismigration_(false), zygosity_(true), everygen_(10) {
+Model::Model(): N_(1000), L_(100000), nbsite_(400), indPrdm9_(5), nballele_(1), parityIndex_(0), v_(1e-4), u_(1e-4), w_(1e-2), meanaff_(0.6), varaff_(1), nbDSB_(6), nbGenerations_(10000), ismigration_(false), zygosity_(false), withDSB_(false), everygen_(10) {
 	
 	//vector counting the number of failed meiosis per generation
 	nbfailedmeiosis_=vector<vector<int>>(nbGenerations_,vector<int>(4,0));
@@ -169,6 +169,12 @@ bool Model::ismigration(){
 double Model::q(){
 	return q_;
 }
+bool Model::withDSB(){
+	return withDSB_;
+}
+double Model::w(){
+	return w_;
+}
 //============================
 //           Setters
 //============================
@@ -251,20 +257,23 @@ vector<int> Model::vectfreesites(vector<int> vect, int nb){//return the index of
 	return (freesites);	
 }
 
-vector<int> Model::occupiedsites(vector<int> vect){//return the index of all positions occupied
+vector<vector<int>> Model::occupiedsites(vector<int> vect){//return the index of all positions occupied
 	vector<int> occupiedsites;
+	vector<int> occupiedsitesneutral;
 	for(int i=0; i<vect.size(); i++){
-		if(vect[i]!= -2 and vect[i]!= -1){
+		if(vect[i]!= -2 and vect[i]!= -1 and vect[i]!= -3){
 			occupiedsites.push_back(i);
+		}else if(vect[i]==-3){
+			occupiedsitesneutral.push_back(i);
 		}
 	}
-	return (occupiedsites);	
+	return (vector<vector<int>>{occupiedsites,occupiedsitesneutral});	
 }
 
 void Model::sitemutation(){
 	// for each position with allele, prob v to mutate and if mutation, choose randomly 1 chrom to mutate
-	vector<int> occupied = occupiedsites(Alleleforeachpos_);
-	
+	vector<int> occupied = occupiedsites(Alleleforeachpos_)[0];
+	vector<int> occupiedneutral = occupiedsites(Alleleforeachpos_)[1];
 	// affichage
 	/*for (auto i : occupied){
 		cout<<" "<< i;
@@ -272,6 +281,7 @@ void Model::sitemutation(){
 	cout<<endl;*/
 	
 	vector<int> mutsites;
+	vector<int> mutsitesneutral;
 	for (auto i : occupied){
 		if (bernoulli_draw(2*N_*v_)){
 			mutsites.push_back(i);
@@ -281,16 +291,36 @@ void Model::sitemutation(){
 			cout<<endl;*/
 		}
 	}
+	for (auto i : occupiedneutral){
+		if (bernoulli_draw(2*N_*w_)){
+			mutsitesneutral.push_back(i);
+			/*for (auto j : mutsites){
+				cout<<" "<< j;
+			}
+			cout<<endl;*/
+		}
+	}
 	for (auto j : mutsites){
 		int mutchrom = choose(2*N_);
-		vector<int>::iterator itv = find(Siteforeacheallele_[-3].begin(),Siteforeacheallele_[-3].end(),j);
-		if(itv == Siteforeacheallele_[-3].end()){
+		//vector<int>::iterator itv = find(Siteforeacheallele_[-3].begin(),Siteforeacheallele_[-3].end(),j);
+		//if(itv == Siteforeacheallele_[-3].end()){
 			if (populations_[parityIndex_][mutchrom][j]==1){ 
 				populations_[parityIndex_][mutchrom][j]=0;
 			}
-		}else{
+		//}else{
+		//	populations_[parityIndex_][mutchrom][j]=(populations_[parityIndex_][mutchrom][j]+1)%2;
+		//}
+	}
+	for (auto j : mutsitesneutral){
+		int mutchrom = choose(2*N_);
+		//vector<int>::iterator itv = find(Siteforeacheallele_[-3].begin(),Siteforeacheallele_[-3].end(),j);
+		//if(itv == Siteforeacheallele_[-3].end()){
+		//	if (populations_[parityIndex_][mutchrom][j]==1){ 
+		//		populations_[parityIndex_][mutchrom][j]=0;
+		//	}
+		//}else{
 			populations_[parityIndex_][mutchrom][j]=(populations_[parityIndex_][mutchrom][j]+1)%2;
-		}
+		//}
 	}
 }
 
@@ -481,7 +511,8 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 	}
 	//nblinksite=summarysites.size();
 	//cout<<"+++++++++++++++++++++++++++++++++++++++++"<<endl;
-	/*for(auto i : summarysites){
+	/*cout<<"summary sites"<<endl;
+	for(auto i : summarysites){
 		for(auto j : i){
 			cout<<' '<<j;
 		}
@@ -516,7 +547,8 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 				summarysites[i][j+1]=2;// DSB -> 2
 				nbdsbpersite+=1;
 				vectsitedsb.push_back({i,j});
-				/*cout<<"summarysites : "<<endl;
+				/*
+				cout<<"summarysites : "<<endl;
 				for(auto i : summarysites){
 					for(auto j : i){
 						cout<<' '<<j;
@@ -524,9 +556,10 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 					cout<<"\n";
 				}
 				cout<<endl;
-				cout<<"a1 "<<nbdsbpersite<<endl;*/
+				cout<<"a1 "<<nbdsbpersite<<endl;
+				*/
 				try{
-					if (nbdsbpersite>1){
+					if (nbdsbpersite>1 and withDSB_){
 						nbfailedmeiosis_[nb_gen][0]+=1;
 						throw int(0);
 					}
@@ -540,20 +573,43 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 			}
 			//cout<<"a2"<<nbdsbpersite<<endl;
 		}
-		if (dsb){
-			if(vectsitedsb.back()[1]==0 or vectsitedsb.back()[1]==1){
-				if(summarysites[i][3]==1){
-					vect_CO.push_back({summarysites[i][0],vectsitedsb.back()[1],2});
+		/*cout<<" vectsitedsb : "<<endl;
+		for(auto i : vectsitedsb){
+			for(auto j : i){
+				cout<<' '<<j;
+			}
+			cout<<"\n";
+		}
+		cout<<endl;*/
+		vector<int> vco;
+		if (dsb){ /// pose pb puisqu'on peut avoir plusieurs dsb sur meme site donc .back marche pas...
+			for(int indexnbdsb = 0; indexnbdsb<nbdsbpersite; indexnbdsb++){
+				vco = {summarysites[i][0],vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]};
+				if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==0 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==1){
+					if((summarysites[i][3]==1 or summarysites[i][3]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=2){/// in these cases, I suppose that 2 DSB can perform a CO
+						//cout<<"cas1"<<endl;
+						//vect_CO.push_back({summarysites[i][0],vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1],2});
+						vco.push_back(2);
+					}
+					if((summarysites[i][4]==1 or summarysites[i][4]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=3){
+						//cout<<"cas2"<<endl;
+						//vect_CO.push_back({summarysites[i][0],vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1],3});
+						vco.push_back(3);
+					}
+				}else if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==2 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==3 or summarysites[i][1]==2){
+					if((summarysites[i][1]==1 or summarysites[i][1]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=0 ){
+						//cout<<"cas3"<<endl;
+						//vect_CO.push_back({summarysites[i][0],vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1],0});
+						vco.push_back(0);
+					}
+					if((summarysites[i][2]==1 or summarysites[i][2]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=1){
+						//cout<<"cas4"<<endl;
+						//vect_CO.push_back({summarysites[i][0],vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1],1});
+						vco.push_back(1);
+					}
 				}
-				if(summarysites[i][4]==1){
-					vect_CO.push_back({summarysites[i][0],vectsitedsb.back()[1],3});
-				}
-			}else if(vectsitedsb.back()[1]==2 or vectsitedsb.back()[1]==3){
-				if(summarysites[i][1]==1){
-					vect_CO.push_back({summarysites[i][0],vectsitedsb.back()[1],0});
-				}
-				if(summarysites[i][2]==1){
-					vect_CO.push_back({summarysites[i][0],vectsitedsb.back()[1],1});
+				if(vco.size()>2){
+					vect_CO.push_back(vco);
 				}
 			}
 		}
@@ -564,8 +620,8 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 			}
 			cout<<"\n";
 		}
-		cout<<endl;*/
-		/*cout<<"vect_CO : "<<endl;
+		cout<<endl;
+		cout<<"vect_CO : "<<endl;
 		for(auto i : vect_CO){
 			for(auto j : i){
 				cout<<' '<<j;
@@ -618,9 +674,19 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 	cout<<endl;*/
 	//cout<<vect_CO.size()<<endl;
 	//cout<<nblinksite<<endl;
-	q_=q_+double(vect_CO.size())/nblinksite;
+	q_=q_+double(vect_CO.size())/(vectsitedsb.size());
 	//cout<<q_<<endl;
-	vector<int> index_CO=vect_CO[choose(vect_CO.size())];
+	vector<int> index_CO;
+	int choosevect=choose(vect_CO.size());
+	if(vect_CO[choosevect].size()==4){
+		if(bernoulli_draw(0.5)){
+			index_CO={vect_CO[choosevect][0],vect_CO[choosevect][1],vect_CO[choosevect][2]};
+		}else{
+			index_CO={vect_CO[choosevect][0],vect_CO[choosevect][1],vect_CO[choosevect][3]};
+		}
+	}else{
+		index_CO=vect_CO[choosevect];	
+	}
 	/*cout<<"index_CO : "<<endl;
 	for(auto i : index_CO){
 		cout<<' '<<i;
@@ -687,11 +753,11 @@ void Model::fillnewpop(int nb_gen){
 
 //methode qui repete tout ce au'on vient de faire pendant X generations
 void Model::manygenerations(){
-	ofstream generalfile (("general_"+std::to_string(v_)+".txt").c_str());
+	ofstream generalfile (("general_q_"+std::to_string(u_)+".txt").c_str());
 	generalfile << "Generation number" << '\t' << "Total number of allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' <<"Time" << '\t' << "Fertility rate" << '\t' << "2 DSB on one site rate" << '\t' << "No DSB rate" << '\t' << "No symmetrical sites (binding + DSB) rate" << '\t' << "q" <<'\n';
     generalfile.flush();
-    ofstream allelefile (("allele_"+std::to_string(v_)+".txt").c_str());
-	allelefile << "Generation number" << '\t' << "Allele number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << '\n';
+    ofstream allelefile (("allele_q_"+std::to_string(u_)+".txt").c_str());
+	allelefile << "Generation number" << '\t' << "Allele number" << '\t' << "Frequency" << '\t'  << "Activity" << '\n';
     allelefile.flush();
 	for(int indgeneration=0; indgeneration<nbGenerations_; indgeneration++){
 		clock_t t1, t2;
