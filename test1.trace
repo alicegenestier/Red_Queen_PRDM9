@@ -1,0 +1,4 @@
+Generation number	Total number of allele	Diversity	Activity	Time	Fertility rate	2 DSB on one site rate	No DSB rate	No symmetrical sites (binding + DSB) rate	q
+0	2	1.21951	0.955	0.00183	0.689655	0	0	0.310345	0.815595
+10	5	2.5	0.611667	0.001716	0.555556	0	0	0.444444	0.609405
+20	6	3.7037	0.564167	0.001328	0.769231	0	0.0769231	0.153846	0.719881

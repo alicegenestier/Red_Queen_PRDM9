@@ -47,6 +47,8 @@ class Model {
 	bool zygosity();
 	int everygen();
 	bool ismigration();
+	double q();
+	bool withDSB();
 	//============================
 	//           Setters
 	//============================
@@ -78,6 +80,9 @@ class Model {
 	double activitymoyallele(int allele);
 	double get_current_activity();
 	void migration();
+	vector<double> freqneutral();
+	double freqall(int allele);
+	double actall(int allele);
 	
 	protected:
 	//============================
@@ -107,4 +112,6 @@ class Model {
 	bool zygosity_;
 	int everygen_;
 	bool ismigration_;
+	double q_;
+	bool withDSB_;
 };

@@ -9,7 +9,8 @@
 #include <time.h>
 #include <iterator>
 #include <algorithm>
-#include <fstream>
+#include <string>
+#include <cstring>
 
 #include "model.h"
 
@@ -21,6 +22,109 @@ int main(int argc, char* argv[])    {
 
 	cout<< "Hello World !\0"<< endl;
 	cout<< " "<< endl;
+
+
+	// default values
+	string name = "simu";
+	int N = 1000;
+	int L = 100000;
+	int nbsite = 400;
+	int indPrdm9 = 5;
+	int nballele = 1;
+	int parityIndex = 0;
+    double u = 1e-4;
+    double v = 1e-4;
+	double w = 1e-3;
+	double meanaff = 0.6;
+	double varaff = 1;
+	int nbDSB = 6;
+	int nbGenerations = 10000;
+	bool ismigration = false;
+	bool zygosity = false;
+	bool withDSB = false;
+	int everygen = 10;
+
+	int i=1;
+	//cout<<"argc"<<argc<<endl;
+    while (i < argc)    {
+    	//cout<<argv[i]<<endl;
+    	string s = argv[i];
+
+		if (s == "-N") {
+        	i++;
+            N = atoi(argv[i]);
+        }
+        else if (s == "-L") {
+        	i++;
+            L = atoi(argv[i]);
+        }
+        else if (s == "-nbsite") {
+        	i++;
+            nbsite = atoi(argv[i]);
+        }
+        else if (s == "-indPrdm9") {
+        	i++;
+            indPrdm9 = atoi(argv[i]);
+        }
+        else if (s == "-nballele") {
+        	i++;
+            nballele = atoi(argv[i]);
+        }
+        else if (s == "-parityIndex") {
+        	i++;
+            parityIndex = atoi(argv[i]);
+        }
+        else if (s == "-u")  {
+        	i++;
+            u = atof(argv[i]);
+        }
+        else if (s == "-v")  {
+        	i++;
+            v = atof(argv[i]);
+        }
+        else if (s == "-w") {
+        	i++;
+            w = atof(argv[i]);
+        }
+        else if (s == "-meanaff") {
+        	i++;
+            meanaff = atof(argv[i]);
+        }
+        else if (s == "-varaff") {
+        	i++;
+            varaff = atof(argv[i]);
+        }
+        else if (s == "-nbDSB") {
+        	i++;
+            nbDSB = atoi(argv[i]);
+        }
+        else if (s == "-nbGenerations") {
+        	i++;
+            nbGenerations = atoi(argv[i]);
+        }
+        else if (s == "-ismigration") {
+        	i++;
+            ismigration = atoi(argv[i]);
+        }
+        else if (s == "-zygosity") {
+        	i++;
+            zygosity = atoi(argv[i]);
+        }
+        else if (s == "-withDSB") {
+        	i++;
+            withDSB = atoi(argv[i]);
+        }
+        else if (s == "-everygen") {
+        	i++;
+            everygen = atoi(argv[i]);
+        }
+        else {
+        	// name of the run (name will be followed by extensions: <name>.general…);
+            name = argv[i];
+        }
+        i++;
+	}
+	
 	
 	float temps1, temps2;
 	clock_t t1, t2, t3;
@@ -28,7 +132,7 @@ int main(int argc, char* argv[])    {
 	t1=clock();
 	
 	cout<< "Test for Model constructor" <<endl;
-	Model model1;
+	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,name);
 	
 	t2=clock();
 	temps1=(float)(t2-t1)/CLOCKS_PER_SEC;

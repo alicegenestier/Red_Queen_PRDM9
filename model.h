@@ -6,6 +6,8 @@
 #include <map>
 #include <random>
 #include <fstream>
+#include <string>
+#include <cstring>
 
 using namespace std;
 
@@ -14,7 +16,10 @@ class Model {
 	//============================
 	//        Constructors
 	//============================
+	// Default	
 	Model();
+	//with arg
+	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,string name);
 	
 	//============================
 	//        Destructors
@@ -36,12 +41,12 @@ class Model {
 	int indPrdm9(); 
 	int nballele(); 
 	int nbsite(); 
-	float u();
-	float v();
-	float m();
+	double u();
+	double v();
+	double m();
 	double meanaff(); 
 	double varaff();
-	float nbDSB();
+	int nbDSB();
 	int nbGenerations();
 	vector<vector<int>> nbfailedmeiosis();
 	bool zygosity();
@@ -50,6 +55,9 @@ class Model {
 	double q();
 	bool withDSB();
 	double w();
+	string name();
+	map<int,double> Ageallele();
+	map<int,vector<double>> infoperallele();
 	//============================
 	//           Setters
 	//============================
@@ -84,6 +92,10 @@ class Model {
 	vector<double> freqneutral();
 	double freqall(int allele);
 	double actall(int allele);
+	void printageallele();
+	double get_age_allele(int allname);
+	void printinfoallele();
+	double get_info_allele(int allname);
 	
 	protected:
 	//============================
@@ -102,12 +114,12 @@ class Model {
 	int indPrdm9_; // index of the site of the prdm9 gene
 	int nballele_; // number of allele which possess active motifs in the popluation (nb of alleles in the pop since the begining) -> nb current allele???
 	int nbsite_; // number of sites for each new allele
-	float u_; //prdm9 mutation rate
-	float v_; // target mutation rate
-	float m_; // migration rate
+	double u_; //prdm9 mutation rate
+	double v_; // target mutation rate
+	double m_; // migration rate
 	double meanaff_; //mean gamma law 
 	double varaff_; // variance gamma law
-	float nbDSB_; //nb of DSB
+	int nbDSB_; //nb of DSB
 	int nbGenerations_; //nb of generations
 	vector<vector<int>> nbfailedmeiosis_;
 	bool zygosity_;
@@ -116,4 +128,7 @@ class Model {
 	double q_;
 	bool withDSB_;
 	double w_;
+	string name_;
+	map<int,double> Ageallele_;
+	map<int,vector<double>> infoperallele_;
 };

@@ -17,6 +17,7 @@ using namespace std;
 
 
 int main(int argc, char* argv[])    {
+	
 	srand(time(NULL));
 
 	cout<< "Hello World !\0"<< endl;
