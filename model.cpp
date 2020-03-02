@@ -15,33 +15,29 @@
 #include <fstream>
 #include <string>
 #include <cstring>
-
+//#include <boost/math/distributions/beta.hpp>
 using namespace std;
-
+//using namespace boost::math;
 //============================
 //         Constructors
 //============================
-Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen),name_(name) {
+Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize,string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen),m_(m),alpha_(alpha),beta_(beta),nbgenmig_(nbgenmig),popsamesize_(popsamesize),name_(name) {
 	
 	//vector counting the number of failed meiosis per generation
 	nbfailedmeiosis_=vector<vector<int>>(nbGenerations_,vector<int>(4,0));
 	
 	//popluations matrix
 	populations_ = vector<vector<vector<int>>>(2,vector<vector<int>>(2*N_,vector<int> (L_,1)));
-	// matrix initialized with 1 because at the begining all the sites are activated in the whole genme for each individual
+	// matrix initialized with 1 because at the begining all the sites are activated in the whole genome for each individual
 	for (auto &i : populations_){
 		for (int j=0; j<2*N_; j++)
 		i[j][indPrdm9_]=0; 
 	}
-
-	//parity = 0 ou 1 => pour 2 pop : 
-	//int current = parity
-	//int next = 1-parity
 	
 	//affinity vector
 	Affinity_=vector<double>(L_,0);
 	for(int i=0; i<L_; i++){
-		Affinity_[i]=chosegamma(meanaff_, varaff_);
+		Affinity_[i]=choosegamma(meanaff_, varaff_);
 	}
 	
 	//genotypes vector
@@ -63,6 +59,19 @@ Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,do
 	
 	Siteforeacheallele_[-3]=firstposneutral;
 	
+	//distribution beta for neutral sites
+	for(int site=0; site<nbsite_; site++){
+		double freqactivsite = choosebeta(alpha_, beta_);
+		for(int ind=0; ind<2*N_; ind++){
+			double p=bernoulli_draw(freqactivsite);
+			//cout<<"p : "<<p<<endl;
+			if(not p){
+				populations_[parityIndex_][ind][Siteforeacheallele_[-3][site]]=0;
+			}
+		}
+	}
+	
+	
 	// positions of sites for first allele (0)
 	vector<int> freepos = vectfreesites(Alleleforeachpos_, -1);
 	vector<int> firstpos = choosemany(nbsite_, freepos); 
@@ -76,15 +85,6 @@ Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,do
 		Siteforeacheallele_[i]=firstpos;
 		Ageallele_[i]=freqall(i);
 		infoperallele_[i]={0,0,0,0,0,0};
-	}
-	
-	if(ismigration_){
-		populations1_ = vector<vector<vector<int>>>(2,vector<vector<int>>(2*N_,vector<int> (L_,1)));
-		for (auto &i : populations1_){
-			for (int j=0; j<2*N_; j++)
-			i[j][indPrdm9_]=0; 
-		}
-		genotypes1_=vector<vector<int>>(2,vector<int>(2*N_,0));
 	}
 
 }
@@ -186,6 +186,18 @@ map<int,double> Model::Ageallele(){
 map<int,vector<double>> Model::infoperallele(){
 	return infoperallele_;
 }
+double Model::alpha(){
+	return alpha_;
+}
+double Model::beta(){
+	return beta_;
+}
+int Model::nbgenmig(){
+	return nbgenmig_;
+}
+bool Model::popsamesize(){
+	return popsamesize_;
+}
 //============================
 //           Setters
 //============================
@@ -218,9 +230,18 @@ int Model::binomial_draw(int n, double p)  {
 }
 
 //gamma
-double Model::chosegamma(double meanaff, double varaff){
+double Model::choosegamma(double meanaff, double varaff){
 	gamma_distribution<double> g(varaff,meanaff);
 	return g(e);
+}
+
+//beta
+double Model::choosebeta(double alpha, double beta){
+	//beta_distribution<double> mybeta(alpha, beta);
+	//return mybeta(e);
+	double X = choosegamma(alpha, 1);
+	double Y = choosegamma(beta, 1);
+	return X/(X+Y);
 }
 
 vector<int> Model::choosemany(int k, vector<int> vect){ //choose k positions among all the free positions (vect)
@@ -694,7 +715,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 				infoperallele_[zygote[1]][0]+=1;
 				infoperallele_[zygote[1]][2]+=1;
 			}
-			cout<<"case No DSB"<<endl;
+			//cout<<"case No DSB"<<endl;
 			throw int(1);
 		}else if(not vect_CO.size()){
 			nbfailedmeiosis_[nb_gen][2]+=1;
@@ -707,7 +728,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 				infoperallele_[zygote[1]][0]+=1;
 				infoperallele_[zygote[1]][3]+=1;
 			}
-			cout<<"case No sym"<<endl;
+			//cout<<"case No sym"<<endl;
 			throw int(2);
 		}
 	} // assert
@@ -838,10 +859,10 @@ void Model::fillnewpop(int nb_gen){
 //methode qui repete tout ce au'on vient de faire pendant X generations
 void Model::manygenerations(){
 	ofstream generalfile ((name_+".trace").c_str());
-	generalfile << "Generation number" << '\t' << "Total number of allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' <<"Time" << '\t' << "Fertility rate" << '\t' << "2 DSB on one site rate" << '\t' << "No DSB rate" << '\t' << "No symmetrical sites (binding + DSB) rate" << '\t' << "q" <<'\n';
+	generalfile << "Generation_number" << '\t' << "Total_number_of_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" <<'\n';
     	generalfile.flush();
     	ofstream allelefile ((name_+".allele").c_str());
-	allelefile << "Generation number" << '\t' << "Allele number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" <<'\n';
+	allelefile << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" <<'\n';
     	allelefile.flush();
 	ofstream paramsfile ((name_+".params").c_str());
 	paramsfile << "N" << '\t' << N_ << '\n' << "L" << '\t' << L_ << '\n' << "nbsite" << '\t' << nbsite_ << '\n' << "indPrdm9" << '\t' << indPrdm9_ << '\n' << "nballele" << '\t' << nballele_ << '\n' << "parityIndex" << '\t' << parityIndex_ << '\n' << "u" << '\t' << u_ << '\n' << "v" << '\t' << v_ << '\n' << "w" << '\t' << w_ << '\n' << "meanaff" << '\t' << meanaff_ << '\n' << "varaff" << '\t' << varaff_ << '\n' << "nbDSB" << '\t' << nbDSB_ << '\n' << "nbGenerations" << '\t' << nbGenerations_ << '\n' << "ismigration" << '\t' << ismigration_ << '\n' << "zygosity" << '\t' << zygosity_ << '\n' << "withDSB" << '\t' << withDSB_ << '\n' << "everygen" << '\t' << everygen_ << '\n';
@@ -859,18 +880,18 @@ void Model::manygenerations(){
 		sitemutation();
 		allelemutation();
 		updatemissingallele();
-		cout<<"pop :"<<endl;
+		/*cout<<"pop :"<<endl;
 		printpop(parityIndex_);
 		cout<<"map :"<<endl;
-		printposallele();
-		cout<<"age allele :"<<endl;
-		printageallele();
-		cout<< "genotypes : "<<endl;
-		printgen(parityIndex_);
-		cout<< "Allele for each position : "<<endl;
-		printallelepos();
-		cout<<"info per allele : "<<endl;
-		printinfoallele();
+		printposallele();*/
+		/*cout<<"age allele :"<<endl;
+		printageallele();*/
+		/*cout<< "genotypes : "<<endl;
+		printgen(parityIndex_);*/
+		/*cout<< "Allele for each position : "<<endl;
+		printallelepos();*/
+		/*cout<<"info per allele : "<<endl;
+		printinfoallele();*/
 		q_=0;
 		fillnewpop(indgeneration);
 		q_=q_/(2*N_);
@@ -882,19 +903,19 @@ void Model::manygenerations(){
 		for (auto &it : infoperallele_){
 			it.second[4]=it.second[4]/it.second[5];
 		}
-		cout<<"---------"<<endl;
+		/*cout<<"---------"<<endl;
 		cout<<"pop :"<<endl;
 		printpop(parityIndex_);
 		cout<<"map :"<<endl;
-		printposallele();
-		cout<<"age allele :"<<endl;
-		printageallele();
-		cout<< "genotypes : "<<endl;
-		printgen(parityIndex_);
-		cout<< "Allele for each position : "<<endl;
-		printallelepos();
-		cout<<"info per allele : "<<endl;
-		printinfoallele();
+		printposallele();*/
+		/*cout<<"age allele :"<<endl;
+		printageallele();*/
+		/*cout<< "genotypes : "<<endl;
+		printgen(parityIndex_);*/
+		/*cout<< "Allele for each position : "<<endl;
+		printallelepos();*/
+		/*cout<<"info per allele : "<<endl;
+		printinfoallele();*/
 		//cout<<"a "<<indgeneration % everygen_<<endl;
 		t2=clock();
 		if (indgeneration % everygen_ ==0)  {
@@ -1044,10 +1065,73 @@ double Model::get_current_activity(){
 	return moytotact;
 }
 
-void migration(){
-	//choisir le nombre de migrant voulu dans la pop (m_*N_ migrants parmi N_ indiv et independants)
+vector<int> Model::choosemanymigration(int k){ //choose k individuals in the pop
+//return the vector of index of the chosen positions
+	vector<int> newsites;
+	try{
+		if (k>N_){
+			throw string("To much migrants");
+		}
+	} // assert
+	catch(string const& chaine){
+		cerr << chaine << endl;
+		return vector<int>{-1};
+	}
+	for (int i=0; i<k; i++){
+		int index = choose(N_-i);
+		//boucle: tant que le find dans le vector est true, on incremnte l'indice
+		bool found=true;
+		while(found==true){
+			vector<int>::iterator it = find(newsites.begin(),newsites.end(),index);
+			if(it != newsites.end()){
+				//found=true;
+				index+=1;
+				if(index==N_){
+					index=0;
+				}
+			}
+			else{
+				found=false;
+			}
+		}
+		newsites.push_back(index);
+	}
+	sort(newsites.begin(), newsites.end());
+	return(newsites);
+}
+
+double Model::q_two_hap(vector<int> haplotype1, vector<int> haplotype2){
+	//give two haplotype (2 ind of the pop ??)
+}
+
+double Model::q_hom(int allele, vector<int> haplotype1, vector<int> haplotype2){
+	//
+}
+
+double Model::q_hete(int allele1, int allele2, vector<int> haplotype1, vector<int> haplotype2){
+	//
+}
+
+void Model::migration(){
+	//choisir le nombre de migrant voulu dans la pop1 et dans la pop2 (m_*N_ migrants parmi N_ indiv et independants)
 	//copier les deux chromosomes de l'indiv de la pop1, remplacer cet indiv dans la pop1 par l'indiv choisi dans la pop2 puis remplacer l'indiv de la pop2 par l'indiv copier de la pop1.
 	//faire ce meme echange dans les genotypes
+	vector<int> migrated_indiv_pop1 = choosemanymigration(int(m_*N_));
+	vector<int> migrated_indiv_pop2 = choosemanymigration(int(m_*N_));
+	if(migrated_indiv_pop1!=vector<int>{-1} and migrated_indiv_pop2!=vector<int>{-1}){
+		for (int indiv=0; indiv<migrated_indiv_pop1.size(); indiv++){
+			vector<vector<int>> ind_pop1_to_pop2 = vector<vector<int>> {populations1_[parityIndex_][2*migrated_indiv_pop1[indiv]],populations1_[parityIndex_][2*migrated_indiv_pop1[indiv]+1]};
+			vector<int> ind_gen1_to_gen2 = vector<int> {genotypes1_[parityIndex_][2*migrated_indiv_pop1[indiv]],genotypes1_[parityIndex_][2*migrated_indiv_pop1[indiv]+1]};
+			populations1_[parityIndex_][2*migrated_indiv_pop1[indiv]]=populations2_[parityIndex_][2*migrated_indiv_pop2[indiv]];
+			populations1_[parityIndex_][2*migrated_indiv_pop1[indiv]+1]=populations2_[parityIndex_][2*migrated_indiv_pop2[indiv]+1];
+			genotypes1_[parityIndex_][2*migrated_indiv_pop1[indiv]]=genotypes2_[parityIndex_][2*migrated_indiv_pop2[indiv]];
+			genotypes1_[parityIndex_][2*migrated_indiv_pop1[indiv]+1]=genotypes2_[parityIndex_][2*migrated_indiv_pop2[indiv]+1];
+			populations2_[parityIndex_][2*migrated_indiv_pop2[indiv]]=ind_pop1_to_pop2[0];
+			populations2_[parityIndex_][2*migrated_indiv_pop2[indiv]+1]=ind_pop1_to_pop2[1];
+			genotypes2_[parityIndex_][2*migrated_indiv_pop2[indiv]]=ind_gen1_to_gen2[0];
+			genotypes2_[parityIndex_][2*migrated_indiv_pop2[indiv]+1]=ind_gen1_to_gen2[1];
+		}
+	}
 }
 
 //vecteur : num generation ; nbtotalallele par generation ; diversite ; activite moy 

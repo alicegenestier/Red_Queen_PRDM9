@@ -19,7 +19,7 @@ class Model {
 	// Default	
 	Model();
 	//with arg
-	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,string name);
+	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,string name);
 	
 	//============================
 	//        Destructors
@@ -58,6 +58,10 @@ class Model {
 	string name();
 	map<int,double> Ageallele();
 	map<int,vector<double>> infoperallele();
+	double alpha();
+	double beta();
+	int nbgenmig();
+	bool popsamesize();
 	//============================
 	//           Setters
 	//============================
@@ -68,7 +72,7 @@ class Model {
 	int choose(int n);
 	int bernoulli_draw(double p);
 	int binomial_draw(int n, double p);  
-	double chosegamma(double meanaff, double varaff);
+	double choosegamma(double meanaff, double varaff);
 	vector<int> choosemany(int k, vector<int> vect);
 	vector<int> vectfreesites(vector<int> vect, int nb);
 	vector<vector<int>> occupiedsites(vector<int> vect);
@@ -96,15 +100,22 @@ class Model {
 	double get_age_allele(int allname);
 	void printinfoallele();
 	double get_info_allele(int allname);
+	vector<int> choosemanymigration(int k);
+	double choosebeta(double alpha, double beta);
+	double q_two_hap(vector<int> haplotype1, vector<int> haplotype2);
+	double q_hom(int allele, vector<int> haplotype1, vector<int> haplotype2);
+	double q_hete(int allele1, int allele2, vector<int> haplotype1, vector<int> haplotype2);
 	
 	protected:
 	//============================
 	//       Data members
 	//============================
 	vector<vector<vector<int>>> populations_; // marix of the populations current and next: columns => number of chromosomes (2*N), rows => all sites in the genome (L)
-	vector<vector<vector<int>>> populations1_; //second population for the migration
+	vector<vector<vector<int>>> populations1_; //first population for the migration
+	vector<vector<vector<int>>> populations2_; //second population for the migration
 	vector<vector<int>> genotypes_; // prdm9 allele for each chromosom
-	vector<vector<int>> genotypes1_; //genotype of the second pop if migration
+	vector<vector<int>> genotypes1_; //first genotype for the migration
+	vector<vector<int>> genotypes2_; //second genotype for the migration
 	map<int,vector<int>> Siteforeacheallele_; // all sites positions for each allele
 	vector<int> Alleleforeachpos_; // prdm9 allele corresponding to each position
 	vector<double> Affinity_; //sites affinity
@@ -121,14 +132,18 @@ class Model {
 	double varaff_; // variance gamma law
 	int nbDSB_; //nb of DSB
 	int nbGenerations_; //nb of generations
-	vector<vector<int>> nbfailedmeiosis_;
-	bool zygosity_;
-	int everygen_;
-	bool ismigration_;
-	double q_;
-	bool withDSB_;
-	double w_;
-	string name_;
-	map<int,double> Ageallele_;
-	map<int,vector<double>> infoperallele_;
+	vector<vector<int>> nbfailedmeiosis_; //store the number of failed meiosis of each type
+	bool zygosity_; //make difference between heterozygots and homozygots
+	int everygen_; //nb of generation at which we want to print the reults in the files
+	bool ismigration_; //is there migration
+	double q_; //
+	bool withDSB_; //do we take into account the 2 DSB at one site as a cause of failed meiosis
+	double w_; //neutral site mutation rate
+	string name_; //name of the files
+	map<int,double> Ageallele_; //store the age of each allele
+	map<int,vector<double>> infoperallele_; //store information for each allele such as the numer of symetrical binding or the nb of failed meiosis per allele
+	double alpha_; //first param of the beta distribution
+	double beta_; //second param of the beta distribution
+	int nbgenmig_; //nb of the generation at which we want to split de pop for migration (if = 0 => begin directly with 2 pop)
+	bool popsamesize_; //two pop for migration has the same size of the initial pop or devided by two
 };

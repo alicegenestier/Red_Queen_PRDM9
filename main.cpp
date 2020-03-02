@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <string>
 #include <cstring>
+//#include <boost/math/distributions/beta.hpp>
 
 #include "model.h"
 
@@ -43,6 +44,12 @@ int main(int argc, char* argv[])    {
 	bool zygosity = false;
 	bool withDSB = false;
 	int everygen = 10;
+	double m = 0.1;
+	double alpha = 0.5;
+	double beta = 0.5;
+	int nbgenmig = 0;
+	int popsamesize = true;
+	
 
 	int i=1;
 	//cout<<"argc"<<argc<<endl;
@@ -118,6 +125,26 @@ int main(int argc, char* argv[])    {
         	i++;
             everygen = atoi(argv[i]);
         }
+	else if (s == "-m") {
+        	i++;
+            m = atoi(argv[i]);
+        }
+	else if (s == "-alpha") {
+        	i++;
+            alpha = atof(argv[i]);
+        }
+	else if (s == "-beta") {
+        	i++;
+            beta = atof(argv[i]);
+        }
+	else if (s == "-nbgenmig") {
+        	i++;
+            nbgenmig = atof(argv[i]);
+        }
+	else if (s == "-popsamesize") {
+        	i++;
+            popsamesize = atof(argv[i]);
+        }
         else {
         	// name of the run (name will be followed by extensions: <name>.general…);
             name = argv[i];
@@ -132,7 +159,7 @@ int main(int argc, char* argv[])    {
 	t1=clock();
 	
 	cout<< "Test for Model constructor" <<endl;
-	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,name);
+	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,m,alpha,beta,nbgenmig,popsamesize,name);
 	
 	t2=clock();
 	temps1=(float)(t2-t1)/CLOCKS_PER_SEC;
@@ -263,26 +290,17 @@ int main(int argc, char* argv[])    {
 	
 	model1.manygenerations();
 	
+	
 	t3=clock();
 	temps2=(float)(t3-t2)/CLOCKS_PER_SEC;
 	printf("temps2 = %f\n", temps2);
-
-
-
-	/*ofstream os((name + ".trace").c_str());
-
-    for (int gen=0; gen<max_ngen; gen++)    {
-
-        // mutation
-        //
-        //
-        //
-
-        if (! gen % every)  {
-            os << gen << '\t' << get_allele_number() << '\t' << get_current_diversity() << '\t'  << get_current_activity() << '\n';
-            os.flush();
-        }
-    }*/
+	
+	/*cout<<"test choosemanymigration :"<<endl;
+	vector<int> vectsite = model1.choosemanymigration(15);
+	for (auto i : vectsite){
+		cout<<' '<<i;
+	}
+	cout<<'\n';*/
 
 return 0;
 }
