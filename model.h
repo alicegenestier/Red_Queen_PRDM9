@@ -30,8 +30,10 @@ class Model {
 	//============================
 	vector<vector<vector<int>>> populations(); 
 	vector<vector<vector<int>>> populations1();
+	vector<vector<vector<int>>> populations2();
 	vector<vector<int>> genotypes(); 
 	vector<vector<int>> genotypes1();
+	vector<vector<int>> genotypes2();
 	map<int,vector<int>> Siteforeacheallele(); 
 	vector<int> Alleleforeachpos();
 	vector<double> Affinity();
@@ -69,42 +71,42 @@ class Model {
 	//============================
 	//           Methods
 	//============================
-	int choose(int n);
-	int bernoulli_draw(double p);
-	int binomial_draw(int n, double p);  
-	double choosegamma(double meanaff, double varaff);
-	vector<int> choosemany(int k, vector<int> vect);
-	vector<int> vectfreesites(vector<int> vect, int nb);
-	vector<vector<int>> occupiedsites(vector<int> vect);
-	void sitemutation();
-	void allelemutation();
-	void updatemissingallele();
-	void printpop(int n);
-	void printgen(int n);
-	void printposallele();
-	void printallelepos();
-	void printaffinity();
-	int Meiosis(int no_chrom_ind, int nb_gen);
-	void fillnewpop(int nb_gen);
-	void manygenerations();
-	int get_allele_number();
-	double freqallele(int allelename);
-	double get_current_diversity();
-	double activitymoyallele(int allele);
-	double get_current_activity();
-	void migration();
-	vector<double> freqneutral();
-	double freqall(int allele);
-	double actall(int allele);
-	void printageallele();
-	double get_age_allele(int allname);
-	void printinfoallele();
-	double get_info_allele(int allname);
-	vector<int> choosemanymigration(int k);
-	double choosebeta(double alpha, double beta);
-	double q_two_hap(vector<int> haplotype1, vector<int> haplotype2);
-	double q_hom(int allele, vector<int> haplotype1, vector<int> haplotype2);
-	double q_hete(int allele1, int allele2, vector<int> haplotype1, vector<int> haplotype2);
+	int choose(int n); //choose a nb between 0 and n-1 with a uniform law
+	int bernoulli_draw(double p); //give bernoulli distrib with prob p
+	int binomial_draw(int n, double p); // 
+	double choosegamma(double meanaff, double varaff); //
+	vector<int> choosemany(int k, vector<int> vect); //
+	vector<int> vectfreesites(vector<int> vect, int nb); //
+	vector<vector<int>> occupiedsites(vector<int> vect); //
+	void sitemutation(); //
+	void allelemutation(); //
+	void updatemissingallele(); //
+	void printpop(int n, vector<vector<vector<int>>> population); //
+	void printgen(int n, vector<vector<int>> genotype); //
+	void printposallele(); //
+	void printallelepos(); //
+	void printaffinity(); //
+	int Meiosis(int no_chrom_ind, int nb_gen); //
+	void fillnewpop(int nb_gen); //
+	void manygenerations(); //
+	int get_allele_number(); //
+	double freqallele(int allelename); //
+	double get_current_diversity(); //
+	double activitymoyallele(int allele); //
+	double get_current_activity(); //
+	void migration(); //
+	vector<double> freqneutral(); //
+	double freqall(int allele); //
+	double actall(int allele); //
+	void printageallele(); //
+	double get_age_allele(int allname); //
+	void printinfoallele(); //
+	double get_info_allele(int allname); //
+	vector<int> choosemanymigration(int k); //
+	double choosebeta(double alpha, double beta); //
+	double q_two_hap(vector<int> haplotype1, vector<int> haplotype2); //
+	double q_hom(int allele, vector<int> haplotype1, vector<int> haplotype2); //
+	double q_hete(int allele1, int allele2, vector<int> haplotype1, vector<int> haplotype2); //
 	
 	protected:
 	//============================

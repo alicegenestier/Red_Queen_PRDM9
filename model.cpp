@@ -86,7 +86,13 @@ Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,do
 		Ageallele_[i]=freqall(i);
 		infoperallele_[i]={0,0,0,0,0,0};
 	}
-
+	
+	if(ismigration_==true and nbgenmig_==0){
+		populations1_=populations_;
+		populations2_=populations_;
+		genotypes1_=genotypes_;
+		genotypes2_=genotypes_;
+	}
 }
 
 //============================
@@ -102,11 +108,17 @@ vector<vector<vector<int>>> Model::populations(){
 vector<vector<vector<int>>> Model::populations1(){
 	return populations1_;
 }
+vector<vector<vector<int>>> Model::populations2(){
+	return populations2_;
+}
 vector<vector<int>> Model::genotypes(){
 	return genotypes_;
 }
 vector<vector<int>> Model::genotypes1(){
 	return genotypes1_;
+}
+vector<vector<int>> Model::genotypes2(){
+	return genotypes2_;
 }
 map<int,vector<int>> Model::Siteforeacheallele(){
 	return Siteforeacheallele_;
@@ -302,8 +314,8 @@ vector<vector<int>> Model::occupiedsites(vector<int> vect){//return the index of
 	return (vector<vector<int>>{occupiedsites,occupiedsitesneutral});	
 }
 
-void Model::sitemutation(){
-	// for each position with allele, prob v to mutate and if mutation, choose randomly 1 chrom to mutate
+void Model::sitemutation(){      ///////////// change with 2 pop : maybe give as argument a vector of pop containing either 1 or 2 pop (and vector of 1 or 2 genotype) => boucle sur les elements du vector
+	// for each position with allele, prob v to mutate and if mutation, choose randomly 1 chrom to mutate 
 	vector<int> occupied = occupiedsites(Alleleforeachpos_)[0];
 	vector<int> occupiedneutral = occupiedsites(Alleleforeachpos_)[1];
 	// affichage
@@ -356,7 +368,7 @@ void Model::sitemutation(){
 	}
 }
 
-void Model::allelemutation(){
+void Model::allelemutation(){ ///////////////////////// maybe give a vector of pop and genotype (1 or 2) : siteforeachallele is the same for both pop but Ageallele and maybe infoperallele will be different depending on the pop
 	// for each chromosome, mutation of allele with proba u and if at least one mutation (if more than one : same allele ?) update populations (change prdm9 allele at its position), genotypes(same), map (site pos associated to the new allele) and allele for each pos (change the allel corresponding to each pos : -1 -> new allele)
 	vector<int> mutchromallele;
 	for (int i=0; i<2*N_; i++){
@@ -417,9 +429,9 @@ void Model::updatemissingallele(){
 //Print functions
 
 //print populations
-void Model::printpop(int n){//n = parityIndexu (0 ou 1) ou 2 si plot 2 pop
+void Model::printpop(int n, vector<vector<vector<int>>>population){//n = parityIndexu (0 ou 1) ou 2 si plot 2 pop
 	if(n==2){
-		for (auto i : populations_){ // a changer
+		for (auto i : population){ // a changer
 			for (auto j : i){
 				for (auto k : j){
 					cout<<' '<<k;
@@ -431,7 +443,7 @@ void Model::printpop(int n){//n = parityIndexu (0 ou 1) ou 2 si plot 2 pop
 		cout<<'\n';
 	}
 	else if(n==0 or n==1){
-		vector<vector<int>> pop = populations_[n]; // a changer
+		vector<vector<int>> pop = population[n]; // a changer
 		for (auto i : pop){
 			for (auto j : i){
 				cout<<' '<<j;
@@ -443,9 +455,9 @@ void Model::printpop(int n){//n = parityIndexu (0 ou 1) ou 2 si plot 2 pop
 }
 
 //print genotypes
-void Model::printgen(int n){
+void Model::printgen(int n, vector<vector<int>>genotype){
 	if(n==2){
-		for (auto i : genotypes_){
+		for (auto i : genotype){
 			for (auto j : i){
 				cout<<' '<<j;
 			}
@@ -454,7 +466,7 @@ void Model::printgen(int n){
 		cout<<'\n';
 	}
 	else if(n==0 or n==1){
-		vector<int> gen = genotypes_[n];
+		vector<int> gen = genotype[n];
 		for (auto i : gen){
 			cout<<' '<<i;
 		}
@@ -881,13 +893,13 @@ void Model::manygenerations(){
 		allelemutation();
 		updatemissingallele();
 		/*cout<<"pop :"<<endl;
-		printpop(parityIndex_);
+		printpop(parityIndex_, populations_);
 		cout<<"map :"<<endl;
 		printposallele();*/
 		/*cout<<"age allele :"<<endl;
 		printageallele();*/
 		/*cout<< "genotypes : "<<endl;
-		printgen(parityIndex_);*/
+		printgen(parityIndex_,genotypes_);*/
 		/*cout<< "Allele for each position : "<<endl;
 		printallelepos();*/
 		/*cout<<"info per allele : "<<endl;
@@ -905,13 +917,13 @@ void Model::manygenerations(){
 		}
 		/*cout<<"---------"<<endl;
 		cout<<"pop :"<<endl;
-		printpop(parityIndex_);
+		printpop(parityIndex_, popuations_);
 		cout<<"map :"<<endl;
 		printposallele();*/
 		/*cout<<"age allele :"<<endl;
 		printageallele();*/
 		/*cout<< "genotypes : "<<endl;
-		printgen(parityIndex_);*/
+		printgen(parityIndex_,genotypes_);*/
 		/*cout<< "Allele for each position : "<<endl;
 		printallelepos();*/
 		/*cout<<"info per allele : "<<endl;
@@ -1113,11 +1125,19 @@ double Model::q_hete(int allele1, int allele2, vector<int> haplotype1, vector<in
 }
 
 void Model::migration(){
-	//choisir le nombre de migrant voulu dans la pop1 et dans la pop2 (m_*N_ migrants parmi N_ indiv et independants)
-	//copier les deux chromosomes de l'indiv de la pop1, remplacer cet indiv dans la pop1 par l'indiv choisi dans la pop2 puis remplacer l'indiv de la pop2 par l'indiv copier de la pop1.
-	//faire ce meme echange dans les genotypes
+	//cout<<"m_*N_ :"<< m_*N_ <<endl;
 	vector<int> migrated_indiv_pop1 = choosemanymigration(int(m_*N_));
+	/*cout<<"migrated_indiv_pop1 : "<<endl;
+	for (auto i : migrated_indiv_pop1){
+		cout<<i<<" ";
+	}
+	cout<<endl;*/
 	vector<int> migrated_indiv_pop2 = choosemanymigration(int(m_*N_));
+	/*cout<<"migrated_indiv_pop2 : "<<endl;
+	for (auto i : migrated_indiv_pop2){
+		cout<<i<<" ";
+	}
+	cout<<endl;*/
 	if(migrated_indiv_pop1!=vector<int>{-1} and migrated_indiv_pop2!=vector<int>{-1}){
 		for (int indiv=0; indiv<migrated_indiv_pop1.size(); indiv++){
 			vector<vector<int>> ind_pop1_to_pop2 = vector<vector<int>> {populations1_[parityIndex_][2*migrated_indiv_pop1[indiv]],populations1_[parityIndex_][2*migrated_indiv_pop1[indiv]+1]};
@@ -1134,5 +1154,3 @@ void Model::migration(){
 	}
 }
 
-//vecteur : num generation ; nbtotalallele par generation ; diversite ; activite moy 
-//tableau : generation ; no allele ; freq ; activite moy 

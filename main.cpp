@@ -127,7 +127,7 @@ int main(int argc, char* argv[])    {
         }
 	else if (s == "-m") {
         	i++;
-            m = atoi(argv[i]);
+            m = atof(argv[i]);
         }
 	else if (s == "-alpha") {
         	i++;
@@ -139,11 +139,11 @@ int main(int argc, char* argv[])    {
         }
 	else if (s == "-nbgenmig") {
         	i++;
-            nbgenmig = atof(argv[i]);
+            nbgenmig = atoi(argv[i]);
         }
 	else if (s == "-popsamesize") {
         	i++;
-            popsamesize = atof(argv[i]);
+            popsamesize = atoi(argv[i]);
         }
         else {
         	// name of the run (name will be followed by extensions: <name>.general…);
@@ -275,7 +275,7 @@ int main(int argc, char* argv[])    {
 	model1.allelemutation();
 	model1.updatemissingallele();
 	cout<<"pop :"<<endl;
-	model1.printpop(0);
+	model1.printpop(0,model1.populations());
 	cout<<"map :"<<endl;
 	model1.printposallele();
 	cout<< "genotypes : "<<endl;
@@ -289,6 +289,16 @@ int main(int argc, char* argv[])    {
 	cout<<"nb of failed meiosis : "<<model1.nbfailedmeiosis()<<endl;*/
 	
 	model1.manygenerations();
+	
+	/*cout<<"pop1 :"<<endl;
+	model1.printpop(0,model1.populations1());
+	cout<<"pop2 :"<<endl;
+	model1.printpop(0,model1.populations2());
+	model1.migration();
+	cout<<"pop1 :"<<endl;
+	model1.printpop(0,model1.populations1());
+	cout<<"pop2 :"<<endl;
+	model1.printpop(0,model1.populations2());*/
 	
 	
 	t3=clock();
