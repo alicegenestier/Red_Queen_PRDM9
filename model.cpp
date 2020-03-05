@@ -171,6 +171,12 @@ int Model::nbGenerations(){
 vector<vector<int>> Model::nbfailedmeiosis(){
 	return nbfailedmeiosis_;
 }
+vector<vector<int>> Model::nbfailedmeiosis1(){
+	return nbfailedmeiosis1_;
+}
+vector<vector<int>> Model::nbfailedmeiosis2(){
+	return nbfailedmeiosis2_;
+}
 bool Model::zygosity(){
 	return zygosity_;
 }
@@ -182,6 +188,12 @@ bool Model::ismigration(){
 }
 double Model::q(){
 	return q_;
+}
+double Model::q1(){
+	return q1_;
+}
+double Model::q2(){
+	return q2_;
 }
 bool Model::withDSB(){
 	return withDSB_;
@@ -195,8 +207,20 @@ string Model::name(){
 map<int,double> Model::Ageallele(){
 	return Ageallele_;
 }
+map<int,double> Model::Ageallele1(){
+	return Ageallele1_;
+}
+map<int,double> Model::Ageallele2(){
+	return Ageallele2_;
+}
 map<int,vector<double>> Model::infoperallele(){
 	return infoperallele_;
+}
+map<int,vector<double>> Model::infoperallele1(){
+	return infoperallele1_;
+}
+map<int,vector<double>> Model::infoperallele2(){
+	return infoperallele2_;
 }
 double Model::alpha(){
 	return alpha_;
@@ -314,8 +338,11 @@ vector<vector<int>> Model::occupiedsites(vector<int> vect){//return the index of
 	return (vector<vector<int>>{occupiedsites,occupiedsitesneutral});	
 }
 
-void Model::sitemutation(){      ///////////// change with 2 pop : maybe give as argument a vector of pop containing either 1 or 2 pop (and vector of 1 or 2 genotype) => boucle sur les elements du vector
-	// for each position with allele, prob v to mutate and if mutation, choose randomly 1 chrom to mutate 
+void Model::sitemutation(vector<vector<vector<int>>>* population){      ///////////// change with 2 pop : maybe give as argument a vector of pop containing either 1 or 2 pop (and vector of 1 or 2 genotype) => boucle sur les elements du vector
+	//vector<vector<vector<int>>>* popul(0);
+	//popul=population;
+	//vector<vector<vector<int>>>copypop=population;
+	// for each position with allele, prob v to mutate and if mutation, choose randomly 1 chrom to mutate
 	vector<int> occupied = occupiedsites(Alleleforeachpos_)[0];
 	vector<int> occupiedneutral = occupiedsites(Alleleforeachpos_)[1];
 	// affichage
@@ -323,7 +350,6 @@ void Model::sitemutation(){      ///////////// change with 2 pop : maybe give as
 		cout<<" "<< i;
 	}
 	cout<<endl;*/
-	
 	vector<int> mutsites;
 	vector<int> mutsitesneutral;
 	for (auto i : occupied){
@@ -345,31 +371,33 @@ void Model::sitemutation(){      ///////////// change with 2 pop : maybe give as
 		}
 	}
 	for (auto j : mutsites){
-		int mutchrom = choose(2*N_);
+		int mutchrom = choose(2*N_); //only one indiv will preform a mutation at this site
 		//vector<int>::iterator itv = find(Siteforeacheallele_[-3].begin(),Siteforeacheallele_[-3].end(),j);
 		//if(itv == Siteforeacheallele_[-3].end()){
-			if (populations_[parityIndex_][mutchrom][j]==1){ 
-				populations_[parityIndex_][mutchrom][j]=0;
-			}
+		if ((*population)[parityIndex_][mutchrom][j]==1){
+			/*cout<<"mutchrom : "<<mutchrom<<endl;
+			cout<<"j : "<<j<<endl;*/
+			(*population)[parityIndex_][mutchrom][j]=0;
+		}
 		//}else{
-		//	populations_[parityIndex_][mutchrom][j]=(populations_[parityIndex_][mutchrom][j]+1)%2;
+		//	popul[parityIndex_][mutchrom][j]=(popul[parityIndex_][mutchrom][j]+1)%2;
 		//}
 	}
 	for (auto j : mutsitesneutral){
 		int mutchrom = choose(2*N_);
 		//vector<int>::iterator itv = find(Siteforeacheallele_[-3].begin(),Siteforeacheallele_[-3].end(),j);
 		//if(itv == Siteforeacheallele_[-3].end()){
-		//	if (populations_[parityIndex_][mutchrom][j]==1){ 
-		//		populations_[parityIndex_][mutchrom][j]=0;
+		//	if (popul[parityIndex_][mutchrom][j]==1){ 
+		//		popul[parityIndex_][mutchrom][j]=0;
 		//	}
 		//}else{
-			populations_[parityIndex_][mutchrom][j]=(populations_[parityIndex_][mutchrom][j]+1)%2;
+		(*population)[parityIndex_][mutchrom][j]=((*population)[parityIndex_][mutchrom][j]+1)%2;
 		//}
 	}
 }
 
-void Model::allelemutation(){ ///////////////////////// maybe give a vector of pop and genotype (1 or 2) : siteforeachallele is the same for both pop but Ageallele and maybe infoperallele will be different depending on the pop
-	// for each chromosome, mutation of allele with proba u and if at least one mutation (if more than one : same allele ?) update populations (change prdm9 allele at its position), genotypes(same), map (site pos associated to the new allele) and allele for each pos (change the allel corresponding to each pos : -1 -> new allele)
+void Model::allelemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,double>* Ageallele, map<int,vector<double>>* infoperallele){ //Est ce que lorsque je fais une mutation dans les 2 pop c'est le meme allele (pour le moment je dit que ce sont 2 alleles differents) + est ce que 2 alleles differents dans les pop differentes sont susceptibles d'avoir des sites en communs (je fais comme si c'etait pas le cas)
+	// for each chromosome, mutation of allele with proba u and if at least one mutation update populations (change prdm9 allele at its position), genotypes(same), map (site pos associated to the new allele) and allele for each pos (change the allel corresponding to each pos : -1 -> new allele)
 	vector<int> mutchromallele;
 	for (int i=0; i<2*N_; i++){
 		if(bernoulli_draw(u_)){
@@ -389,10 +417,10 @@ void Model::allelemutation(){ ///////////////////////// maybe give a vector of p
 			Alleleforeachpos_[j]=newallele;//update allele for each pos
 		}
 		Siteforeacheallele_[newallele]=newpos; //update map
-		genotypes_[parityIndex_][i]=newallele;//update genotype
-		populations_[parityIndex_][i][indPrdm9_]=newallele;//update pop
-		Ageallele_[newallele]=freqall(newallele);
-		infoperallele_[newallele]={0,0,0,0,0,0};
+		(*genotype)[parityIndex_][i]=newallele;//update genotype
+		(*population)[parityIndex_][i][indPrdm9_]=newallele;//update pop
+		(*Ageallele)[newallele]=freqall(newallele);
+		(*infoperallele)[newallele]={0,0,0,0,0,0};
 	}
 }
 
@@ -405,24 +433,50 @@ void Model::updatemissingallele(){
 		if(it.first!=-3 and it.first!=-2){
 			//cout<<it.first<<endl;
 			//cout<<&it<<endl;
-			vector<int>::iterator itvect = find(genotypes_[parityIndex_].begin(),genotypes_[parityIndex_].end(),it.first);
-			if(itvect == genotypes_[parityIndex_].end()){
-				for(auto &i : it.second){
-					//cout<<"i"<<i<<endl;
-					Alleleforeachpos_[i]=-1;//free all sites
-					for(int j=0; j<2*N_; j++){
-						populations_[parityIndex_][j][i]=1;//reactive all sites
+			//cout<<ismigration_<<endl;
+			if(not ismigration_){
+				vector<int>::iterator itvect = find(genotypes_[parityIndex_].begin(),genotypes_[parityIndex_].end(),it.first);
+				if(itvect == genotypes_[parityIndex_].end()){
+					for(auto &i : it.second){
+						//cout<<"i"<<i<<endl;
+						Alleleforeachpos_[i]=-1;//free all sites
+						for(int j=0; j<2*N_; j++){
+							populations_[parityIndex_][j][i]=1;//reactive all sites
+						}
 					}
+					alleletoerase.push_back(it.first);
+					//Siteforeacheallele_.erase(it.first);//erase in the map
 				}
-				alleletoerase.push_back(it.first);
-				//Siteforeacheallele_.erase(it.first);//erase in the map
+			}else{
+				vector<int>::iterator itvect1 = find(genotypes1_[parityIndex_].begin(),genotypes1_[parityIndex_].end(),it.first);
+				vector<int>::iterator itvect2 = find(genotypes2_[parityIndex_].begin(),genotypes2_[parityIndex_].end(),it.first);
+				if(itvect1 == genotypes1_[parityIndex_].end() and itvect2 == genotypes2_[parityIndex_].end()){
+					for(auto &i : it.second){
+						//cout<<"i"<<i<<endl;
+						Alleleforeachpos_[i]=-1;//free all sites
+						for(int j=0; j<2*N_; j++){
+							populations1_[parityIndex_][j][i]=1;//reactive all sites
+							populations2_[parityIndex_][j][i]=1;//reactive all sites
+						}
+					}
+					alleletoerase.push_back(it.first);
+					//Siteforeacheallele_.erase(it.first);//erase in the map
+				}
 			}
 		}
 	}
 	for (auto a : alleletoerase){
-		Siteforeacheallele_.erase(a);
-		Ageallele_.erase(a);
-		infoperallele_.erase(a);
+		if(not ismigration_){
+			Siteforeacheallele_.erase(a);
+			Ageallele_.erase(a);
+			infoperallele_.erase(a);
+		}else{
+			Siteforeacheallele_.erase(a);
+			Ageallele1_.erase(a);
+			infoperallele1_.erase(a);
+			Ageallele2_.erase(a);
+			infoperallele2_.erase(a);
+		}
 	}
 }
 
@@ -525,13 +579,13 @@ void Model::printinfoallele(){
 
 
 // Meiosis
-int Model::Meiosis(int no_chrom_ind, int nb_gen){
+int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis){ //
 	// choose one ind
 	int indiv = 2*choose(N_);
 	//cout<<"indiv "<<indiv<<endl;
 	//homozygote or heterozygote
 	int ind_gen=2;
-	vector<int> zygote{genotypes_[parityIndex_][indiv]};
+	vector<int> zygote{genotype[parityIndex_][indiv]};
 	/*for(auto i : genotypes_){
 		for (auto j : i){cout<<"j"<<j;}
 	}*/
@@ -855,9 +909,9 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen){
 void Model::fillnewpop(int nb_gen){
 	//for(int indnewpop=0; indnewpop<2*N_; indnewpop++){
 	for(int indnewpop=0; indnewpop<2*N_; indnewpop++){
-		int meiosisState = Meiosis(indnewpop, nb_gen);
+		int meiosisState = Meiosis(indnewpop, nb_gen, &populations_, &genotypes_, &infoperallele_, &nbfailedmeiosis_);//
 		while (meiosisState==-1){
-			meiosisState = Meiosis(indnewpop, nb_gen);
+			meiosisState = Meiosis(indnewpop, nb_gen, &populations_, &genotypes_, &infoperallele_, &nbfailedmeiosis_);//
 			nbfailedmeiosis_[nb_gen][3]+=1;
 		}
 		//cout<<"-----------------------------------------------------------------------------------------------------"<<endl;
@@ -889,8 +943,8 @@ void Model::manygenerations(){
 		for (auto const &it : infoperallele_){
 			infoperallele_[it.first]=vector<double>{0,0,0,0,0,0};
 		}	
-		sitemutation();
-		allelemutation();
+		sitemutation(&populations_);
+		allelemutation(&populations_, &genotypes_, &Ageallele_, &infoperallele_);
 		updatemissingallele();
 		/*cout<<"pop :"<<endl;
 		printpop(parityIndex_, populations_);
@@ -904,8 +958,14 @@ void Model::manygenerations(){
 		printallelepos();*/
 		/*cout<<"info per allele : "<<endl;
 		printinfoallele();*/
+		/////////////////////////////////////// when we want to split the pop : set ismigration to true, copy populations_ in populations1_ and populations2_, and then fillnwpop for both pop and then do all the function for both pop for the following generations
+		/*if(indgeneration==nbgenmig_){
+			ismigration_=true;
+			populations1_=populations_;
+			populations2_=populations_;
+		}*/
 		q_=0;
-		fillnewpop(indgeneration);
+		fillnewpop(indgeneration); 
 		q_=q_/(2*N_);
 		//cout<<q_<<endl;
 		updatemissingallele();
