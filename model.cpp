@@ -585,7 +585,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 	//cout<<"indiv "<<indiv<<endl;
 	//homozygote or heterozygote
 	int ind_gen=2;
-	vector<int> zygote{genotype[parityIndex_][indiv]};
+	vector<int> zygote{genotypes_[parityIndex_][indiv]};
 	/*for(auto i : genotypes_){
 		for (auto j : i){cout<<"j"<<j;}
 	}*/
