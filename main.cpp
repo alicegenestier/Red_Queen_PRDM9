@@ -47,7 +47,7 @@ int main(int argc, char* argv[])    {
 	double m = 0.1;
 	double alpha = 0.5;
 	double beta = 0.5;
-	int nbgenmig = 0;
+	int nbgenmig = -1;
 	int popsamesize = true;
 	
 

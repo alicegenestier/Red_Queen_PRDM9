@@ -94,22 +94,22 @@ class Model {
 	void printposallele(); //
 	void printallelepos(); //
 	void printaffinity(); //
-	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis); //
-	void fillnewpop(int nb_gen); //
+	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q); //
+	void fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q); //
 	void manygenerations(); //
 	int get_allele_number(); //
-	double freqallele(int allelename); //
-	double get_current_diversity(); //
-	double activitymoyallele(int allele); //
-	double get_current_activity(); //
+	double freqallele(int allelename, vector<vector<int>>* genotype); //
+	double get_current_diversity(vector<vector<int>>* genotype); //
+	double activitymoyallele(int allele,  vector<vector<vector<int>>>* population); //
+	double get_current_activity(vector<vector<int>>* genotype, vector<vector<vector<int>>>* population); //
 	void migration(); //
-	vector<double> freqneutral(); //
-	double freqall(int allele); //
-	double actall(int allele); //
-	void printageallele(); //
-	double get_age_allele(int allname); //
-	void printinfoallele(); //
-	double get_info_allele(int allname); //
+	vector<double> freqneutral(vector<vector<vector<int>>>* population); //
+	double freqall(int allele, vector<vector<int>>* genotype, vector<vector<vector<int>>>* population); //
+	double actall(int allele, vector<vector<vector<int>>>* population); //
+	void printageallele(map<int,double>* Ageallele); //
+	double get_age_allele(int allname, map<int,double>* Ageallele); //
+	void printinfoallele(map<int,vector<double>>* infoperallele); //
+	double get_info_allele(int allname, map<int,vector<double>>* infoperallele); //
 	vector<int> choosemanymigration(int k); //
 	double choosebeta(double alpha, double beta); //
 	double q_two_hap(vector<int> haplotype1, vector<int> haplotype2); //
