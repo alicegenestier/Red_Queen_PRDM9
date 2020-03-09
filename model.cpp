@@ -405,6 +405,9 @@ void Model::allelemutation(vector<vector<vector<int>>>* population, vector<vecto
 			mutchromallele.push_back(i);
 		}
 	}
+	/*for(auto chrom : mutchromallele){
+		cout<<chrom<<" "<<endl;
+	}*/
 	for (auto i : mutchromallele){
 		nballele_+=1;
 		vector<int> freepos = vectfreesites(Alleleforeachpos_, -1);
@@ -421,7 +424,14 @@ void Model::allelemutation(vector<vector<vector<int>>>* population, vector<vecto
 		(*genotype)[parityIndex_][i]=newallele;//update genotype
 		(*population)[parityIndex_][i][indPrdm9_]=newallele;//update pop
 		(*Ageallele)[newallele]=freqall(newallele, genotype, population);
-		(*infoperallele)[newallele]={0,0,0,0,0,0};
+		//(*infoperallele)[newallele]={0,0,0,0,0,0};
+		
+		if(ismigration_){
+			infoperallele1_[newallele]={0,0,0,0,0,0};
+			infoperallele2_[newallele]={0,0,0,0,0,0};
+		}else{
+			infoperallele_[newallele]={0,0,0,0,0,0};
+		}
 	}
 }
 
@@ -602,7 +612,6 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 		cout<<" "<<i;
 	}
 	cout<<endl;*/
-	
 	//PRDM9 binding
 	vector<vector<int>>summarysites;
 	vector<int>Z;
@@ -642,7 +651,6 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 		}
 	}
 	//nblinksite=summarysites.size();
-	//cout<<"+++++++++++++++++++++++++++++++++++++++++"<<endl;
 	/*cout<<"summary sites"<<endl;
 	for(auto i : summarysites){
 		for(auto j : i){
@@ -698,7 +706,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 						(*nbfailedmeiosis)[nb_gen][0]+=1; 
 						(*infoperallele)[Z[i]][0]+=1;
 						(*infoperallele)[Z[i]][1]+=1;
-						cout<<"case 2 DSB"<<endl;
+						//cout<<"case 2 DSB"<<endl;
 						throw int(0);
 					}
 				} // assert
@@ -865,7 +873,6 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 	}
 	cout<<'\n';*/
 	
-	
 	// si besoin chercher dans anciencode.cpp
 	
 	//toute cette partie avec copy
@@ -900,7 +907,6 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 			}
 		}
 	}
-	
 	//return nb meiose echouee?? Pour le moment, return 0 si eurreur qqpart et 1 si meiose reussie.
 	return 1;
 }
@@ -929,53 +935,71 @@ void Model::fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vect
 void Model::manygenerations(){
 	ofstream generalfile ((name_+".trace").c_str());
 	generalfile << "Generation_number" << '\t' << "Total_number_of_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" <<'\n';
-    	generalfile.flush();
-    	ofstream allelefile ((name_+".allele").c_str());
+    generalfile.flush();
+    ofstream allelefile ((name_+".allele").c_str());
 	allelefile << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" <<'\n';
-    	allelefile.flush();
+    allelefile.flush();
 	ofstream paramsfile ((name_+".params").c_str());
 	paramsfile << "N" << '\t' << N_ << '\n' << "L" << '\t' << L_ << '\n' << "nbsite" << '\t' << nbsite_ << '\n' << "indPrdm9" << '\t' << indPrdm9_ << '\n' << "nballele" << '\t' << nballele_ << '\n' << "parityIndex" << '\t' << parityIndex_ << '\n' << "u" << '\t' << u_ << '\n' << "v" << '\t' << v_ << '\n' << "w" << '\t' << w_ << '\n' << "meanaff" << '\t' << meanaff_ << '\n' << "varaff" << '\t' << varaff_ << '\n' << "nbDSB" << '\t' << nbDSB_ << '\n' << "nbGenerations" << '\t' << nbGenerations_ << '\n' << "ismigration" << '\t' << ismigration_ << '\n' << "zygosity" << '\t' << zygosity_ << '\n' << "withDSB" << '\t' << withDSB_ << '\n' << "everygen" << '\t' << everygen_ << '\n';
-    	paramsfile.flush();
-	/*vector<vector<vector<vector<int>>>*> vectpop = vector<vector<vector<vector<int>>>*> {&populations_};
+    paramsfile.flush();
+    ofstream generalfile1 ((name_+"_1.trace").c_str());
+	generalfile1 << "Generation_number" << '\t' << "Total_number_of_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" <<'\n';
+    generalfile1.flush();
+    ofstream allelefile1 ((name_+"_1.allele").c_str());
+	allelefile1 << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" <<'\n';
+    allelefile1.flush();
+	ofstream generalfile2 ((name_+"_2.trace").c_str());
+	generalfile2 << "Generation_number" << '\t' << "Total_number_of_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" <<'\n';
+    generalfile2.flush();
+    ofstream allelefile2 ((name_+"_2.allele").c_str());
+	allelefile2 << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" <<'\n';
+    allelefile2.flush();
+	vector<vector<vector<vector<int>>>*> vectpop = vector<vector<vector<vector<int>>>*> {&populations_};
 	vector<vector<vector<int>>*> vectgen = vector<vector<vector<int>>*> {&genotypes_};
 	vector<map<int,double>*> vectage = vector<map<int,double>*> {&Ageallele_};
 	vector<map<int,vector<double>>*> vectinfo = vector<map<int,vector<double>>*> {&infoperallele_};
+	double q1_=0;
+	double q2_=0;
 	vector<double*> vectq = vector<double*> {&q_};
 	vector<vector<vector<int>>*> vectfailed = vector<vector<vector<int>>*> {&nbfailedmeiosis_};
-	int lenvect = vectpop.size();*/
+	int lenvect = vectpop.size();
 	for(int indgeneration=0; indgeneration<nbGenerations_; indgeneration++){
 		clock_t t1, t2;
 		t1=clock();
 		//cout<<"parity index : "<<parityIndex_<<endl;
 		cout<<"generation "<<indgeneration<<endl;
 		// remise a 0 vector de chaque allele de infoperallele
-		/*for(int i_vect=0; i_vect<lenvect; i_vect++){
-			for (auto const &it : vectinfo[i_vect]){
-				vectinfo[i_vect][it.first]=vector<double>{0,0,0,0,0,0};
-			}	
+		for(int i_vect=0; i_vect<lenvect; i_vect++){
+			for (auto const &it : *vectinfo[i_vect]){
+				(*vectinfo[i_vect])[it.first]=vector<double>{0,0,0,0,0,0};
+			}
+			/*cout<<"before mutation"<<endl;
+			printpop(parityIndex_, *vectpop[i_vect]);*/
 			sitemutation(vectpop[i_vect]);
 			allelemutation(vectpop[i_vect], vectgen[i_vect], vectage[i_vect], vectinfo[i_vect]);
-		}*/
-		for (auto const &it : infoperallele_){//////////////////////// for both pop
+			/*cout<<"after mutation"<<endl;
+			printpop(parityIndex_, *vectpop[i_vect]);*/
+		}
+		/*for (auto const &it : infoperallele_){//////////////////////// for both pop
 			infoperallele_[it.first]=vector<double>{0,0,0,0,0,0};
 		}	
 		sitemutation(&populations_);///////////////////////for both pop
-		allelemutation(&populations_, &genotypes_, &Ageallele_, &infoperallele_);///////////////////////////for both pop
+		allelemutation(&populations_, &genotypes_, &Ageallele_, &infoperallele_);///////////////////////////for both pop*/
 		updatemissingallele();
-		//for(int i_vect=0; i_vect<lenvect; i_vect++){
-			/*cout<<"pop : "<<i_vect<<endl;
-			printpop(parityIndex_, vectpop[i_vect]);
+		/*for(int i_vect=0; i_vect<lenvect; i_vect++){
+			cout<<"pop : "<<i_vect<<endl;
+			printpop(parityIndex_, *vectpop[i_vect]);
 			cout<<"map : "<<i_vect<<endl;
-			printposallele();*/
-			/*cout<<"age allele : "<<i_vect<<endl;
-			printageallele(vectage[i_vect]);*/
-			/*cout<< "genotypes : "<<i_vect<<endl;
-			printgen(parityIndex_,vectgen[i_vect]);*/
-			/*cout<< "Allele for each position : "<<i_vect<<endl;
-			printallelepos();*/
-			/*cout<<"info per allele : "<<i_vect<<endl;
-			printinfoallele(vectinfo[i_vect]);*/
-		//}
+			printposallele();
+			cout<<"age allele : "<<i_vect<<endl;
+			printageallele(vectage[i_vect]);
+			cout<< "genotypes : "<<i_vect<<endl;
+			printgen(parityIndex_,*vectgen[i_vect]);
+			cout<< "Allele for each position : "<<i_vect<<endl;
+			printallelepos();
+			cout<<"info per allele : "<<i_vect<<endl;
+			printinfoallele(vectinfo[i_vect]);
+		}*/
 		/*cout<<"pop :"<<endl;
 		printpop(parityIndex_, &populations_);
 		cout<<"map :"<<endl;
@@ -989,73 +1013,79 @@ void Model::manygenerations(){
 		/*cout<<"info per allele : "<<endl;
 		printinfoallele(&infoperallele_);*/
 		/////////////////////////////////////// when we want to split the pop : set ismigration to true, copy populations_ in populations1_ and populations2_, and then fillnwpop for both pop and then do all the function for both pop for the following generations
-		/*if(indgeneration==nbgenmig_){
+		if(indgeneration==nbgenmig_){
+			cout<<"MIGRATION _________________________________________________________________________________"<<endl;
 			ismigration_=true;
 			populations1_=populations_;
 			populations2_=populations_;
-			vectpop = vector<vector<vector<vector<int>>>*> {&populations1_,&populations2_}
 			genotypes1_=genotypes_;
 			genotypes2_=genotypes_;
 			Ageallele1_=Ageallele_;
 			Ageallele2_=Ageallele_;
 			infoperallele1_=infoperallele_;
 			infoperallele2_=infoperallele_;
+			nbfailedmeiosis1_=vector<vector<int>>(nbGenerations_,vector<int>(4,0));
+			nbfailedmeiosis2_=vector<vector<int>>(nbGenerations_,vector<int>(4,0));
 			vectpop = vector<vector<vector<vector<int>>>*> {&populations1_,&populations2_};
 			vectgen = vector<vector<vector<int>>*> {&genotypes1_,&genotypes2_};
 			vectage = vector<map<int,double>*> {&Ageallele1_,&Ageallele2_};
 			vectinfo = vector<map<int,vector<double>>*> {&infoperallele1_,&infoperallele2_};
-			vectq = vector<double*> {&q1_;&q2_};
+			vectq = vector<double*> {&q1_,&q2_};
 			vectfailed = vector<vector<vector<int>>*> {&nbfailedmeiosis1_,&nbfailedmeiosis2_};
-			int indvect = vectpop.size();
+			lenvect = vectpop.size();
 			//initialiser fichier generalfile et allelefile 1 et 2
-			ofstream generalfile1 ((name_+"_1.trace").c_str());
+			/*ofstream generalfile1 ((name_+"_1.trace").c_str());
 			generalfile1 << "Generation_number" << '\t' << "Total_number_of_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" <<'\n';
-    			generalfile1.flush();
-    			ofstream allelefile1 ((name_+"_1.allele").c_str());
+    		generalfile1.flush();
+    		ofstream allelefile1 ((name_+"_1.allele").c_str());
 			allelefile1 << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" <<'\n';
-    			allelefile1.flush();
+    		allelefile1.flush();
 			ofstream generalfile2 ((name_+"_2.trace").c_str());
 			generalfile2 << "Generation_number" << '\t' << "Total_number_of_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" <<'\n';
-    			generalfile2.flush();
-    			ofstream allelefile2 ((name_+"_2.allele").c_str());
+    		generalfile2.flush();
+    		ofstream allelefile2 ((name_+"_2.allele").c_str());
 			allelefile2 << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" <<'\n';
-    			allelefile2.flush();
-		}*/
-		/*for(int i_vect=0; i_vect<lenvect; i_vect++){
+    		allelefile2.flush();*/
+		}
+		if(ismigration_){
+			migration();
+		}
+		for(int i_vect=0; i_vect<lenvect; i_vect++){
+			//printinfoallele(vectinfo[i_vect]);
 			fillnewpop(indgeneration, vectpop[i_vect], vectgen[i_vect], vectinfo[i_vect], vectfailed[i_vect], vectq[i_vect]);
-		}*/
-		fillnewpop(indgeneration, &populations_, &genotypes_, &infoperallele_, &nbfailedmeiosis_, &q_);//////////////////////for both pop
+		}
+		//fillnewpop(indgeneration, &populations_, &genotypes_, &infoperallele_, &nbfailedmeiosis_, &q_);//////////////////////for both pop
 		//cout<<q_<<endl;
 		updatemissingallele();
-		/*for(int i_vect=0; i_vect<lenvect; i_vect++){
-			for (auto &it : vectage[i_vect]){
+		for(int i_vect=0; i_vect<lenvect; i_vect++){
+			for (auto &it : *vectage[i_vect]){
 				it.second=it.second+freqall(it.first, vectgen[i_vect], vectpop[i_vect]);
 			}
-			for (auto &it : vectinfo[i_vect]){
+			for (auto &it : *vectinfo[i_vect]){
 				it.second[4]=it.second[4]/it.second[5];
 			}
-		}*/
-		for (auto &it : Ageallele_){//////////////////////for both pop
+		}
+		/*for (auto &it : Ageallele_){//////////////////////for both pop
 			it.second=it.second+freqall(it.first, &genotypes_, &populations_);
 		}
 		for (auto &it : infoperallele_){//////////////////////for both pop
 			it.second[4]=it.second[4]/it.second[5];
-		}
-		//cout<<"---------"<<endl;
-		//for(int i_vect=0; i_vect<lenvect; i_vect++){
-			/*cout<<"pop : "<<i_vect<<endl;
-			printpop(parityIndex_, vectpop[i_vect]);
+		}*/
+		/*cout<<"---------"<<endl;
+		for(int i_vect=0; i_vect<lenvect; i_vect++){
+			cout<<"pop : "<<i_vect<<endl;
+			printpop(parityIndex_, *vectpop[i_vect]);
 			cout<<"map : "<<i_vect<<endl;
-			printposallele();*/
-			/*cout<<"age allele : "<<i_vect<<endl;
-			printageallele(vectage[i_vect]);*/
-			/*cout<< "genotypes : "<<i_vect<<endl;
-			printgen(parityIndex_,vectgen[i_vect]);*/
-			/*cout<< "Allele for each position : "<<i_vect<<endl;
-			printallelepos();*/
-			/*cout<<"info per allele : "<<i_vect<<endl;
-			printinfoallele(vectinfo[i_vect]);*/
-		//}
+			printposallele();
+			cout<<"age allele : "<<i_vect<<endl;
+			printageallele(vectage[i_vect]);
+			cout<< "genotypes : "<<i_vect<<endl;
+			printgen(parityIndex_,*vectgen[i_vect]);
+			cout<< "Allele for each position : "<<i_vect<<endl;
+			printallelepos();
+			cout<<"info per allele : "<<i_vect<<endl;
+			printinfoallele(vectinfo[i_vect]);
+		}*/
 		/*cout<<"---------"<<endl;
 		cout<<"pop :"<<endl;
 		printpop(parityIndex_, &popuations_);
@@ -1072,7 +1102,7 @@ void Model::manygenerations(){
 		//cout<<"a "<<indgeneration % everygen_<<endl;
 		t2=clock();
 		if (indgeneration % everygen_ ==0)  {//////////////////////for both pop
-			/*if(ismigration_==false){
+			if(ismigration_==false){
 				generalfile << indgeneration << '\t' << get_allele_number() << '\t' << get_current_diversity(&genotypes_) << '\t'  << get_current_activity(&genotypes_, &populations_) << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << 1-(double(nbfailedmeiosis_[indgeneration][3])/(2*N_+nbfailedmeiosis_[indgeneration][3]))<< '\t' << double(nbfailedmeiosis_[indgeneration][0])/(2*N_+nbfailedmeiosis_[indgeneration][3]) << '\t'<< double(nbfailedmeiosis_[indgeneration][1])/(2*N_+nbfailedmeiosis_[indgeneration][3]) << '\t' << double(nbfailedmeiosis_[indgeneration][2])/(2*N_+nbfailedmeiosis_[indgeneration][3]) << '\t' << q_ <<'\n';
             	generalfile.flush();
             	for (auto const &it : Siteforeacheallele_){
@@ -1085,7 +1115,8 @@ void Model::manygenerations(){
 				generalfile1 << indgeneration << '\t' << get_allele_number() << '\t' << get_current_diversity(&genotypes1_) << '\t'  << get_current_activity(&genotypes1_, &populations1_) << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << 1-(double(nbfailedmeiosis1_[indgeneration][3])/(2*N_+nbfailedmeiosis1_[indgeneration][3]))<< '\t' << double(nbfailedmeiosis1_[indgeneration][0])/(2*N_+nbfailedmeiosis1_[indgeneration][3]) << '\t'<< double(nbfailedmeiosis1_[indgeneration][1])/(2*N_+nbfailedmeiosis1_[indgeneration][3]) << '\t' << double(nbfailedmeiosis1_[indgeneration][2])/(2*N_+nbfailedmeiosis1_[indgeneration][3]) << '\t' << q1_ <<'\n';
             	generalfile1.flush();
             	for (auto const &it : Siteforeacheallele_){
-	    			if(it.first!=-2){
+	    			if(it.first!=-2){	
+	    				//cout<<"pop1 info: "<<it.first<<endl;
             			allelefile1 << indgeneration << '\t' << it.first << '\t' << freqall(it.first, &genotypes1_, &populations1_) << '\t'  << actall(it.first, &populations1_) << '\t' << get_age_allele(it.first, &Ageallele1_) << '\t' << get_info_allele(it.first, &infoperallele1_) << '\n';
             			allelefile1.flush();
             		}
@@ -1094,32 +1125,33 @@ void Model::manygenerations(){
             	generalfile2.flush();
             	for (auto const &it : Siteforeacheallele_){
 	    			if(it.first!=-2){
+	    				//cout<<"pop2 info: "<<it.first<<endl;
             			allelefile2 << indgeneration << '\t' << it.first << '\t' << freqall(it.first, &genotypes2_, &populations2_) << '\t'  << actall(it.first, &populations2_) << '\t' << get_age_allele(it.first, &Ageallele2_) << '\t' << get_info_allele(it.first, &infoperallele2_) << '\n';
             			allelefile2.flush();
             		}
             	}
-			}*/
+			}
 			//cout<<"b "<<indgeneration % everygen_<<endl;
-        	generalfile << indgeneration << '\t' << get_allele_number() << '\t' << get_current_diversity(&genotypes_) << '\t'  << get_current_activity(&genotypes_, &populations_) << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << 1-(double(nbfailedmeiosis_[indgeneration][3])/(2*N_+nbfailedmeiosis_[indgeneration][3]))<< '\t' << double(nbfailedmeiosis_[indgeneration][0])/(2*N_+nbfailedmeiosis_[indgeneration][3]) << '\t'<< double(nbfailedmeiosis_[indgeneration][1])/(2*N_+nbfailedmeiosis_[indgeneration][3]) << '\t' << double(nbfailedmeiosis_[indgeneration][2])/(2*N_+nbfailedmeiosis_[indgeneration][3]) << '\t' << q_ <<'\n';
+        	/*generalfile << indgeneration << '\t' << get_allele_number() << '\t' << get_current_diversity(&genotypes_) << '\t'  << get_current_activity(&genotypes_, &populations_) << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << 1-(double(nbfailedmeiosis_[indgeneration][3])/(2*N_+nbfailedmeiosis_[indgeneration][3]))<< '\t' << double(nbfailedmeiosis_[indgeneration][0])/(2*N_+nbfailedmeiosis_[indgeneration][3]) << '\t'<< double(nbfailedmeiosis_[indgeneration][1])/(2*N_+nbfailedmeiosis_[indgeneration][3]) << '\t' << double(nbfailedmeiosis_[indgeneration][2])/(2*N_+nbfailedmeiosis_[indgeneration][3]) << '\t' << q_ <<'\n';
             generalfile.flush();
             for (auto const &it : Siteforeacheallele_){
 	    		if(it.first!=-2){
             		allelefile << indgeneration << '\t' << it.first << '\t' << freqall(it.first, &genotypes_, &populations_) << '\t'  << actall(it.first, &populations_) << '\t' << get_age_allele(it.first, &Ageallele_) << '\t' << get_info_allele(it.first, &infoperallele_) << '\n';
             		allelefile.flush();
             	}
-            }
+            }*/
         }
 	}
-	/*generalfile.close();
+	generalfile.close();
 	allelefile.close();
 	paramsfile.close();
 	generalfile1.close();
 	allelefile1.close();
 	generalfile2.close();
-	allelefile2.close();*/
-	generalfile.close();
+	allelefile2.close();
+	/*generalfile.close();
 	allelefile.close();
-	paramsfile.close();
+	paramsfile.close();*/
 }
 
 int Model::get_allele_number(){
@@ -1138,7 +1170,11 @@ double Model::get_info_allele(int allname, map<int,vector<double>>* infoperallel
 	if(allname==-3){
 		return 0;
 	}else{
-		return (*infoperallele)[allname][4];
+		//printinfoallele(infoperallele);
+		typedef map<int,vector<double>>::iterator mi;
+		if ( (*infoperallele).find(allname) != (*infoperallele).end() ) {
+			return (*infoperallele)[allname][4];
+		}
 	}
 }
 
@@ -1294,17 +1330,17 @@ double Model::q_hete(int allele1, int allele2, vector<int> haplotype1, vector<in
 void Model::migration(){
 	//cout<<"m_*N_ :"<< m_*N_ <<endl;
 	vector<int> migrated_indiv_pop1 = choosemanymigration(int(m_*N_));
-	/*cout<<"migrated_indiv_pop1 : "<<endl;
+	cout<<"migrated_indiv_pop1 : "<<endl;
 	for (auto i : migrated_indiv_pop1){
 		cout<<i<<" ";
 	}
-	cout<<endl;*/
+	cout<<endl;
 	vector<int> migrated_indiv_pop2 = choosemanymigration(int(m_*N_));
-	/*cout<<"migrated_indiv_pop2 : "<<endl;
+	cout<<"migrated_indiv_pop2 : "<<endl;
 	for (auto i : migrated_indiv_pop2){
 		cout<<i<<" ";
 	}
-	cout<<endl;*/
+	cout<<endl;
 	if(migrated_indiv_pop1!=vector<int>{-1} and migrated_indiv_pop2!=vector<int>{-1}){
 		for (int indiv=0; indiv<migrated_indiv_pop1.size(); indiv++){
 			vector<vector<int>> ind_pop1_to_pop2 = vector<vector<int>> {populations1_[parityIndex_][2*migrated_indiv_pop1[indiv]],populations1_[parityIndex_][2*migrated_indiv_pop1[indiv]+1]};
