@@ -86,7 +86,7 @@ class Model {
 	vector<int> choosemany(int k, vector<int> vect); //
 	vector<int> vectfreesites(vector<int> vect, int nb); //
 	vector<vector<int>> occupiedsites(vector<int> vect); //
-	void sitemutation(vector<vector<vector<int>>>* population); //
+	void sitemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype);
 	void allelemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,double>* Ageallele, map<int,vector<double>>* infoperallele); //
 	void updatemissingallele(); //
 	void printpop(int n, vector<vector<vector<int>>> population); //
@@ -109,7 +109,7 @@ class Model {
 	void printageallele(map<int,double>* Ageallele); //
 	double get_age_allele(int allname, map<int,double>* Ageallele); //
 	void printinfoallele(map<int,vector<double>>* infoperallele); //
-	double get_info_allele(int allname, map<int,vector<double>>* infoperallele); //
+	vector<double> get_info_allele(int allname, map<int,vector<double>>* infoperallele); //
 	vector<int> choosemanymigration(int k); //
 	double choosebeta(double alpha, double beta); //
 	double q_two_hap(vector<int> haplotype1, vector<int> haplotype2); //
@@ -158,8 +158,8 @@ class Model {
 	map<int,double> Ageallele1_; //
 	map<int,double> Ageallele2_; //
 	map<int,vector<double>> infoperallele_; //store information for each allele such as the numer of symetrical binding or the nb of failed meiosis per allele
-	map<int,vector<double>> infoperallele1_; //
-	map<int,vector<double>> infoperallele2_; ///////////////////////////////////////////////////////
+	map<int,vector<double>> infoperallele1_; // totnbfail, 2dsb, nodsb, nosym, q, totnbok
+	map<int,vector<double>> infoperallele2_; //
 	double alpha_; //first param of the beta distribution
 	double beta_; //second param of the beta distribution
 	int nbgenmig_; //nb of the generation at which we want to split de pop for migration (if = 0 => begin directly with 2 pop)

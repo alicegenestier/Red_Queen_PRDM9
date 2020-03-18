@@ -33,8 +33,8 @@ int main(int argc, char* argv[])    {
 	int indPrdm9 = 5;
 	int nballele = 1;
 	int parityIndex = 0;
-    double u = 1e-4;
-    double v = 1e-4;
+    	double u = 1e-4;
+    	double v = 1e-4;
 	double w = 1e-3;
 	double meanaff = 0.6;
 	double varaff = 1;
