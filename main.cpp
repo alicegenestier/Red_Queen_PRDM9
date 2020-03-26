@@ -43,12 +43,13 @@ int main(int argc, char* argv[])    {
 	bool ismigration = false;
 	bool zygosity = false;
 	bool withDSB = false;
-	int everygen = 10;
+	int everygen = 100;
 	double m = 0.1;
 	double alpha = 0.5;
 	double beta = 0.5;
 	int nbgenmig = -1;
 	int popsamesize = true;
+	int nbloop = 1000;
 	
 
 	int i=1;
@@ -144,7 +145,10 @@ int main(int argc, char* argv[])    {
 	else if (s == "-popsamesize") {
         	i++;
             popsamesize = atoi(argv[i]);
-        }
+        }else if (s == "-nbloop"){
+		i++;
+		nbloop = atoi(argv[i]);
+	}
         else {
         	// name of the run (name will be followed by extensions: <name>.general…);
             name = argv[i];
@@ -159,7 +163,7 @@ int main(int argc, char* argv[])    {
 	t1=clock();
 	
 	cout<< "Test for Model constructor" <<endl;
-	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,m,alpha,beta,nbgenmig,popsamesize,name);
+	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,m,alpha,beta,nbgenmig,popsamesize,nbloop,name);
 	
 	t2=clock();
 	temps1=(float)(t2-t1)/CLOCKS_PER_SEC;
@@ -311,7 +315,7 @@ int main(int argc, char* argv[])    {
 		cout<<' '<<i;
 	}
 	cout<<'\n';*/
-
+	
 
 return 0;
 }

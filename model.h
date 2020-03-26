@@ -19,7 +19,7 @@ class Model {
 	// Default	
 	Model();
 	//with arg
-	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,string name);
+	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,string name);
 	
 	//============================
 	//        Destructors
@@ -72,6 +72,7 @@ class Model {
 	double beta();
 	int nbgenmig();
 	bool popsamesize();
+	int nbloop();
 	//============================
 	//           Setters
 	//============================
@@ -85,7 +86,7 @@ class Model {
 	double choosegamma(double meanaff, double varaff); //
 	vector<int> choosemany(int k, vector<int> vect); //
 	vector<int> vectfreesites(vector<int> vect, int nb); //
-	vector<vector<int>> occupiedsites(vector<int> vect); //
+	vector<vector<int>> occupiedsites(vector<int> vect, vector<vector<int>>* genotype); //
 	void sitemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype);
 	void allelemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,double>* Ageallele, map<int,vector<double>>* infoperallele); //
 	void updatemissingallele(); //
@@ -112,9 +113,15 @@ class Model {
 	vector<double> get_info_allele(int allname, map<int,vector<double>>* infoperallele); //
 	vector<int> choosemanymigration(int k); //
 	double choosebeta(double alpha, double beta); //
-	double q_two_hap(vector<int> haplotype1, vector<int> haplotype2); //
-	double q_hom(int allele, vector<int> haplotype1, vector<int> haplotype2); //
-	double q_hete(int allele1, int allele2, vector<int> haplotype1, vector<int> haplotype2); //
+	double q_two_hap(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom); //
+	//double q_hom(int allele, vector<int> haplotype1, vector<int> haplotype2); //
+	//double q_hete(int allele1, int allele2, vector<int> haplotype1, vector<int> haplotype2); //
+	double get_q(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype);
+	double get_q_hybrid(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen);
+	vector<int> get_one_gamete(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom);
+	vector<double> get_q_fertility_indep(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, int nbloop_, int nopop);
+	double get_FST_neutral(vector<vector<vector<vector<int>>>*> vectpop);
+	double get_FST_PRDM9(vector<vector<vector<int>>*> vectgen);
 	
 	protected:
 	//============================
@@ -164,4 +171,5 @@ class Model {
 	double beta_; //second param of the beta distribution
 	int nbgenmig_; //nb of the generation at which we want to split de pop for migration (if = 0 => begin directly with 2 pop)
 	bool popsamesize_; //two pop for migration has the same size of the initial pop or devided by two
+	int nbloop_; //nb loop for indep q and fertility
 };
