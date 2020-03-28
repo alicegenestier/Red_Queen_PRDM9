@@ -98,7 +98,7 @@ class Model {
 	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q); //
 	void fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q); //
 	void manygenerations(); //
-	int get_allele_number(); //
+	vector<int> get_allele_number(vector<vector<vector<int>>*> vectgen); //
 	double freqallele(int allelename, vector<vector<int>>* genotype); //
 	double get_current_diversity(vector<vector<int>>* genotype); //
 	double activitymoyallele(int allele,  vector<vector<vector<int>>>* population); //
