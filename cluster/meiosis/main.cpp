@@ -43,7 +43,7 @@ int main(int argc, char* argv[])    {
 	bool ismigration = false;
 	bool zygosity = false;
 	bool withDSB = false;
-	int everygen = 50;
+	int everygen = 100;
 	double m = 0.1;
 	double alpha = 0.5;
 	double beta = 0.5;
