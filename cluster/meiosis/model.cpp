@@ -84,16 +84,9 @@ Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,do
 	for (int i = 0; i < nballele_; i++){
 		Siteforeacheallele_[i]=firstpos;
 		Ageallele_[i]=freqall(i, &genotypes_, &populations_);
-		infoperallele_[i]={0,0,0,0,0,0};
+		infoperallele_[i]={0,0,0,0,0,0,get_mean_affinity(i)};
 	}
-	
 	q_=0;
-	/*if(ismigration_==true and nbgenmig_==0){
-		populations1_=populations_;
-		populations2_=populations_;
-		genotypes1_=genotypes_;
-		genotypes2_=genotypes_;
-	}*/
 }
 
 //============================
@@ -433,10 +426,10 @@ void Model::allelemutation(vector<vector<vector<int>>>* population, vector<vecto
 		//(*infoperallele)[newallele]={0,0,0,0,0,0};
 		
 		if(ismigration_){
-			infoperallele1_[newallele]={0,0,0,0,0,0};
-			infoperallele2_[newallele]={0,0,0,0,0,0};
+			infoperallele1_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele)};
+			infoperallele2_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele)};
 		}else{
-			infoperallele_[newallele]={0,0,0,0,0,0}; ///////////////////a ajouter au fichiers
+			infoperallele_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele)}; ///////////////////a ajouter au fichiers
 		}
 	}
 }
@@ -943,10 +936,10 @@ void Model::fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vect
 //methode qui repete tout ce au'on vient de faire pendant X generations
 void Model::manygenerations(){
 	ofstream generalfile ((name_+".trace").c_str());
-	generalfile << "Generation_number" << '\t' << "Total_number_of_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" << '\t' << "q_intra" << '\t' << "fertility_intra" << '\n';
+	generalfile << "Generation_number" << '\t' << "Total_number_of_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' << "Mean_Age" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" << '\t' << "q_intra" << '\t' << "fertility_intra" << '\n';
     generalfile.flush();
     ofstream allelefile ((name_+".allele").c_str());
-	allelefile << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" << '\t' << "Fertility_allele" <<'\n';
+	allelefile << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" << '\t' << "Fertility_allele" << '\t' << "mean_affinity" << '\n';
     allelefile.flush();
 	ofstream paramsfile ((name_+".params").c_str());
 	paramsfile << "N" << '\t' << N_ << '\n' << "L" << '\t' << L_ << '\n' << "nbsite" << '\t' << nbsite_ << '\n' << "indPrdm9" << '\t' << indPrdm9_ << '\n' << "nballele" << '\t' << nballele_ << '\n' << "parityIndex" << '\t' << parityIndex_ << '\n' << "u" << '\t' << u_ << '\n' << "v" << '\t' << v_ << '\n' << "w" << '\t' << w_ << '\n' << "meanaff" << '\t' << meanaff_ << '\n' << "varaff" << '\t' << varaff_ << '\n' << "nbDSB" << '\t' << nbDSB_ << '\n' << "nbGenerations" << '\t' << nbGenerations_ << '\n' << "ismigration" << '\t' << ismigration_ << '\n' << "zygosity" << '\t' << zygosity_ << '\n' << "withDSB" << '\t' << withDSB_ << '\n' << "everygen" << '\t' << everygen_ << '\n' << "m" << '\t' << m_ << '\n' << "nbgenmig" << '\t' << nbgenmig_ << '\n';
@@ -964,38 +957,6 @@ void Model::manygenerations(){
 	vector<double*> vectq = vector<double*> {&q_};
 	vector<vector<vector<int>>*> vectfailed = vector<vector<vector<int>>*> {&nbfailedmeiosis_};
 	int lenvect = vectpop.size();
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/*vector<int> allele_nb_trace=vector<int>(2,0);
-	vector<double> current_div=vector<double>(2,0);
-	vector<double> current_act=vector<double>(2,0);
-	vector<double> Fertility_rate=vector<double>(2,0);
-	vector<double> twoDSB=vector<double>(2,0);
-	vector<double> noDSB=vector<double>(2,0);
-	vector<double> nosym=vector<double>(2,0);
-	vector<double> current_q=vector<double>(2,0);
-	vector<double> q_fertility;
-	double FST_neutral;
-	double FST_PRDM9;
-	vector<int> allele_nb;
-	vector<double> q_fertility_hybrid;
-	vector<double> q_fertility_1;
-	vector<double> q_fertility_2;
-	vector<double> freqallele;
-	vector<double> freqallele1;
-	vector<double> freqallele2;
-	vector<double> activityall;
-	vector<double> activityall1;
-	vector<double> activityall2;
-	vector<double> ageallele;
-	vector<double> ageallele1;
-	vector<double> ageallele2;
-	vector<double> qallele;
-	vector<double> qallele1;
-	vector<double> qallele2;
-	vector<double> fertilityallele;
-	vector<double> fertilityallele1;
-	vector<double> fertilityallele2;*/
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	for(int indgeneration=0; indgeneration<nbGenerations_; indgeneration++){
 		clock_t t1, t2;
 		t1=clock();
@@ -1004,7 +965,7 @@ void Model::manygenerations(){
 		// remise a 0 vector de chaque allele de infoperallele
 		for(int i_vect=0; i_vect<lenvect; i_vect++){
 			for (auto const &it : *vectinfo[i_vect]){
-				(*vectinfo[i_vect])[it.first]=vector<double>{0,0,0,0,0,0};
+				(*vectinfo[i_vect])[it.first]=vector<double>{0,0,0,0,0,0,get_mean_affinity(it.first)};
 			}
 			/*cout<<"before mutation"<<endl;
 			printpop(parityIndex_, *vectpop[i_vect]);*/
@@ -1051,16 +1012,16 @@ void Model::manygenerations(){
 			lenvect = vectpop.size();
 			//initialiser fichier generalfile et allelefile 1 et 2
 			generalfile1.open ((name_+"_1.trace").c_str());
-			generalfile1 << "Generation_number" << '\t' << "Number_of_allele" << '\t' << "Total_nb_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" << '\t' << "q_intra" << '\t' << "q_inter" << '\t' << "fertility_intra" << '\t' << "fertility_inter" << '\t' << "FST_neutral" << '\t' << "FST_PRDM9" << '\n';
+			generalfile1 << "Generation_number" << '\t' << "Number_of_allele" << '\t' << "Total_nb_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' << "Mean_Age" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" << '\t' << "q_intra" << '\t' << "q_inter" << '\t' << "fertility_intra" << '\t' << "fertility_inter" << '\t' << "FST_neutral" << '\t' << "FST_PRDM9" << '\n';
     			generalfile1.flush();
     			allelefile1.open ((name_+"_1.allele").c_str());
-			allelefile1 << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" << '\t' << "Fertility_allele" <<'\n';
+			allelefile1 << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" << '\t' << "Fertility_allele" << '\t' << "mean_affinity" << '\n';
     			allelefile1.flush();
 			generalfile2.open ((name_+"_2.trace").c_str());
-			generalfile2 << "Generation_number" << '\t' << "Number_of_allele" << '\t' << "Total_nb_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" << '\t' << "q_intra" << '\t' << "q_inter" << '\t' << "fertility_intra" << '\t' << "fertility_inter" << '\t' << "FST_neutral" << '\t' << "FST_PRDM9" << '\n';
+			generalfile2 << "Generation_number" << '\t' << "Number_of_allele" << '\t' << "Total_nb_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' << "Mean_Age" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" << '\t' << "q_intra" << '\t' << "q_inter" << '\t' << "fertility_intra" << '\t' << "fertility_inter" << '\t' << "FST_neutral" << '\t' << "FST_PRDM9" << '\n';
     			generalfile2.flush();
     			allelefile2.open ((name_+"_2.allele").c_str());
-			allelefile2 << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" << '\t' << "Fertility_allele" <<'\n';
+			allelefile2 << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" << '\t' << "Fertility_allele" << '\t' << "mean_affinity" << '\n';
     			allelefile2.flush();
 		}
 		if(ismigration_){
@@ -1072,9 +1033,12 @@ void Model::manygenerations(){
 		}
 		parityIndex_=(parityIndex_+1)%2;
 		updatemissingallele();
+		//cout<<"lenvect : "<<lenvect<<endl;
 		for(int i_vect=0; i_vect<lenvect; i_vect++){
 			for (auto &it : *vectage[i_vect]){
+				//cout<<"it.second before => "<<it.first<< " : " <<it.second<<endl;
 				it.second=it.second+freqall(it.first, vectgen[i_vect], vectpop[i_vect]);
+				//cout<<"it.second after => "<<it.first<< " : " <<it.second<<endl;
 			}
 			for (auto &it : *vectinfo[i_vect]){
 				it.second[4]=it.second[4]/it.second[5];
@@ -1112,6 +1076,7 @@ void Model::manygenerations(){
 		vector<double> noDSB=vector<double>(2,0);
 		vector<double> nosym=vector<double>(2,0);
 		vector<double> current_q=vector<double>(2,0);
+		vector<double> mean_age=vector<double>(2,0);
 		vector<double> q_fertility;
 		double FST_neutral;
 		double FST_PRDM9;
@@ -1134,6 +1099,9 @@ void Model::manygenerations(){
 		vector<double> fertilityallele;
 		vector<double> fertilityallele1;
 		vector<double> fertilityallele2;
+		vector<double> meanaffinity;
+		vector<double> meanaffinity1;
+		vector<double> meanaffinity2;
 		if (indgeneration % everygen_ ==0)  {
 			if(ismigration_==false){
 				// generalfile
@@ -1145,14 +1113,20 @@ void Model::manygenerations(){
 				noDSB[0] = double(nbfailedmeiosis_[indgeneration][1])/(2*N_+nbfailedmeiosis_[indgeneration][3]);
 				nosym[0] = double(nbfailedmeiosis_[indgeneration][2])/(2*N_+nbfailedmeiosis_[indgeneration][3]);
 				current_q[0] = q_;
+				mean_age[0] = get_mean_age(vectgen[0], vectage[0]);
 				for (auto const &it : Siteforeacheallele_){
-	    			if(it.first!=-2){
+	    				if(it.first!=-2){
 						allele_nb.push_back(it.first);
 						freqallele.push_back(freqall(it.first, &genotypes_, &populations_));
 						activityall.push_back(actall(it.first, &populations_));
 						ageallele.push_back(get_age_allele(it.first, &Ageallele_));
 						qallele.push_back(get_info_allele(it.first, &infoperallele_)[0]);
 						fertilityallele.push_back(get_info_allele(it.first, &infoperallele_)[1]);
+						if(it.first==-3){
+							meanaffinity.push_back(get_mean_affinity(it.first));
+						}else{
+							meanaffinity.push_back(infoperallele_[it.first][6]);
+						}
             		}
             	}
 				q_fertility = get_q_fertility_indep(vectpop, vectgen, nbloop_, 1);
@@ -1174,6 +1148,7 @@ void Model::manygenerations(){
 					noDSB[indfile] = double((*vectfailed[indfile])[indgeneration][1])/(2*N_+(*vectfailed[indfile])[indgeneration][3]);
 					nosym[indfile] = double((*vectfailed[indfile])[indgeneration][2])/(2*N_+(*vectfailed[indfile])[indgeneration][3]);
 					current_q[indfile] = *vectq[indfile];
+					mean_age[indfile] = get_mean_age(vectgen[indfile], vectage[indfile]);
 				}
 				tot_allele_nb = get_allele_number(vectgen,true);
 				FST_neutral = get_FST_neutral(vectpop);
@@ -1188,12 +1163,19 @@ void Model::manygenerations(){
 							freqallele2.push_back(freqall(it.first, &genotypes2_, &populations2_));
 							activityall1.push_back(actall(it.first, &populations1_));
 							activityall2.push_back(actall(it.first, &populations2_));
-							ageallele1.push_back(get_age_allele(it.first, &Ageallele_));
-							ageallele2.push_back(get_age_allele(it.first, &Ageallele_));
+							ageallele1.push_back(get_age_allele(it.first, &Ageallele1_));
+							ageallele2.push_back(get_age_allele(it.first, &Ageallele2_));
 							qallele1.push_back(get_info_allele(it.first, &infoperallele1_)[0]);
 							qallele2.push_back(get_info_allele(it.first, &infoperallele2_)[0]);
 							fertilityallele1.push_back(get_info_allele(it.first, &infoperallele1_)[1]);
 							fertilityallele2.push_back(get_info_allele(it.first, &infoperallele2_)[1]);
+							if(it.first==-3){
+								meanaffinity1.push_back(get_mean_affinity(it.first));
+								meanaffinity2.push_back(get_mean_affinity(it.first));
+							}else{
+								meanaffinity1.push_back(infoperallele1_[it.first][6]);
+								meanaffinity2.push_back(infoperallele2_[it.first][6]);
+							}
             		}
             	}
 				/*generalfile1 << indgeneration << '\t' << get_allele_number(vectgen)[0] << '\t' << get_current_diversity(&genotypes1_) << '\t'  << get_current_activity(&genotypes1_, &populations1_) << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << 1-(double(nbfailedmeiosis1_[indgeneration][3])/(2*N_+nbfailedmeiosis1_[indgeneration][3]))<< '\t' << double(nbfailedmeiosis1_[indgeneration][0])/(2*N_+nbfailedmeiosis1_[indgeneration][3]) << '\t'<< double(nbfailedmeiosis1_[indgeneration][1])/(2*N_+nbfailedmeiosis1_[indgeneration][3]) << '\t' << double(nbfailedmeiosis1_[indgeneration][2])/(2*N_+nbfailedmeiosis1_[indgeneration][3]) << '\t' << q1_ << '\t' << q_fertility_1[0] << '\t' << q_fertility_hybrid[0] << '\t' << q_fertility_1[1] << '\t' << q_fertility_hybrid[1] << '\t' << get_FST_neutral(vectpop) << '\t' << get_FST_PRDM9(vectgen) << '\n';
@@ -1215,23 +1197,23 @@ void Model::manygenerations(){
 			}
 			t2=clock();
 			if(ismigration_==false){
-				generalfile << indgeneration << '\t' << allele_nb_trace[0] << '\t' << current_div[0] << '\t'  << current_act[0] << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << Fertility_rate[0] << '\t' << twoDSB[0] << '\t'<< noDSB[0] << '\t' << nosym[0] << '\t' << current_q[0] << '\t' << q_fertility[0] << '\t' << q_fertility[1] << '\n';
+				generalfile << indgeneration << '\t' << allele_nb_trace[0] << '\t' << current_div[0] << '\t'  << current_act[0] << '\t' << mean_age[0] << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << Fertility_rate[0] << '\t' << twoDSB[0] << '\t'<< noDSB[0] << '\t' << nosym[0] << '\t' << current_q[0] << '\t' << q_fertility[0] << '\t' << q_fertility[1] << '\n';
             	generalfile.flush();
             	for (int indall = 0; indall<allele_nb.size(); indall++){
-            		allelefile << indgeneration << '\t' << allele_nb[indall] << '\t' << freqallele[indall] << '\t'  << activityall[indall] << '\t' << ageallele[indall] << '\t' << qallele[indall] << '\t' << fertilityallele[indall] << '\n';
+            		allelefile << indgeneration << '\t' << allele_nb[indall] << '\t' << freqallele[indall] << '\t'  << activityall[indall] << '\t' << ageallele[indall] << '\t' << qallele[indall] << '\t' << fertilityallele[indall] << '\t' << meanaffinity[indall] << '\n';
             		allelefile.flush();
             	}
 			}else if(ismigration_==true){
-				generalfile1 << indgeneration << '\t' << allele_nb_trace[0] << '\t' << tot_allele_nb[0] << '\t' << current_div[0] << '\t'  << current_act[0] << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << Fertility_rate[0] << '\t' << twoDSB[0] << '\t'<< noDSB[0] << '\t' << nosym[0] << '\t' << current_q[0] << '\t' << q_fertility_1[0] << '\t' << q_fertility_hybrid[0] << '\t' << q_fertility_1[1] << '\t' << q_fertility_hybrid[1] << '\t' << get_FST_neutral(vectpop) << '\t' << get_FST_PRDM9(vectgen) << '\n';
+				generalfile1 << indgeneration << '\t' << allele_nb_trace[0] << '\t' << tot_allele_nb[0] << '\t' << current_div[0] << '\t'  << current_act[0] << '\t' << mean_age[0] << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << Fertility_rate[0] << '\t' << twoDSB[0] << '\t'<< noDSB[0] << '\t' << nosym[0] << '\t' << current_q[0] << '\t' << q_fertility_1[0] << '\t' << q_fertility_hybrid[0] << '\t' << q_fertility_1[1] << '\t' << q_fertility_hybrid[1] << '\t' << get_FST_neutral(vectpop) << '\t' << get_FST_PRDM9(vectgen) << '\n';
             	generalfile1.flush();
             	for (int indall = 0; indall<allele_nb.size(); indall++){
-            		allelefile1 << indgeneration << '\t' << allele_nb[indall] << '\t' << freqallele1[indall] << '\t'  << activityall1[indall] << '\t' << ageallele1[indall] << '\t' << qallele1[indall] << '\t' << fertilityallele1[indall] << '\n';
+            		allelefile1 << indgeneration << '\t' << allele_nb[indall] << '\t' << freqallele1[indall] << '\t'  << activityall1[indall] << '\t' << ageallele1[indall] << '\t' << qallele1[indall] << '\t' << fertilityallele1[indall] << '\t' << meanaffinity1[indall] << '\n';
             		allelefile1.flush();
             	}
-            	generalfile2 << indgeneration << '\t' << allele_nb_trace[1] << '\t' << tot_allele_nb[0] << '\t' << current_div[1] << '\t'  << current_act[1] << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << Fertility_rate[1] << '\t' << twoDSB[0] << '\t'<< noDSB[1] << '\t' << nosym[1] << '\t' << current_q[1] << '\t' << q_fertility_2[0] << '\t' << q_fertility_hybrid[0] << '\t' << q_fertility_2[1] << '\t' << q_fertility_hybrid[1] << '\t' << get_FST_neutral(vectpop) << '\t' << get_FST_PRDM9(vectgen) << '\n';
+            	generalfile2 << indgeneration << '\t' << allele_nb_trace[1] << '\t' << tot_allele_nb[0] << '\t' << current_div[1] << '\t'  << current_act[1] << '\t' << mean_age[1] << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << Fertility_rate[1] << '\t' << twoDSB[0] << '\t'<< noDSB[1] << '\t' << nosym[1] << '\t' << current_q[1] << '\t' << q_fertility_2[0] << '\t' << q_fertility_hybrid[0] << '\t' << q_fertility_2[1] << '\t' << q_fertility_hybrid[1] << '\t' << get_FST_neutral(vectpop) << '\t' << get_FST_PRDM9(vectgen) << '\n';
             	generalfile2.flush();
             	for (int indall = 0; indall<allele_nb.size(); indall++){
-            		allelefile2 << indgeneration << '\t' << allele_nb[indall] << '\t' << freqallele2[indall] << '\t'  << activityall2[indall] << '\t' << ageallele2[indall] << '\t' << qallele2[indall] << '\t' << fertilityallele2[indall] << '\n';
+            		allelefile2 << indgeneration << '\t' << allele_nb[indall] << '\t' << freqallele2[indall] << '\t'  << activityall2[indall] << '\t' << ageallele2[indall] << '\t' << qallele2[indall] << '\t' << fertilityallele2[indall] << '\t' << meanaffinity2[indall] << '\n';
             		allelefile2.flush();
             	}
 			}
@@ -1272,6 +1254,14 @@ double Model::get_age_allele(int allname, map<int,double>* Ageallele){
 	}else{
 		return (*Ageallele)[allname];
 	}
+}
+
+double Model::get_mean_age(vector<vector<int>>* genotype, map<int,double>* Ageallele){
+	double meanage=0;
+	for(auto const allele : (*genotype)[parityIndex_]){
+		meanage+=(*Ageallele)[allele];
+	}
+	return meanage/((*genotype)[parityIndex_].size());
 }
 
 vector<double> Model::get_info_allele(int allname, map<int,vector<double>>* infoperallele){
@@ -1366,6 +1356,14 @@ double Model::get_current_activity(vector<vector<int>>* genotype, vector<vector<
 	}
 	//cout<<"activity moy"<<moytotact/meanaff_<<endl;
 	return moytotact;
+}
+
+double Model::get_mean_affinity(int allele){
+	double meanaffinity=0;
+	for(auto const site : Siteforeacheallele_[allele]){
+		meanaffinity+=Affinity_[site];
+	}
+	return meanaffinity/nbsite_;
 }
 
 double Model::get_FST_neutral(vector<vector<vector<vector<int>>>*> vectpop){

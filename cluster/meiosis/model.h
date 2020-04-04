@@ -122,6 +122,8 @@ class Model {
 	vector<double> get_q_fertility_indep(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, int nbloop_, int nopop);
 	double get_FST_neutral(vector<vector<vector<vector<int>>>*> vectpop);
 	double get_FST_PRDM9(vector<vector<vector<int>>*> vectgen);
+	double get_mean_age(vector<vector<int>>* genotype, map<int,double>* Ageallele);
+	double get_mean_affinity(int allele);
 	
 	protected:
 	//============================
