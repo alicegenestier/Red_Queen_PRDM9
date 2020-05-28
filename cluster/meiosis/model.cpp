@@ -84,7 +84,7 @@ Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,do
 	for (int i = 0; i < nballele_; i++){
 		Siteforeacheallele_[i]=firstpos;
 		Ageallele_[i]=freqall(i, &genotypes_, &populations_);
-		infoperallele_[i]={0,0,0,0,0,0,get_mean_affinity(i)};
+		infoperallele_[i]={0,0,0,0,0,0,get_mean_affinity(i,&populations_)};
 	}
 	q_=0;
 }
@@ -426,10 +426,10 @@ void Model::allelemutation(vector<vector<vector<int>>>* population, vector<vecto
 		//(*infoperallele)[newallele]={0,0,0,0,0,0};
 		
 		if(ismigration_){
-			infoperallele1_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele)};
-			infoperallele2_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele)};
+			infoperallele1_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele,population)};
+			infoperallele2_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele,population)};
 		}else{
-			infoperallele_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele)}; ///////////////////a ajouter au fichiers
+			infoperallele_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele,population)}; ///////////////////a ajouter au fichiers
 		}
 	}
 }
@@ -652,6 +652,18 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 			}
 		}
 	}
+	/*try{
+		if(nblinksite=0){
+			throw(3);
+		}
+	}
+	catch(int const& error_nb){
+		if(error_nb==3){
+			cout<<"No linked site"<<endl;	
+		}
+		return -1;
+	}
+	*/
 	//nblinksite=summarysites.size();
 	/*cout<<"summary sites"<<endl;
 	for(auto i : summarysites){
@@ -975,7 +987,7 @@ void Model::manygenerations(){
 		// remise a 0 vector de chaque allele de infoperallele
 		for(int i_vect=0; i_vect<lenvect; i_vect++){
 			for (auto const &it : *vectinfo[i_vect]){
-				(*vectinfo[i_vect])[it.first]=vector<double>{0,0,0,0,0,0,get_mean_affinity(it.first)};
+				(*vectinfo[i_vect])[it.first]=vector<double>{0,0,0,0,0,0,get_mean_affinity(it.first,vectpop[i_vect])};
 			}
 			/*cout<<"before mutation"<<endl;
 			printpop(parityIndex_, *vectpop[i_vect]);*/
@@ -1133,7 +1145,7 @@ void Model::manygenerations(){
 						qallele.push_back(get_info_allele(it.first, &infoperallele_)[0]);
 						fertilityallele.push_back(get_info_allele(it.first, &infoperallele_)[1]);
 						if(it.first==-3){
-							meanaffinity.push_back(get_mean_affinity(it.first));
+							meanaffinity.push_back(get_mean_affinity(it.first,&populations_));
 						}else{
 							meanaffinity.push_back(infoperallele_[it.first][6]);
 						}
@@ -1172,8 +1184,8 @@ void Model::manygenerations(){
 							fertilityallele1.push_back(get_info_allele(it.first, &infoperallele1_)[1]);
 							fertilityallele2.push_back(get_info_allele(it.first, &infoperallele2_)[1]);
 							if(it.first==-3){
-								meanaffinity1.push_back(get_mean_affinity(it.first));
-								meanaffinity2.push_back(get_mean_affinity(it.first));
+								meanaffinity1.push_back(get_mean_affinity(it.first,&populations1_));
+								meanaffinity2.push_back(get_mean_affinity(it.first,&populations2_));
 							}else{
 								meanaffinity1.push_back(infoperallele1_[it.first][6]);
 								meanaffinity2.push_back(infoperallele2_[it.first][6]);
@@ -1345,12 +1357,20 @@ double Model::get_current_activity(vector<vector<int>>* genotype, vector<vector<
 	return moytotact;
 }
 
-double Model::get_mean_affinity(int allele){
+double Model::get_mean_affinity(int allele, vector<vector<vector<int>>>* pop){
 	double meanaffinity=0;
+	int nbactivesite=0;
 	for(auto const site : Siteforeacheallele_[allele]){
-		meanaffinity+=Affinity_[site];
+		int activitysite=0;
+		for(int siteind=0; siteind<2*N_; siteind++){
+			if((*pop)[parityIndex_][siteind][site]==1){
+				activitysite+=1;
+				nbactivesite+=1;
+			}
+		}
+		meanaffinity+=Affinity_[site]*activitysite;
 	}
-	return meanaffinity/nbsite_;
+	return meanaffinity/nbactivesite;
 }
 
 double Model::get_FST_neutral(vector<vector<vector<vector<int>>>*> vectpop){
