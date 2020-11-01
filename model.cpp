@@ -642,6 +642,8 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 			}
 		}
 	}
+	cout<<"vect_CO"<<vect_CO.size()<<endl;
+	for
 	try{
 		if(vectsitedsb.size()==0){
 			(*nbfailedmeiosis)[nb_gen][1]+=1;
@@ -749,6 +751,7 @@ void Model::fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vect
 	for(int indnewpop=0; indnewpop<2*N_; indnewpop++){
 		int meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele, nbfailedmeiosis, q);
 		while (meiosisState==-1){
+			//cout<<"aaaaaaaaaaaaaaaaaaaaaaaaa"<<endl;
 			meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele, nbfailedmeiosis, q);
 			(*nbfailedmeiosis)[nb_gen][3]+=1;
 		}
@@ -894,6 +897,11 @@ void Model::manygenerations(){
 				current_div[0] = get_current_diversity(&genotypes_);
 				current_act[0] = get_current_activity(&genotypes_, &populations_);
 				Fertility_rate[0] = 1-(double(nbfailedmeiosis_[indgeneration][3])/(2*N_+nbfailedmeiosis_[indgeneration][3]));
+				//////////////////////////////////////////////////////////////////////////////////////
+				//cout<<"Fertility_rate"<<Fertility_rate[0]<<endl;
+				//cout<<"num"<<double(nbfailedmeiosis_[indgeneration][3])<<endl;
+				//cout<<"denom"<<(2*N_+nbfailedmeiosis_[indgeneration][3])<<endl;
+				//////////////////////////////////////////////////////////////////////////////////////
 				twoDSB[0] = double(nbfailedmeiosis_[indgeneration][0])/(2*N_+nbfailedmeiosis_[indgeneration][3]);
 				noDSB[0] = double(nbfailedmeiosis_[indgeneration][1])/(2*N_+nbfailedmeiosis_[indgeneration][3]);
 				nosym[0] = double(nbfailedmeiosis_[indgeneration][2])/(2*N_+nbfailedmeiosis_[indgeneration][3]);
