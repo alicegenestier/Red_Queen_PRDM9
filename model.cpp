@@ -642,8 +642,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 			}
 		}
 	}
-	cout<<"vect_CO"<<vect_CO.size()<<endl;
-	for
+	//cout<<"vect_CO"<<vect_CO.size()<<endl;
 	try{
 		if(vectsitedsb.size()==0){
 			(*nbfailedmeiosis)[nb_gen][1]+=1;
