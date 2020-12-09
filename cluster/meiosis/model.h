@@ -114,8 +114,6 @@ class Model {
 	vector<int> choosemanymigration(int k); //
 	double choosebeta(double alpha, double beta); //
 	double q_two_hap(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom); //
-	//double q_hom(int allele, vector<int> haplotype1, vector<int> haplotype2); //
-	//double q_hete(int allele1, int allele2, vector<int> haplotype1, vector<int> haplotype2); //
 	double get_q(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype);
 	double get_q_hybrid(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen);
 	vector<int> get_one_gamete(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom);
@@ -124,6 +122,12 @@ class Model {
 	double get_FST_PRDM9(vector<vector<vector<int>>*> vectgen);
 	double get_mean_age(vector<vector<int>>* genotype, map<int,double>* Ageallele);
 	double get_mean_affinity(int allele, vector<vector<vector<int>>>* pop);
+	double puissance_double(int puiss, double x);
+	int puissance_int(int puiss, int x);
+	//////////////////
+	map<int,vector<double>> q_fert_allele_analytique(vector<vector<int>>* genotype); //
+	//map<int,vector<double>> q_fert_individual_analytique(vector<vector<int>>* genotype);//
+	map<int,vector<double>> q_fert_individual_analytique(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop);
 	
 	protected:
 	//============================

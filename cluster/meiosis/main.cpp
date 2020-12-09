@@ -226,8 +226,8 @@ int main(int argc, char* argv[])    {
 	/*cout<< "Test for sitemutation function : "<<endl;
 	for (int l=1; l<11; l++){
 		cout<<"Generation "<<l<<endl;
-		model1.sitemutation();
-		model1.printpop(2);
+		model1.sitemutation((model1.populations()),(model1.genotypes()));
+		model1.printpop(2,model1.populations());
 	}*/
 	
 	/*cout<< "Test for allelemutation function : "<<endl;
