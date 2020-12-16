@@ -88,7 +88,7 @@ class Model {
 	vector<int> vectfreesites(vector<int> vect, int nb); //
 	vector<vector<int>> occupiedsites(vector<int> vect, vector<vector<int>>* genotype); //
 	void sitemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype);
-	void allelemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,double>* Ageallele, map<int,vector<double>>* infoperallele); //
+	void allelemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,double>* Ageallele, map<int,vector<double>>* infoperallele, vector<int>vectnbind); //
 	void updatemissingallele(); //
 	void printpop(int n, vector<vector<vector<int>>> population); //
 	void printgen(int n, vector<vector<int>> genotype); //

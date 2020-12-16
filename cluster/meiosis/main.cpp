@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <string>
 #include <cstring>
+#include <omp.h>
 //#include <boost/math/distributions/beta.hpp>
 
 #include "model.h"
