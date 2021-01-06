@@ -19,7 +19,7 @@ class Model {
 	// Default	
 	Model();
 	//with arg
-	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,string name);
+	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,int nbcore,string name);
 	
 	//============================
 	//        Destructors
@@ -73,6 +73,7 @@ class Model {
 	int nbgenmig();
 	bool popsamesize();
 	int nbloop();
+	int nbcore();
 	//============================
 	//           Setters
 	//============================
@@ -95,8 +96,8 @@ class Model {
 	void printposallele(); //
 	void printallelepos(); //
 	void printaffinity(); //
-	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q); //
-	void fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q); //
+	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym); //
+	void fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym); //
 	void manygenerations(); //
 	vector<int> get_allele_number(vector<vector<vector<int>>*> vectgen, bool nbtot); //
 	double freqallele(int allelename, vector<vector<int>>* genotype); //
@@ -162,6 +163,7 @@ class Model {
 	int everygen_; //nb of generation at which we want to print the results in the files
 	bool ismigration_; //is there migration
 	double q_; //
+	double qsym_;////////////////////////////////
 	double q1_;//
 	double q2_;//
 	bool withDSB_; //do we take into account the 2 DSB at one site as a cause of failed meiosis
@@ -178,4 +180,5 @@ class Model {
 	int nbgenmig_; //nb of the generation at which we want to split de pop for migration (if = 0 => begin directly with 2 pop)
 	bool popsamesize_; //two pop for migration has the same size of the initial pop or devided by two
 	int nbloop_; //nb loop for indep q and fertility
+	int nbcore_;//nb core for open mp
 };
