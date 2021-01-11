@@ -52,6 +52,9 @@ int main(int argc, char* argv[])    {
 	int popsamesize = true;
 	int nbloop = 1000;
 	int nbcore = 4;
+	bool isallele=true;
+	bool issampling=true;
+	bool isanalytic=true;
 	
 
 	int i=1;
@@ -153,6 +156,15 @@ int main(int argc, char* argv[])    {
 	}else if (s == "-nbcore"){
 		i++;
 		nbcore = atoi(argv[i]);
+	}else if (s == "-isallele"){
+		i++;
+		isallele = atoi(argv[i]);
+	}else if (s == "-issampling"){
+		i++;
+		issampling = atoi(argv[i]);
+	}else if (s == "-isanalytic"){
+		i++;
+		isanalytic = atoi(argv[i]);
 	}
         else {
         	// name of the run (name will be followed by extensions: <name>.general…);
@@ -168,7 +180,7 @@ int main(int argc, char* argv[])    {
 	t1=clock();
 	
 	cout<< "Test for Model constructor" <<endl;
-	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,m,alpha,beta,nbgenmig,popsamesize,nbloop,nbcore,name);
+	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,m,alpha,beta,nbgenmig,popsamesize,nbloop,nbcore,isallele,issampling,isanalytic,name);
 	
 	t2=clock();
 	temps1=(float)(t2-t1)/CLOCKS_PER_SEC;

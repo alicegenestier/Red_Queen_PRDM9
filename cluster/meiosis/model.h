@@ -19,7 +19,7 @@ class Model {
 	// Default	
 	Model();
 	//with arg
-	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,int nbcore,string name);
+	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,int nbcore,bool isallele,bool issampling,bool isanalytic,string name);
 	
 	//============================
 	//        Destructors
@@ -74,6 +74,9 @@ class Model {
 	bool popsamesize();
 	int nbloop();
 	int nbcore();
+	bool isallele();/////////////////////////////////////
+	bool issampling();/////////////////////////////////////
+	bool isanalytic();/////////////////////////////////////
 	//============================
 	//           Setters
 	//============================
@@ -181,4 +184,7 @@ class Model {
 	bool popsamesize_; //two pop for migration has the same size of the initial pop or devided by two
 	int nbloop_; //nb loop for indep q and fertility
 	int nbcore_;//nb core for open mp
+	bool isallele_;//do we want the result for each allele
+	bool issampling_;//do we want the result from the sampling
+	bool isanalytic_;//do we want the analytical results
 };

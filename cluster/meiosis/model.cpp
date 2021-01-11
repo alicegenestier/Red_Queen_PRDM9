@@ -26,7 +26,7 @@ using namespace std;
 //============================
 //         Constructors
 //============================
-Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbloop, int nbcore, string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen),m_(m),alpha_(alpha),beta_(beta),nbgenmig_(nbgenmig),popsamesize_(popsamesize),nbloop_(nbloop),nbcore_(nbcore),name_(name) {
+Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbloop, int nbcore, bool isallele, bool issampling, bool isanalytic, string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen), m_(m), alpha_(alpha), beta_(beta), nbgenmig_(nbgenmig), popsamesize_(popsamesize), nbloop_(nbloop), nbcore_(nbcore), isallele_(isallele), issampling_(issampling), isanalytic_(isanalytic), name_(name) {
 	
 	//vector counting the number of failed meiosis per generation
 	nbfailedmeiosis_=vector<vector<int>>(nbGenerations_,vector<int>(4,0));
@@ -243,6 +243,15 @@ int Model::nbloop(){
 int Model::nbcore(){
 	return nbcore_;
 }
+bool Model::isallele(){
+	return isallele_;
+}
+bool Model::issampling(){
+	return issampling_;
+}
+bool Model::isanalytic(){
+	return isanalytic_;
+}
 //============================
 //           Setters
 //============================
@@ -392,7 +401,7 @@ void Model::allelemutation(vector<vector<vector<int>>>* population, vector<vecto
 			infoperallele1_[newallele]={0,0,0,0,0,0,0};
 			infoperallele2_[newallele]={0,0,0,0,0,0,0};
 		}else{
-			//infoperallele_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele,population)}; ///////////////////a ajouter au fichiers
+			//infoperallele_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele,population)};
 			infoperallele_[newallele]={0,0,0,0,0,0,0};
 		}
 	}
@@ -680,20 +689,27 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 		//Crossing over
 		vector<int> vco;
 		if (dsb){
-			for(int indexnbdsb = 0; indexnbdsb<nbdsbpersite; indexnbdsb++){
-				vco = {summarysites[i][0],vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]};
-				if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==0 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==1){
-					if((summarysites[i][3]==1 or summarysites[i][3]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=2){/// in these cases, I suppose that 2 DSB can perform a CO
-						vco.push_back(2);
+			for(int indexnbdsb = 0; indexnbdsb<nbdsbpersite; indexnbdsb++){// for all the dsb performed at this position (0 to 4)
+				vco = {summarysites[i][0],vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]};//vco={position,last indexnbdsb DSB added to vectsitedsb=all DSB performed at this site}
+				if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==0 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==1){//if there is a DSB on the first or second chromatide
+					//if((summarysites[i][3]==1 or summarysites[i][3]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=2){
+					if(summarysites[i][3]==1 or summarysites[i][3]==2){//if there is a PRDM9 linked or even a DSB on the third chromatide
+						// in these cases, I suppose that 2 DSB can perform a CO
+						vco.push_back(2);//add third chromatide to the potential site for CO
 					}
-					if((summarysites[i][4]==1 or summarysites[i][4]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=3){
-						vco.push_back(3);
+					//if((summarysites[i][4]==1 or summarysites[i][4]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=3){
+					if(summarysites[i][4]==1 or summarysites[i][4]==2){//if there is a PRDM9 linked or even a DSB on the fourth chromatide
+						vco.push_back(3);//add fourth chromatide to the potential site for CO
 					}
-				}else if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==2 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==3 or summarysites[i][1]==2){
-					if((summarysites[i][1]==1 or summarysites[i][1]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=0 ){
+					//that means that 1 DSB = 1 potential CO (even if there is 2 linked sites on the other side)
+				//}else if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==2 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==3 or summarysites[i][1]==2){
+				}else if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==2 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==3){//same thing but with DSB on third or fourth chromatide
+					//if((summarysites[i][1]==1 or summarysites[i][1]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=0){
+					if(summarysites[i][1]==1 or summarysites[i][1]==2){
 						vco.push_back(0);
 					}
-					if((summarysites[i][2]==1 or summarysites[i][2]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=1){
+					//if((summarysites[i][2]==1 or summarysites[i][2]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=1){
+					if(summarysites[i][2]==1 or summarysites[i][2]==2){
 						vco.push_back(1);
 					}
 				}
@@ -1068,38 +1084,48 @@ void Model::manygenerations(){
 				current_q[0] = q_;
 				current_qsym[0] = qsym_;
 				mean_age[0] = get_mean_age(vectgen[0], vectage[0]);
+				analytic_indiv=q_fert_individual_analytique(&genotypes_,&populations_);
+				//q_fertility = get_q_fertility_indep(vectpop, vectgen, nbloop_, 1);//utile pour migration
+				q_fertility =vector<double>{0,0};
 				////////////////////////
 				t7=clock();
 				temps_calcunit=(float)(t7-t6)/CLOCKS_PER_SEC;
 				printf("temps_calcunit = %f\n", temps_calcunit);
 				////////////////////////
-				for (auto const &it : Siteforeacheallele_){//////////////////////////////////////////////////////////////// =========> openMP peut marcher si on enleve auto (for cassique) et push_back (declaration des vecteurs de longueur la taille de Siteforeachallele)
-	    				if(it.first!=-2){
-						allele_nb.push_back(it.first);
-						freqallele.push_back(freqall(it.first, &genotypes_, &populations_));
-						activityall.push_back(actall(it.first, &populations_));
-						ageallele.push_back(get_age_allele(it.first, &Ageallele_));
-						qfertall=get_info_allele(it.first, &infoperallele_);
-						qallele.push_back(qfertall[0]);
-						fertilityallele.push_back(qfertall[1]);
-						if(it.first==-3){
-							meanaffinity.push_back(get_mean_affinity(it.first,&populations_));
-						}else{
+				if(isallele_==true){
+					for (auto const &it : Siteforeacheallele_){//////////////////////////////////////////////////////////////// =========> openMP peut marcher si on enleve auto (for cassique) et push_back (declaration des vecteurs de longueur la taille de Siteforeachallele)
+	    					if(it.first!=-2){
+							allele_nb.push_back(it.first);
+							freqallele.push_back(freqall(it.first, &genotypes_, &populations_));
+							activityall.push_back(actall(it.first, &populations_));
+							ageallele.push_back(get_age_allele(it.first, &Ageallele_));
+							qfertall=get_info_allele(it.first, &infoperallele_);
+							qallele.push_back(qfertall[0]);
+							fertilityallele.push_back(qfertall[1]);
+							if(it.first==-3){
+								meanaffinity.push_back(get_mean_affinity(it.first,&populations_));
+							}else{
 							//meanaffinity.push_back(infoperallele_[it.first][6]);
-							meanaffinity.push_back(get_mean_affinity(it.first,&populations_));
-						}
+								meanaffinity.push_back(get_mean_affinity(it.first,&populations_));
+							}
+            					}
             				}
-            			}
-				//q_fertility = get_q_fertility_indep(vectpop, vectgen, nbloop_, 1);//utile pour migration
-				q_fertility =vector<double>{0,0};
-				analytic_indiv=q_fert_individual_analytique(&genotypes_,&populations_);
-				/////////////////////////////////////////////////////////////////////////////////////////////////////
+				}else{
+					allele_nb.push_back(0);
+					freqallele.push_back(0);
+					activityall.push_back(0);
+					ageallele.push_back(0);
+					qfertall=get_info_allele(0);
+					qallele.push_back(0);
+					fertilityallele.push_back(0);
+					meanaffinity.push_back(0);
+				}
 				////////////////////////
 				t8=clock();
 				temps_calcloop=(float)(t8-t7)/CLOCKS_PER_SEC;
 				printf("temps_calcloop = %f\n", temps_calcloop);
 				////////////////////////
-			}else if(ismigration_==true){
+			}else if(ismigration_==true){////////////////////////////////to add: analytical calcul, isallele, isanalytic, issampling 
 				for(int indfile=0; indfile<2; indfile++){
 					allele_nb_trace[indfile] = get_allele_number(vectgen,false)[indfile];
 					current_div[indfile] = get_current_diversity(vectgen[indfile]);
@@ -1280,7 +1306,7 @@ double Model::activitymoyallele(int allele,  vector<vector<vector<int>>>* popula
 	return (moyact);
 }
 
-//???????????
+//freq, activity of neutral sites
 vector<double> Model::freqneutral(vector<vector<vector<int>>>* population){
 	double moyfreq=0;
 	double moy2f=0;
