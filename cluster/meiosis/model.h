@@ -77,6 +77,8 @@ class Model {
 	bool isallele();/////////////////////////////////////
 	bool issampling();/////////////////////////////////////
 	bool isanalytic();/////////////////////////////////////
+	double qnum();
+	double qdenom();
 	//============================
 	//           Setters
 	//============================
@@ -99,8 +101,8 @@ class Model {
 	void printposallele(); //
 	void printallelepos(); //
 	void printaffinity(); //
-	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym); //
-	void fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym); //
+	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom); //
+	void fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom); //
 	void manygenerations(); //
 	vector<int> get_allele_number(vector<vector<vector<int>>*> vectgen, bool nbtot); //
 	double freqallele(int allelename, vector<vector<int>>* genotype); //
@@ -187,4 +189,6 @@ class Model {
 	bool isallele_;//do we want the result for each allele
 	bool issampling_;//do we want the result from the sampling
 	bool isanalytic_;//do we want the analytical results
+	double qdenom_;
+	double qnum_;
 };
