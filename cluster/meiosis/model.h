@@ -101,7 +101,7 @@ class Model {
 	void printposallele(); //
 	void printallelepos(); //
 	void printaffinity(); //
-	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom); //
+	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom, int indiv); //
 	void fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom); //
 	void manygenerations(); //
 	vector<int> get_allele_number(vector<vector<vector<int>>*> vectgen, bool nbtot); //
