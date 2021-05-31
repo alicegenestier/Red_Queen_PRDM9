@@ -131,9 +131,10 @@ class Model {
 	double puissance_double(int puiss, double x);
 	int puissance_int(int puiss, int x);
 	//////////////////
-	map<int,vector<double>> q_fert_allele_analytique(vector<vector<int>>* genotype); //
 	//map<int,vector<double>> q_fert_individual_analytique(vector<vector<int>>* genotype);//
 	map<int,vector<double>> q_fert_individual_analytique(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop);
+	double Mean_fert_new_allele(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop);
+	double sigma_0();
 	
 	protected:
 	//============================
