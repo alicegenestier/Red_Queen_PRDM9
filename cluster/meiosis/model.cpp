@@ -2453,7 +2453,6 @@ double Model::sigma_0(){
 	}
 	double qhet=(4*infonewallele_1[0]-infonewallele_1[1]-infonewallele_1[2]+4*infonewallele_2[0]-infonewallele_2[1]-infonewallele_2[2])/(infonewallele_1[3]+infonewallele_1[4]+infonewallele_2[3]+infonewallele_2[4]);
 	double whet=1-exp(-nbDSB_*qhet);
-	//cout<<"whet = "<<whet<<endl;
 	
 	//whom(0)
 	ind_gen=2;
@@ -2485,7 +2484,6 @@ double Model::sigma_0(){
 	infonewallele.push_back(moyprobalinkb/nbsite_);
 	double qhom=(4*infonewallele[0]-infonewallele[1]-infonewallele[2])/(infonewallele[3]+infonewallele[4]);
 	double whom=1-exp(-nbDSB_*qhom);
-	//cout<<"whom = "<<whom<<endl;
 	
 	double sigma=(whom-whet)/whet;
 	return sigma;
@@ -2553,6 +2551,9 @@ vector<double> Model::cfree(){
 	}
 	res[0]=cfree_ctot_het_final;
 	res[1]=cfree_ctot_hom_final;
+	
+	//qhet and whet
+	//qhet0 and whet0
 	vector<double> infonewallele_1;
 	vector<double> infonewallele_2;
 	even=0;
@@ -2597,7 +2598,7 @@ vector<double> Model::cfree(){
 	res[4]=whet;
 	
 	
-	//whom(0)
+	//qhom0 and whom0
 	vector<double> infonewallele;
 	even=0;
 	double xa=0;
