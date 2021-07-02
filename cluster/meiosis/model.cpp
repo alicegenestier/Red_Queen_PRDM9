@@ -2494,8 +2494,6 @@ double Model::sigma_0(){
 
 
 vector<double> Model::cfree(){
-	//vector<int> freepos = vectfreesites(Alleleforeachpos_, -1);
-	//vector<int> newpos = choosemany(nbsite_, freepos);
 	vector<int> freepos = vectfreesites(Alleleforeachpos_, -1);
 	vector<int> newpos = choosemany(2*nbsite_, freepos); 
 	vector<double> res = vector<double>(7,0);
@@ -2503,9 +2501,7 @@ vector<double> Model::cfree(){
 	double cfree_ctot_hom_final;
 	double is_diff_het=0;
 	double is_diff_hom=0;
-	//double ctot_het=1000;
 	double ctot_het=ctot_;
-	//cout<< "ctot = "<<ctot_het<<endl;
 	double ctot_hom=ctot_het;
 	if (zygosity_){
 		ctot_hom=2*ctot_het;
@@ -2519,7 +2515,6 @@ vector<double> Model::cfree(){
 	bool even=0;
 	while(is_diff_het==1 or is_diff_hom==1 or loop==0){
 		diff_step=diff_step/double(10);
-		//cout<<diff_step<<endl;
 		for(int index_c_eff=0; index_c_eff<10; index_c_eff++){
 			is_diff_het=0;
 			is_diff_hom=0;
@@ -2531,8 +2526,6 @@ vector<double> Model::cfree(){
 				if(loop!=0 and (ctot_hom-sum_p_occup_hom < 0 or loop==0 or sum_p_occup_hom+cfree_hom>ctot_hom)){
 					cfree_hom=cfree_hom-diff_step;
 				}
-				//cout << "cfree_hom_before = " << cfree_hom << endl;
-				//cout << "cfree_het_before = " << cfree_het << endl;
 				sum_p_occup_hom=0;
 				sum_p_occup_het=0;
 				for(auto const &it : newpos){
@@ -2542,49 +2535,24 @@ vector<double> Model::cfree(){
 					}
 					even=(even+1)%2;
 				}
-				//cout << "sum_p_occup_hom = " << sum_p_occup_hom << endl;
-				//cout << "sum_p_occup_het = " << sum_p_occup_het << endl;
 				loop+=1;
 			}	
 			cfree_ctot_het_final=float(cfree_het)/float(ctot_het);
 			cfree_ctot_hom_final=float(cfree_hom)/float(ctot_hom);
-			//cout << "cfree_hom = " << cfree_hom << endl;
-			//cout << "cfree_het = " << cfree_het << endl;
-			//cout << "cfree_ctot_hom = " << cfree_ctot_hom_final << endl;
-			//cout << "cfree_ctot_het = " << cfree_ctot_het_final << endl;
 			cfree_hom=ctot_hom-sum_p_occup_hom;
 			cfree_het=ctot_het-sum_p_occup_het;
-			//cout << "sum_p_occup_hom_final = " << sum_p_occup_hom << endl;
-			//cout << "sum_p_occup_het_final = " << sum_p_occup_het << endl;
-			//cout << "cfree_hom_after_final = " << cfree_hom << endl;
-			//cout << "cfree_het_after_final = " << cfree_het << endl;
-			//cout << "cfree_ctot_hom_final = " << float(cfree_hom)/float(ctot_hom) << endl;
-			//cout << "cfree_ctot_het_final = " << float(cfree_het)/float(ctot_het) << endl;
-			//cout << endl;
 		}
 		if(abs(cfree_ctot_het_final-float(cfree_het)/float(ctot_het))>0.0001){
-			//cout<<abs(cfree_ctot_het_final-float(cfree_het)/float(ctot_het))<<endl;
 			is_diff_het=1;
 		}
 		if(abs(cfree_ctot_hom_final-float(cfree_hom)/float(ctot_hom))>0.0001){
-			//cout<<abs(cfree_ctot_hom_final-float(cfree_hom)/float(ctot_hom))<<endl;
 			is_diff_hom=1;
 		}
 		loop=1;
-		//cout<<loop<<endl;
-		//cout<<is_diff_het<<endl;
-		//cout<<is_diff_hom<<endl;
 	
 	}
-	//cout<<"is_diff_het = "<<is_diff_het<<endl;
-	//cout<<"is_diff_hom = "<<is_diff_hom<<endl;
 	res[0]=cfree_ctot_het_final;
 	res[1]=cfree_ctot_hom_final;
-	//cout << "cfree_ctot_hom_final = " << res[0] << endl;
-	//cout << "cfree_ctot_het_final = " << res[1] << endl;
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-	//w_het(0,0)
 	vector<double> infonewallele_1;
 	vector<double> infonewallele_2;
 	even=0;
@@ -2625,11 +2593,8 @@ vector<double> Model::cfree(){
 	}
 	double qhet=(4*infonewallele_1[0]-infonewallele_1[1]-infonewallele_1[2]+4*infonewallele_2[0]-infonewallele_2[1]-infonewallele_2[2])/(infonewallele_1[3]+infonewallele_1[4]+infonewallele_2[3]+infonewallele_2[4]);
 	double whet=1-exp(-nbDSB_*qhet);
-	//cout<<"whet = "<<whet<<endl;
 	res[2]=qhet;
 	res[4]=whet;
-	//cout << "qhet = " << res[2] << endl;
-	//cout << "whet = " << res[4] << endl;
 	
 	
 	//whom(0)
@@ -2663,13 +2628,10 @@ vector<double> Model::cfree(){
 	double whom=1-exp(-nbDSB_*qhom);
 	res[3]=qhom;
 	res[5]=whom;
-	//cout << "qhom = " << res[3] << endl;
-	//cout << "whom = " << res[5] << endl;
 	
 	double sigma=(whom-whet)/whet;
 	res[6]=sigma;
-	//cout << "sigma = " << res[6] << endl;
-	
+
 	return res;
 }
 
