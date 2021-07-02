@@ -619,17 +619,27 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 			for(int indexnbdsb = 0; indexnbdsb<nbdsbpersite; indexnbdsb++){
 				vco = {summarysites[i][0],vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]};
 				if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==0 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==1){
-					if((summarysites[i][3]==1 or summarysites[i][3]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=2){/// in these cases, I suppose that 2 DSB can perform a CO
+					//cout<<"A "<<vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]<<endl;
+					//if((summarysites[i][3]==1 or summarysites[i][3]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=2){
+					if(summarysites[i][3]==1 or summarysites[i][3]==2){
 						vco.push_back(2);
 					}
-					if((summarysites[i][4]==1 or summarysites[i][4]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=3){
+					//if((summarysites[i][4]==1 or summarysites[i][4]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=3){
+					if(summarysites[i][4]==1 or summarysites[i][4]==2){
 						vco.push_back(3);
 					}
-				}else if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==2 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==3 or summarysites[i][1]==2){
-					if((summarysites[i][1]==1 or summarysites[i][1]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=0 ){
+				//}else if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==2 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==3 or summarysites[i][1]==2){
+				}else if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==2 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==3){
+					//cout<<"B "<<vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]<<endl;
+					if(summarysites[i][1]==2 and (vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=2 and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=3)){
+						cout<<"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"<<endl;
+					}
+					//if((summarysites[i][1]==1 or summarysites[i][1]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=0){
+					if(summarysites[i][1]==1 or summarysites[i][1]==2){
 						vco.push_back(0);
 					}
-					if((summarysites[i][2]==1 or summarysites[i][2]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=1){
+					//if((summarysites[i][2]==1 or summarysites[i][2]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=1){
+					if(summarysites[i][2]==1 or summarysites[i][2]==2){
 						vco.push_back(1);
 					}
 				}
@@ -640,6 +650,21 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 			}
 		}
 	}
+	cout<<"summarysites"<<endl;
+		for(auto sum : summarysites){
+			for(auto sum1 : sum){
+				cout<<sum1<<' ';
+			}
+			cout<<endl;
+		}
+	cout<<"vect_CO"<<endl;
+	for(auto sum : vect_CO){
+		for(auto sum1 : sum){
+			cout<<sum1<<' ';
+		}
+		cout<<endl;
+	}
+	
 	try{
 		if(vectsitedsb.size()==0){
 			(*nbfailedmeiosis)[nb_gen][1]+=1;

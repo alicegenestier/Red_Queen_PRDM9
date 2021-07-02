@@ -52,9 +52,10 @@ int main(int argc, char* argv[])    {
 	int popsamesize = true;
 	int nbloop = 1000;
 	int nbcore = 4;
-	bool isallele=true;
-	bool issampling=true;
-	bool isanalytic=true;
+	bool isallele = true;
+	bool issampling = true;
+	bool isanalytic = true;
+	double ctot = 1600;
 	
 
 	int i=1;
@@ -165,6 +166,9 @@ int main(int argc, char* argv[])    {
 	}else if (s == "-isanalytic"){
 		i++;
 		isanalytic = atoi(argv[i]);
+	}else if (s == "-ctot"){
+		i++;
+		ctot = atoi(argv[i]);
 	}
         else {
         	// name of the run (name will be followed by extensions: <name>.general…);
@@ -180,7 +184,7 @@ int main(int argc, char* argv[])    {
 	t1=clock();
 	
 	cout<< "Test for Model constructor" <<endl;
-	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,m,alpha,beta,nbgenmig,popsamesize,nbloop,nbcore,isallele,issampling,isanalytic,name);
+	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,m,alpha,beta,nbgenmig,popsamesize,nbloop,nbcore,isallele,issampling,isanalytic,ctot,name);
 	
 	t2=clock();
 	temps1=(float)(t2-t1)/CLOCKS_PER_SEC;
@@ -309,7 +313,7 @@ int main(int argc, char* argv[])    {
 	cout<<endl;
 	cout<<"nb of failed meiosis : "<<model1.nbfailedmeiosis()<<endl;*/
 	
-	model1.manygenerations();
+	model1.manygenerations();/////////////////////////////////////////////////////////////////////////////////////
 	
 	/*cout<<"pop1 :"<<endl;
 	model1.printpop(0,model1.populations1());
@@ -320,6 +324,8 @@ int main(int argc, char* argv[])    {
 	model1.printpop(0,model1.populations1());
 	cout<<"pop2 :"<<endl;
 	model1.printpop(0,model1.populations2());*/
+
+	//model1.cfree();
 	
 	
 	t3=clock();

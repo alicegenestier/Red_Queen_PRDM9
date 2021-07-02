@@ -19,7 +19,7 @@ class Model {
 	// Default	
 	Model();
 	//with arg
-	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,int nbcore,bool isallele,bool issampling,bool isanalytic,string name);
+	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,int nbcore,bool isallele,bool issampling,bool isanalytic,double ctot,string name);
 	
 	//============================
 	//        Destructors
@@ -79,6 +79,7 @@ class Model {
 	bool isanalytic();/////////////////////////////////////
 	double qnum();
 	double qdenom();
+	double ctot();
 	//============================
 	//           Setters
 	//============================
@@ -135,6 +136,7 @@ class Model {
 	map<int,vector<double>> q_fert_individual_analytique(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop);
 	double Mean_fert_new_allele(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop);
 	double sigma_0();
+	vector<double> cfree();
 	
 	protected:
 	//============================
@@ -192,4 +194,5 @@ class Model {
 	bool isanalytic_;//do we want the analytical results
 	double qdenom_;
 	double qnum_;
+	double ctot_;//total concentration for 1 PRDM9 allele in heterozygot
 };
