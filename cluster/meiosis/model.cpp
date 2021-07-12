@@ -451,29 +451,6 @@ void Model::allelemutation(vector<vector<vector<int>>>* population, vector<vecto
 			*/
 		}
 	}
-	
-	/*
-	for (int i=0; i<2*N_; i++){
-		if(bernoulli_draw(u_)){ // faire une binomial_________________________________________________
-			nballele_+=1;
-			vector<int> freepos = vectfreesites(Alleleforeachpos_, -1);
-			vector<int> newpos = choosemany(nbsite_, freepos); 
-			int newallele = nballele_-1;
-			for(auto j : newpos){
-				Alleleforeachpos_[j]=newallele;//update allele for each pos
-			}
-			Siteforeacheallele_[newallele]=newpos; //update map
-			(*genotype)[parityIndex_][i]=newallele;//update genotype
-			(*population)[parityIndex_][i][indPrdm9_]=newallele;//update pop
-			(*Ageallele)[newallele]=freqall(newallele, genotype, population);//update age of the new allele
-			if(ismigration_){
-				infoperallele1_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele,population)};
-				infoperallele2_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele,population)};
-			}else{
-				infoperallele_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele,population)}; ///////////////////a ajouter au fichiers
-			}
-		}
-	}*/
 }
 
 void Model::updatemissingallele(){
