@@ -181,6 +181,8 @@ class Model {
 	map<int,double> Ageallele1_; //
 	map<int,double> Ageallele2_; //
 	map<int,vector<double>> infoperallele_; //store information for each allele such as the numer of symetrical binding or the nb of failed meiosis per allele
+	//map<int,vector<double>> infoperallele_hom_;
+	//map<int,vector<double>> infoperallele_het_;
 	map<int,vector<double>> infoperallele1_; // totnbfail, 2dsb, nodsb, nosym, q, totnbok
 	map<int,vector<double>> infoperallele2_; //
 	double alpha_; //first param of the beta distribution
