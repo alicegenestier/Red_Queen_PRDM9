@@ -185,6 +185,10 @@ class Model {
 	//map<int,vector<double>> infoperallele_het_;
 	map<int,vector<double>> infoperallele1_; // totnbfail, 2dsb, nodsb, nosym, q, totnbok
 	map<int,vector<double>> infoperallele2_; //
+	//map<int,vector<double>> infoperallele1_hom_; // totnbfail, 2dsb, nodsb, nosym, q, totnbok
+	//map<int,vector<double>> infoperallele2_hom_; //
+	//map<int,vector<double>> infoperallele1_het_; // totnbfail, 2dsb, nodsb, nosym, q, totnbok
+	//map<int,vector<double>> infoperallele2_het_; //
 	double alpha_; //first param of the beta distribution
 	double beta_; //second param of the beta distribution
 	int nbgenmig_; //nb of the generation at which we want to split de pop for migration (if = 0 => begin directly with 2 pop)
