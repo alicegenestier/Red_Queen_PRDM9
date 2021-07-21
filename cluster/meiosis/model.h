@@ -19,7 +19,7 @@ class Model {
 	// Default	
 	Model();
 	//with arg
-	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,int nbcore,bool isallele,bool issampling,bool isanalytic,double ctot,string name);
+	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,int nbcore,bool isallele,bool issampling,bool isanalytic,double ctot,bool targetcomp,string name);
 	
 	//============================
 	//        Destructors
@@ -54,6 +54,7 @@ class Model {
 	vector<vector<int>> nbfailedmeiosis1();
 	vector<vector<int>> nbfailedmeiosis2();
 	bool zygosity();
+	bool targetcomp();
 	int everygen();
 	bool ismigration();
 	double q();
@@ -68,6 +69,12 @@ class Model {
 	map<int,vector<double>> infoperallele();
 	map<int,vector<double>> infoperallele1();
 	map<int,vector<double>> infoperallele2();
+	map<int,vector<double>> infoperallele_hom();/////////////////////////////////////
+	//map<int,vector<double>> infoperallele1_hom();
+	//map<int,vector<double>> infoperallele2_hom();
+	map<int,vector<double>> infoperallele_het();/////////////////////////////////////
+	//map<int,vector<double>> infoperallele1_het();
+	//map<int,vector<double>> infoperallele2_het();
 	double alpha();
 	double beta();
 	int nbgenmig();
@@ -95,15 +102,15 @@ class Model {
 	vector<int> vectfreesites(vector<int> vect, int nb); //
 	vector<vector<int>> occupiedsites(vector<int> vect, vector<vector<int>>* genotype); //
 	void sitemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype);
-	void allelemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,double>* Ageallele, map<int,vector<double>>* infoperallele, vector<int>vectnbind); //
+	void allelemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,double>* Ageallele, vector<int>vectnbind); //
 	void updatemissingallele(); //
 	void printpop(int n, vector<vector<vector<int>>> population); //
 	void printgen(int n, vector<vector<int>> genotype); //
 	void printposallele(); //
 	void printallelepos(); //
 	void printaffinity(); //
-	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom, int indiv); //
-	void fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom); //
+	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele,map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom, int indiv); //
+	void fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom); //
 	void manygenerations(); //
 	vector<int> get_allele_number(vector<vector<vector<int>>*> vectgen, bool nbtot); //
 	double freqallele(int allelename, vector<vector<int>>* genotype); //
@@ -168,10 +175,11 @@ class Model {
 	vector<vector<int>> nbfailedmeiosis1_; //
 	vector<vector<int>> nbfailedmeiosis2_; //
 	bool zygosity_; //make difference between heterozygots and homozygots
+	bool targetcomp_; //If we want to take into account target competition
 	int everygen_; //nb of generation at which we want to print the results in the files
 	bool ismigration_; //is there migration
 	double q_; //
-	double qsym_;////////////////////////////////
+	double qsym_;//
 	double q1_;//
 	double q2_;//
 	bool withDSB_; //do we take into account the 2 DSB at one site as a cause of failed meiosis
@@ -181,8 +189,8 @@ class Model {
 	map<int,double> Ageallele1_; //
 	map<int,double> Ageallele2_; //
 	map<int,vector<double>> infoperallele_; //store information for each allele such as the numer of symetrical binding or the nb of failed meiosis per allele
-	//map<int,vector<double>> infoperallele_hom_;
-	//map<int,vector<double>> infoperallele_het_;
+	map<int,vector<double>> infoperallele_hom_;////////////////////////////////////////////////////////////////
+	map<int,vector<double>> infoperallele_het_;////////////////////////////////////////////////////////////////
 	map<int,vector<double>> infoperallele1_; // totnbfail, 2dsb, nodsb, nosym, q, totnbok
 	map<int,vector<double>> infoperallele2_; //
 	//map<int,vector<double>> infoperallele1_hom_; // totnbfail, 2dsb, nodsb, nosym, q, totnbok

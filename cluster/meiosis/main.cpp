@@ -56,6 +56,7 @@ int main(int argc, char* argv[])    {
 	bool issampling = true;
 	bool isanalytic = true;
 	double ctot = 1600;
+	bool targetcomp = false;
 	
 
 	int i=1;
@@ -169,6 +170,9 @@ int main(int argc, char* argv[])    {
 	}else if (s == "-ctot"){
 		i++;
 		ctot = atoi(argv[i]);
+	}else if (s == "-targetcomp"){
+		i++;
+		targetcomp = atoi(argv[i]);
 	}
         else {
         	// name of the run (name will be followed by extensions: <name>.general…);
@@ -184,7 +188,7 @@ int main(int argc, char* argv[])    {
 	t1=clock();
 	
 	cout<< "Test for Model constructor" <<endl;
-	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,m,alpha,beta,nbgenmig,popsamesize,nbloop,nbcore,isallele,issampling,isanalytic,ctot,name);
+	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,m,alpha,beta,nbgenmig,popsamesize,nbloop,nbcore,isallele,issampling,isanalytic,ctot,targetcomp,name);
 	
 	t2=clock();
 	temps1=(float)(t2-t1)/CLOCKS_PER_SEC;
