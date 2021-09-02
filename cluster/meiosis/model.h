@@ -19,7 +19,7 @@ class Model {
 	// Default	
 	Model();
 	//with arg
-	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,int nbcore,bool isallele,bool issampling,bool isanalytic,double ctot,bool targetcomp,string name);
+	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,int nbcore,bool isallele,bool issampling,bool isanalytic,double ctot,bool targetcomp,int quantilenb,string name);
 	
 	//============================
 	//        Destructors
@@ -209,4 +209,6 @@ class Model {
 	double qdenom_;
 	double qnum_;
 	double ctot_;//total concentration for 1 PRDM9 allele in heterozygot
+	int quantilenb_;//number of categories for the affinity distribution
+	map<double,vector<double>> nbsitesperquantile_;//[quantile category]{mean of the quantile category, number of active site in each category of quantile}
 };

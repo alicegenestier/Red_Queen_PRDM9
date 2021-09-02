@@ -57,6 +57,7 @@ int main(int argc, char* argv[])    {
 	bool isanalytic = true;
 	double ctot = 1600;
 	bool targetcomp = false;
+	int quantilenb = 0;
 	
 
 	int i=1;
@@ -173,6 +174,9 @@ int main(int argc, char* argv[])    {
 	}else if (s == "-targetcomp"){
 		i++;
 		targetcomp = atoi(argv[i]);
+	}else if (s == "-quantilenb"){
+		i++;
+		quantilenb = atoi(argv[i]);
 	}
         else {
         	// name of the run (name will be followed by extensions: <name>.general…);
@@ -188,7 +192,7 @@ int main(int argc, char* argv[])    {
 	t1=clock();
 	
 	cout<< "Test for Model constructor" <<endl;
-	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,m,alpha,beta,nbgenmig,popsamesize,nbloop,nbcore,isallele,issampling,isanalytic,ctot,targetcomp,name);
+	Model model1(N,L,nbsite,indPrdm9,nballele,parityIndex,v,u,w,meanaff,varaff,nbDSB,nbGenerations,ismigration,zygosity,withDSB,everygen,m,alpha,beta,nbgenmig,popsamesize,nbloop,nbcore,isallele,issampling,isanalytic,ctot,targetcomp,quantilenb,name);
 	
 	t2=clock();
 	temps1=(float)(t2-t1)/CLOCKS_PER_SEC;
@@ -331,6 +335,16 @@ int main(int argc, char* argv[])    {
 
 	//model1.cfree();
 	
+	//test quantile loi exponentielle
+	/*int nbquantile=10;
+	double quantile_length=1/double(nbquantile);
+	double quantile=0;
+	double meangamma=1/0.44;
+	for (int i=0; i<nbquantile; i++){
+		quantile=quantile+quantile_length;
+		cout<<"quantile "<<quantile<<" : "<<-log(1-quantile)/meangamma<<endl;
+	}
+	*/
 	
 	t3=clock();
 	temps2=(float)(t3-t2)/CLOCKS_PER_SEC;
