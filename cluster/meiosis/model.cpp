@@ -26,7 +26,7 @@ using namespace std;
 //============================
 //         Constructors
 //============================
-Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbloop, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen), m_(m), alpha_(alpha), beta_(beta), nbgenmig_(nbgenmig), popsamesize_(popsamesize), nbloop_(nbloop), nbcore_(nbcore), isallele_(isallele), issampling_(issampling), isanalytic_(isanalytic), ctot_(ctot), targetcomp_(targetcomp), quantilenb_(quantilenb), name_(name) {
+Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbloop, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen), m_(m), alpha_(alpha), beta_(beta), nbgenmig_(nbgenmig), popsamesize_(popsamesize), nbloop_(nbloop), nbcore_(nbcore), isallele_(isallele), issampling_(issampling), isanalytic_(isanalytic), ctot_(ctot), targetcomp_(targetcomp), quantilenb_(quantilenb), nbmeiperind_(nbmeiperind), name_(name) {
 	
 	//vector counting the number of failed meiosis per generation
 	nbfailedmeiosis_=vector<vector<int>>(nbGenerations_,vector<int>(4,0));
@@ -324,6 +324,13 @@ double Model::qdenom(){
 }
 double Model::ctot(){
 	return ctot_;
+}
+
+int Model::quantilenb(){
+	return quantilenb_;
+}
+int Model::nbmeiperind(){
+	return nbmeiperind_;
 }
 //============================
 //           Setters
@@ -1208,10 +1215,12 @@ void Model::fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vect
 	for(int indnewpop=0; indnewpop<2*N_; indnewpop++){
 		tps3=clock();
 		int indiv = 2*choose(N_);
-		//while(meiosisState==-1 and nb_meiosis<nb_mei_per_ind_){ //allows an ind to try performing many meiosis (nb_mei_per_ind_) before stopping and choosing another one
-		int meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv);
-		//}
-		
+		int nb_meiosis=0;
+		int meiosisState=-1;
+		while(meiosisState==-1 and nb_meiosis<nbmeiperind_){ //allows an ind to try performing many meiosis (nbmeiperind_) before stopping and choosing another one
+			meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv);
+			nb_meiosis+=1;
+		}
 		tps4=clock();
 		tps_meiosis=(float)(tps4-tps3)/CLOCKS_PER_SEC;
 		//printf("tps_meiosis = %f\n", tps_meiosis);
@@ -1223,9 +1232,11 @@ void Model::fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vect
 			nbmei2+=1;
 			tps5=clock();
 			int indiv = 2*choose(N_);
-			//while(meiosisState==-1 and nb_meiosis<nb_mei_per_ind_){ //allows an ind to try performing many meiosis (nb_mei_per_ind_) before stopping and choosing another one
-			meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv);
-			//}
+			nb_meiosis=0;
+			while(meiosisState==-1 and nb_meiosis<nbmeiperind_){ //allows an ind to try performing many meiosis (nbmeiperind_) before stopping and choosing another one
+				meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv);
+				nb_meiosis+=1;
+			}
 			(*nbfailedmeiosis)[nb_gen][3]+=1;
 			tps6=clock();
 			tps_meiosis=(float)(tps6-tps5)/CLOCKS_PER_SEC;
@@ -1255,7 +1266,7 @@ void Model::fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vect
 	tps_fill=(float)(tps2-tps1)/CLOCKS_PER_SEC;
 	//printf("tps_fill = %f\n", tps_fill);
 	
-}
+} //////////////////////////////////////////////////////////////////////////////////////////// changer le info per allele si plusieurs meioses possibles par indiv !!!!!
 
 //methode which mix together and runs all the previous functions during X generations 
 void Model::manygenerations(){
