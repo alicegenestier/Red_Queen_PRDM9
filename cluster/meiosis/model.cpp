@@ -23,10 +23,12 @@ using namespace std;
 // pour paralleliser une boucle, on ajoute   #pragma omp parallel for num_threads(nb)   avant la boucle for.
 // Ajouter dans le makefile -fopenmp
 
-//============================
-//         Constructors
-//============================
+//============================//
+//         Constructors	      //
+//============================//
 Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbloop, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen), m_(m), alpha_(alpha), beta_(beta), nbgenmig_(nbgenmig), popsamesize_(popsamesize), nbloop_(nbloop), nbcore_(nbcore), isallele_(isallele), issampling_(issampling), isanalytic_(isanalytic), ctot_(ctot), targetcomp_(targetcomp), quantilenb_(quantilenb), nbmeiperind_(nbmeiperind), name_(name) {
+
+	//Create the model : the population of N individuals with 2 homologous chromosomes per individual, on each chromosome there is a Prdm9 locus (at position indPrdm9_) to witch is associated an allele (number >=0). Each allele recognizes some target sites along the chromosome. Each site is either active (1) or inactive (0) and posess its own binding affinity.
 	
 	//vector counting the number of failed meiosis per generation
 	nbfailedmeiosis_=vector<vector<int>>(nbGenerations_,vector<int>(4,0));
@@ -37,7 +39,7 @@ Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,do
 	for (auto &i : populations_){
 		#pragma omp parallel for num_threads(nbcore_)
 		for (int j=0; j<2*N_; j++)
-		i[j][indPrdm9_]=0; 
+		i[j][indPrdm9_]=0; //site for all individuals the PRDM9 allele 0 at the PRDM9 locus
 	}
 	
 	//affinity vector
@@ -45,28 +47,28 @@ Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,do
 	#pragma omp parallel for num_threads(nbcore_)
 	for(int i=0; i<L_; i++){
 		Affinity_[i]=choosegamma(meanaff_, varaff_);
+		//affinity chosen in gamma law
 	}
 	
-	//////////////////////////////////////////////////////////////////////////////////
-	// Affinity categories
+	// Affinity categories : only if targetcomp_=1 and quantilenb>0
 	if(quantilenb_!=0){
 		double quantile_length=1/double(quantilenb_);
 		double quantile=0;
 		double meanquantile=0;
 		for (int i=0; i<quantilenb_; i++){
-			if(quantile+quantile_length<1){
+			if(quantile+quantile_length<1){ // to compute the mean affinity between these 2 quantiles
 				meanquantile=double((-log(1-quantile)/meanaff_)+(-log(1-(quantile+quantile_length))/meanaff_))/double(2);
 			}else{
 				meanquantile=double((-log(1-quantile)/meanaff_)+(-log(1-(0.99999999999))/meanaff_))/double(2);
 			}
 			quantile=quantile+quantile_length;
-			if(quantile+quantile_length<1){
+			if(quantile+quantile_length<1){ // to set all the quantiles
 				nbsitesperquantile_[-log(1-quantile)/meanaff_]={meanquantile,0};
 			}else{
 				nbsitesperquantile_[-log(1-0.99999999999)/meanaff_]={meanquantile,0};
 			}
 		}
-	
+		//Print for each quantile the mean affinity in each category and the number of site attributed to this category (here 0 because initiation)
 		/*for (auto const it : nbsitesperquantile_){
 			cout<<it.first<<" => ";
 			for(auto const &i : it.second){
@@ -76,16 +78,14 @@ Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,do
 		}
 		cout<<'\n';*/
 	}
-	/////////////////////////////////////////////////////////////////////////////////
 	
-	//genotypes vector
+	// genotypes vector
 	genotypes_=vector<vector<int>>(2,vector<int>(2*N_,0));
 	
 	// Prdm9 position in the genome
 	Alleleforeachpos_ = vector<int>(L_,-1);
 	Alleleforeachpos_[indPrdm9_]=-2;
 	
-	Siteforeacheallele_[-2]={indPrdm9_};
 	
 	// neutral positions
 	vector<int> freeposneutral = vectfreesites(Alleleforeachpos_, -1);
@@ -93,20 +93,6 @@ Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,do
 	
 	for(auto i : firstposneutral){
 		Alleleforeachpos_[i]=-3;
-	}
-	
-	Siteforeacheallele_[-3]=firstposneutral;
-	
-	//distribution beta for neutral sites
-	
-	for(int site=0; site<nbsite_; site++){
-		double freqactivsite = choosebeta(alpha_, beta_);
-		for(int ind=0; ind<2*N_; ind++){
-			double p=bernoulli_draw(freqactivsite);
-			if(not p){
-				populations_[parityIndex_][ind][Siteforeacheallele_[-3][site]]=0;
-			}
-		}
 	}
 	
 	
@@ -119,29 +105,44 @@ Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,do
 	}
 	
 	// positions map
+	Siteforeacheallele_[-2]={indPrdm9_};
 	#pragma omp parallel for num_threads(nbcore_)
 	for (int i = 0; i < nballele_; i++){
 		Siteforeacheallele_[i]=firstpos;
 		Ageallele_[i]=freqall(i, &genotypes_, &populations_)*(N_*v_*nbDSB_)/(2*nbsite_);
 		double meanaffall = get_mean_affinity(i,&populations_);
-		infoperallele_[i]={0,0,0,0,0,0,meanaffall,0,0,0,0}; // infoperallele{nb failed meiosis, 2 DSB on 1 site, no DSB, no symetrical site, q, nb meiosis with at least 1 DSB, mean affinity of the allele, relative_nb_meiosis, nblinksiteall, nblinkposall, absolute_nb_meiosis}////////////////////////////////////////////////////////////////////////////
+		infoperallele_[i]={0,0,0,0,0,0,meanaffall,0,0,0,0}; // infoperallele{nb failed meiosis, 2 DSB on 1 site, no DSB, no symetrical site, q, nb meiosis with at least 1 DSB, mean affinity of the allele, relative_nb_meiosis, nblinksiteall, nblinkposall, absolute_nb_meiosis}
 		
 		infoperallele_hom_[i]={0,0,0,0,0,0,meanaffall,0,0,0,0,0,0}; // infoperallele_hom{nb failed meiosis, 2 DSB on 1 site, no DSB, no symetrical site, q, nb meiosis with at least 1 DSB, mean affinity of the allele, relative_nb_meiosis, nblinksiteall, nblinkposall, absolute_nb_meiosis, cfree_moy, cfree_tot}
 		infoperallele_het_[i]={0,0,0,0,0,0,meanaffall,0,0,0,0,0,0}; // infoperallele_het{nb failed meiosis, 2 DSB on 1 site, no DSB, no symetrical site, q, nb meiosis with at least 1 DSB, mean affinity of the allele, relative_nb_meiosis, nblinksiteall, nblinkposall, absolute_nb_meiosis, cfree_moy, cfree_tot}
 	}
+	
+	//distribution beta for neutral sites
+	Siteforeacheallele_[-3]=firstposneutral;
+	for(int site=0; site<nbsite_; site++){
+		double freqactivsite = choosebeta(alpha_, beta_);
+		for(int ind=0; ind<2*N_; ind++){
+			double p=bernoulli_draw(freqactivsite);
+			if(not p){
+				populations_[parityIndex_][ind][Siteforeacheallele_[-3][site]]=0;
+			}
+		}
+	}
+	
 	q_=0;
-	qsym_=0;///////////////////////////////
+	qsym_=0;
 	qnum_=0;
 	qdenom_=0;
+	
 }
 
-//============================
-//        Destructors
-//============================
+//============================//
+//        Destructors         //
+//============================//
 	
-//============================
-//           Getters
-//============================
+//============================//
+//           Getters          //
+//============================//
 vector<vector<vector<int>>> Model::populations(){
 	return populations_;
 }
@@ -332,51 +333,57 @@ int Model::quantilenb(){
 int Model::nbmeiperind(){
 	return nbmeiperind_;
 }
-//============================
-//           Setters
-//============================
 
-	
-//============================
-//           Methods
-//============================
-// choose method
+//============================//
+//           Setters          //
+//============================//
+
+
+//============================//
+//           Methods          //
+//============================//
+
+//----------------------------//
+// 	choose methods        //
+//----------------------------//
 
 static random_device rdev{};
 static default_random_engine e{rdev()};
 
-//uniforme
+//1) uniforme
 int Model::choose(int n)   {
    uniform_int_distribution<int> d(0,n-1);
    return d(e);
 }
 
-//bernoulli
+//2) bernoulli
 int Model::bernoulli_draw(double p){
 	bernoulli_distribution distribution(p);
 	return distribution(e);
 }
 
-//binomiale
+//3) binomiale
 int Model::binomial_draw(int n, double p)  {
     binomial_distribution<int> b(n,p);
     return b(e);
 }
 
-//gamma
+//4) gamma
 double Model::choosegamma(double meanaff, double varaff){
 	gamma_distribution<double> g(varaff,meanaff);
 	return g(e);
 }
 
-//beta
+//5) beta
 double Model::choosebeta(double alpha, double beta){
 	double X = choosegamma(alpha, 1);
 	double Y = choosegamma(beta, 1);
 	return X/(X+Y);
 }
 
-vector<int> Model::choosemany(int k, vector<int> vect){ //choose k positions among all the free positions (vect)
+
+vector<int> Model::choosemany(int k, vector<int> vect){
+//choose k positions among all the free positions (vect)
 //return the vector of index of the chosen positions
 	vector<int> newsites;
 	int n = vect.size(); //number of free positions
@@ -388,7 +395,6 @@ vector<int> Model::choosemany(int k, vector<int> vect){ //choose k positions amo
 	catch(string const& chaine){
 		cerr << chaine << endl;
 	}
-	//////////////////////
 	for (int i=0; i<k; i++){ //for i in k (number of elements we need)
 		int j=choose(n-i);//pick randomly an index in n minus the i last elements
 		newsites.push_back(vect[j]);//add vect[j] in newsites
@@ -398,9 +404,12 @@ vector<int> Model::choosemany(int k, vector<int> vect){ //choose k positions amo
 	return(newsites);
 }
 
-vector<int> Model::vectfreesites(vector<int> vect, int nb){//return the index of all positions equal to nb
+//----------------------------//
+// 	other methods         //
+//----------------------------//
+vector<int> Model::vectfreesites(vector<int> vect, int nb){
+	//return the index of all positions equal to nb
 	vector<int> freesites;
-	//#pragma omp parallel for num_threads(nbcore_) //====> ne fonctionne pas car push_back()???
 	for(int i=0; i<vect.size(); i++){
 		if(vect[i]==nb){
 			freesites.push_back(i);
@@ -414,7 +423,6 @@ vector<vector<int>> Model::occupiedsites(vector<int> vect, vector<vector<int>>* 
 	vector<int> occupsitesneutral;
 	//int num1=0;
 	//int num2=0;
-	//#pragma omp parallel for num_threads(nbcore_) //====> ne fonctionne pas car push_back()???
 	for(int i=0; i<vect.size(); i++){
 		if(vect[i]!= -2 and vect[i]!= -1 and vect[i]!= -3){
 			//num1+=1;
@@ -436,9 +444,8 @@ vector<vector<int>> Model::occupiedsites(vector<int> vect, vector<vector<int>>* 
 void Model::sitemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype){
 	// for each position with allele, prob v to mutate and if mutation, choose randomly 1 chrom to mutate
 	vector<vector<int>> occupsite = occupiedsites(Alleleforeachpos_, genotype);
-	//for (auto i : occupsite[0]){ //for all the sites recognized by an allele ////////////////////////////////////// auto changed
 	#pragma omp parallel for num_threads(nbcore_)
-	for (int ind=0; ind<occupsite[0].size(); ind++){
+	for (int ind=0; ind<occupsite[0].size(); ind++){ //for all the sites recognized by an allele
 		int i=occupsite[0][ind];
 		if (bernoulli_draw(2*N_*v_)){ //if mutation at this site
 			int mutchrom = choose(2*N_); //only one indiv will preform a mutation at this site
@@ -447,9 +454,8 @@ void Model::sitemutation(vector<vector<vector<int>>>* population, vector<vector<
 			//}
 		}
 	}
-	//for (auto i : occupsite[1]){ //for all the neutral sites ///////////////////////////////////// auto changed
 	#pragma omp parallel for num_threads(nbcore_)
-	for (int ind=0; ind<occupsite[1].size(); ind++){
+	for (int ind=0; ind<occupsite[1].size(); ind++){ //for all the neutral sites
 		int i=occupsite[1][ind];
 		if (bernoulli_draw(2*N_*w_)){ //if mutation at this site
 			int mutchrom = choose(2*N_); //only one indiv will preform a mutation at this site
@@ -460,8 +466,7 @@ void Model::sitemutation(vector<vector<vector<int>>>* population, vector<vector<
 
 void Model::allelemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,double>* Ageallele, vector<int> vectnbind){
 	// for each chromosome, mutation of allele with proba u and if at least one mutation update populations (change prdm9 allele at its position), genotypes(same), map (site pos associated to the new allele) and allele for each pos (change the allele corresponding to each pos : -1 -> new allele)
-	int k = binomial_draw(2*N_, u_); // et pas 2*N*u
-	//cout<<"k"<<k<<endl;
+	int k = binomial_draw(2*N_, u_);
 	vector<int> alltomutate = choosemany(k, vectnbind);// vector de 0 a 2N-1
 	for(int i=0; i<k;i++){
 		nballele_+=1;
@@ -476,10 +481,8 @@ void Model::allelemutation(vector<vector<vector<int>>>* population, vector<vecto
 		(*population)[parityIndex_][alltomutate[i]][indPrdm9_]=newallele;//update pop
 		(*Ageallele)[newallele]=freqall(newallele, genotype, population)*(N_*v_*nbDSB_)/(2*nbsite_);//update age of the new allele
 		if(ismigration_){
-			//infoperallele1_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele,population)};
-			//infoperallele2_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele,population)};
-			infoperallele1_[newallele]={0,0,0,0,0,0,0,0,0,0,0};////////////////////////////////////////////////////////////////////////////
-			infoperallele2_[newallele]={0,0,0,0,0,0,0,0,0,0,0};////////////////////////////////////////////////////////////////////////////
+			infoperallele1_[newallele]={0,0,0,0,0,0,0,0,0,0,0};
+			infoperallele2_[newallele]={0,0,0,0,0,0,0,0,0,0,0};
 			/*
 			infoperallele1_hom_[newallele]={0,0,0,0,0,0,0,0,0,0};
 			infoperallele2_hom_[newallele]={0,0,0,0,0,0,0,0,0,0};
@@ -487,8 +490,7 @@ void Model::allelemutation(vector<vector<vector<int>>>* population, vector<vecto
 			infoperallele2_het_[newallele]={0,0,0,0,0,0,0,0,0,0};
 			*/
 		}else{
-			//infoperallele_[newallele]={0,0,0,0,0,0,get_mean_affinity(newallele,population)};
-			infoperallele_[newallele]={0,0,0,0,0,0,0,0,0,0,0};/////////////////////////////////////////////////////////////////////////////
+			infoperallele_[newallele]={0,0,0,0,0,0,0,0,0,0,0};
 			
 			infoperallele_hom_[newallele]={0,0,0,0,0,0,0,0,0,0,0,0,0};
 			infoperallele_het_[newallele]={0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -550,7 +552,9 @@ void Model::updatemissingallele(){
 	}
 }
 
-//Print functions
+//----------------------------//
+//	Print functions       //
+//----------------------------//
 
 //print populations
 void Model::printpop(int n, vector<vector<vector<int>>>population){
@@ -647,19 +651,30 @@ void Model::printinfoallele(map<int,vector<double>>* infoperallele){
 	cout<<'\n';
 }
 
+//----------------------------//
+// 	Meiosis method        //
+//----------------------------//
 
 // Meiosis
-int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom, int indiv){
+int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom, int indiv/*, int nb_meiosis*/){
 //Perform the meiosis of one individual and return 0 if the meiosis fails somewhere or 1 if the meiosis is successfull
 
-	//Initialisation time meiosis
+	//----------------------------//
+	//Initialisation time meiosis //
+	//----------------------------//
 	double tps_binding, tps_DSB, tps_vCO, tps_symq, tps_CONCO, tps_tot;
 	clock_t t_1, t_2, t_3, t_4, t_5, t_6;
 	t_1=clock();
 	
+	//----------------------------//
+	//Initialisation of zygot vect//
+	//----------------------------//
 	//creation of the vector zygote containing the 1 or 2 allele(s) of the individual
 	double ind_gen=1; //if no target competition
+
 	vector<int> zygote{(*genotype)[parityIndex_][indiv]};
+	
+	
 	if((*genotype)[parityIndex_][indiv]==(*genotype)[parityIndex_][indiv+1]){
 		if(zygosity_){
 			ind_gen=2; //if no target competition
@@ -667,7 +682,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 		(*infoperallele)[zygote[0]][7]+=2; //relative nb meiosis realised per allele (*2 if hom)
 		(*infoperallele)[zygote[0]][10]+=1; //absolute nb meiosis realised per allele
 		
-		(*infoperallele_hom)[zygote[0]][7]+=2; //relative nb de meiose realise par l'allele
+		(*infoperallele_hom)[zygote[0]][7]+=2; //relative nb de meiose realise per allele
 		(*infoperallele_hom)[zygote[0]][10]+=1; //absolute nb meiosis realised per allele
 		
 	}
@@ -685,7 +700,10 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 		
 	}
 	
-	//If target competition
+	
+	//----------------------------//
+	//    If target competition   //
+	//----------------------------//
 	
 	if(targetcomp_){//option param if we want to take into account target competition
 	//added in infoperallele : cfree_het, cfree_hom, cfree_ctot_het, cfree_ctot_hom
@@ -856,7 +874,11 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 		}
 	}
 	
-	//PRDM9 binding
+	
+	
+	//----------------------------//
+	//	PRDM9 binding         //
+	//----------------------------//
 	vector<vector<int>>summarysites;
 	vector<int>Z;
 	vector<int> vectsites;
@@ -942,6 +964,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 				alleleDSB.push_back(Z[i]);
 				try{
 					if (nbdsbpersite>1 and withDSB_){
+						//if (nb_meiosis==nbmeiperind_-1){
 						(*nbfailedmeiosis)[nb_gen][0]+=1; 
 						(*infoperallele)[Z[i]][0]+=1;
 						(*infoperallele)[Z[i]][1]+=1;
@@ -953,7 +976,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 							(*infoperallele_het)[Z[i]][0]+=1;
 							(*infoperallele_het)[Z[i]][1]+=1;
 						}
-						
+						//}
 						throw int(0);
 					}
 				} // assert
@@ -1011,6 +1034,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 	try{
 		//If no DSB
 		if(vectsitedsb.size()==0){
+			//if (nb_meiosis==nbmeiperind_-1){
 			(*nbfailedmeiosis)[nb_gen][1]+=1;
 			if(zygote.size()==1){
 				(*infoperallele)[zygote[0]][0]+=2;//////////////////1 si zygosity_?
@@ -1031,9 +1055,11 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 				(*infoperallele_het)[zygote[1]][2]+=1;
 				
 			}
+			//}
 			throw int(1);
 		//If no potential CO
 		}else if(not vect_CO.size()){
+			//if (nb_meiosis==nbmeiperind_-1){
 			(*nbfailedmeiosis)[nb_gen][2]+=1;
 			if(zygote.size()==1){
 				(*infoperallele)[zygote[0]][0]+=2;//////////////////1 si zygosity_?
@@ -1060,6 +1086,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 				(*infoperallele_het)[zygote[1]][5]+=1;
 				
 			}
+			//}
 			throw int(2);
 		}
 	}
@@ -1216,7 +1243,7 @@ void Model::fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vect
 		int nb_meiosis=0;
 		int meiosisState=-1;
 		while(meiosisState==-1 and nb_meiosis<nbmeiperind_){ //allows an ind to try performing many meiosis (nbmeiperind_) before stopping and choosing another one
-			meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv);
+			meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv/*, nb_meiosis*/);
 			nb_meiosis+=1;
 		}
 		tps4=clock();
@@ -1232,7 +1259,7 @@ void Model::fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vect
 			int indiv = 2*choose(N_);
 			nb_meiosis=0;
 			while(meiosisState==-1 and nb_meiosis<nbmeiperind_){ //allows an ind to try performing many meiosis (nbmeiperind_) before stopping and choosing another one
-				meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv);
+				meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv/*, nb_meiosis*/);
 				nb_meiosis+=1;
 			}
 			(*nbfailedmeiosis)[nb_gen][3]+=1;
