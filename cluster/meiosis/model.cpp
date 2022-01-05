@@ -674,9 +674,15 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 
 	vector<int> zygote{(*genotype)[parityIndex_][indiv]};
 	
+	/*for (auto zyg : zygote){
+		cout<<zyg<<" ";
+	}
+	cout<<"\n"<<endl;*/
+
 	
-	if((*genotype)[parityIndex_][indiv]==(*genotype)[parityIndex_][indiv+1]){
-		if(zygosity_){
+	if((*genotype)[parityIndex_][indiv]==(*genotype)[parityIndex_][indiv+1]){//for homozygous
+		//cout<<"homozygous"<<endl;
+		if(zygosity_){ // if genetic dosage
 			ind_gen=2; //if no target competition
 		}
 		(*infoperallele)[zygote[0]][7]+=2; //relative nb meiosis realised per allele (*2 if hom)
@@ -686,7 +692,8 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 		(*infoperallele_hom)[zygote[0]][10]+=1; //absolute nb meiosis realised per allele
 		
 	}
-	if((*genotype)[parityIndex_][indiv]!=(*genotype)[parityIndex_][indiv+1]){
+	if((*genotype)[parityIndex_][indiv]!=(*genotype)[parityIndex_][indiv+1]){//for heterozygous
+		//cout<<"heterozygous"<<endl;
 		zygote.push_back((*genotype)[parityIndex_][indiv+1]);
 		(*infoperallele)[zygote[0]][7]+=1; //relative nb meiosis realised per allele 1
 		(*infoperallele)[zygote[1]][7]+=1; //relative nb meiosis realised per allele 2
@@ -704,42 +711,56 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 	//----------------------------//
 	//    If target competition   //
 	//----------------------------//
-	
+	/*if (zygote.size()==1){
+		cout<<"infoperallele_hom_before"<<endl;
+		printinfoallele(infoperallele_hom);
+	}else{
+		cout<<"infoperallele_het_before"<<endl;
+		printinfoallele(infoperallele_het);
+	}*/
 	if(targetcomp_){//option param if we want to take into account target competition
 	//added in infoperallele : cfree_het, cfree_hom, cfree_ctot_het, cfree_ctot_hom
 		
-		if(zygote.size()==1){//for homozygots
-			
-			double cfree_ctot_hom_final;
-			double is_diff_hom=1;
-			double ctot_hom=ctot_;
-			if (zygosity_){
-				ctot_hom=2*ctot_;
+		
+		/*double tps_comp_entier;
+		clock_t tp1, tp2, tp3, tp4, tp5, tp6, tp7, tp8, tp9, tp10, tp11, tp12, tp13;
+		tp1=clock();
+		
+		
+		vector<map<int,vector<double>>*> vectinfo_hom_het = vector<map<int,vector<double>>*> {infoperallele_hom, infoperallele_het};
+		double index_vectinfo_hom_het=1;
+		for(auto z : zygote){
+			tp3=clock();
+			double cfree_ctot_final;
+			double is_diff=1;
+			double ctot=ctot_;
+			double cfree;
+			if (zygote.size()==1){
+				if(zygosity_){
+					ctot=2*ctot_;
+				}
+				index_vectinfo_hom_het=0;
 			}
-			double cfree_hom;
-			if((*infoperallele_hom)[zygote[0]][11]==0){
-				cfree_hom=1/float(1000)*ctot_hom;
+			if((*vectinfo_hom_het[index_vectinfo_hom_het])[z][11]==0){
+				cfree=1/float(1000)*ctot;
 			}else{
-				cfree_hom=(*infoperallele_hom)[zygote[0]][11];
+				cfree=(*vectinfo_hom_het[index_vectinfo_hom_het])[z][11];
 			}
-			double sum_p_occup_hom=0;
-			int loop=0;
-			double diff_step = 1;
+			tp4=clock();
 			//Two cases possible :
 			//1) If we want to take the affinity categories map (quantilenb_!=0),if the site is active, the category in which the affinity of this site enters gains one site
-			//2) If we want to be completely exact, all the affinity of the sites are considered as they are and not in an affinity category
 			for(auto quantile_index : nbsitesperquantile_){
 				nbsitesperquantile_[quantile_index.first][1]=0;
 			}
 			if(quantilenb_!=0){
-				for(auto i : Siteforeacheallele_[zygote[0]]){
+				for(auto i : Siteforeacheallele_[z]){
 					for(int j=0; j<4; j++){
 						int chrom=indiv+j/2;
 						if((*population)[parityIndex_][chrom][i]==1){
 							bool is_quantile=0;
 							for(auto quantile_index : nbsitesperquantile_){
 								if(Affinity_[i]<=quantile_index.first and is_quantile==0){
-									nbsitesperquantile_[quantile_index.first][1]+=1; //if this site is active, the category in which the affinity of this site enters gains one site
+									nbsitesperquantile_[quantile_index.first][1]+=1;//if this site is active, the category in which the affinity of this site enters gains one site
 									is_quantile=1;
 								}
 							}
@@ -747,134 +768,172 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 					}
 				}
 			}
-			while(is_diff_hom==1){//while the difference between the current and the next cfree/ctot is above the thershold... 
+			tp5=clock();
+			//2) If we want to be completely exact, all the affinity of the sites are considered as they are and not in an affinity category
+			double diff_step = 1;
+			int loop=0;
+			double sum_p_occup=0;
+			while(is_diff==1){//while the difference between the current and the next cfree/ctot is above the thershold... 
 				diff_step=diff_step/double(10);//the step by which cfree decreases is divided by 10
-				is_diff_hom=0;
+				is_diff=0;//reinitialize is_diff
 				loop=0;
-				while(loop==0 or ctot_hom-sum_p_occup_hom < 0 or sum_p_occup_hom+cfree_hom>ctot_hom){//while the sum of occupied sites is above the total concentration OR the sum of occupied and free concentration is above the total concentration...
-					if(loop!=0 and (ctot_hom-sum_p_occup_hom < 0 or sum_p_occup_hom+cfree_hom>ctot_hom) and cfree_hom-diff_step>0){//if conditions above AND not the first loop of the previous while loop AND the difference between the free concentration and the diff_step is positive....
-						cfree_hom=cfree_hom-diff_step;//cfree decreased from 1 diff_step
-					}else if(cfree_hom-diff_step<=0){//else if the difference between the free concentration and the diff_step is not positive...
-						while(cfree_hom-diff_step<0){//diff_step is divided by 10 as many times as it is needed to make this difference above 0
+				tp8=clock();
+				while(loop==0 or sum_p_occup+cfree>ctot){//while the sum of occupied sites is above the total concentration OR the sum of occupied and free concentration is above the total concentration...
+				//ctot-sum_p_occup < 0 deleted//////////////
+					tp10=clock();
+					if(loop!=0 and  sum_p_occup+cfree>ctot and cfree-diff_step>0){//if conditions above AND not the first loop of the previous while loop AND the difference between the free concentration and the diff_step is positive....
+						cfree=cfree-diff_step;//cfree decreased from 1 diff_step
+					}else if(cfree-diff_step<=0){//else if the difference between the free concentration and the diff_step is not positive...
+						while(cfree-diff_step<=0){//diff_step is divided by 10 as many times as it is needed to make this difference above 0
 							diff_step=diff_step/double(10);
 						}
-						cfree_hom=cfree_hom-diff_step;
+						cfree=cfree-diff_step;
 					}
-					sum_p_occup_hom=0;//the mean sum of occupied site
+					tp11=clock();
+					sum_p_occup=0;//the mean sum of occupied site
 					//In the case of affinity categories
 					if(quantilenb_!=0){
 						for(auto quantile_index : nbsitesperquantile_){
-							sum_p_occup_hom+=double(nbsitesperquantile_[quantile_index.first][1]*(cfree_hom*nbsitesperquantile_[quantile_index.first][0])/(1+cfree_hom*nbsitesperquantile_[quantile_index.first][0]));//The probability of binding in each category multiplied by the number of sites in this category is added to the mean sum of occupied site
+							sum_p_occup+=double(nbsitesperquantile_[quantile_index.first][1]*(cfree*nbsitesperquantile_[quantile_index.first][0])/(1+cfree*nbsitesperquantile_[quantile_index.first][0]));//The probability of binding in each category multiplied by the number of sites in this category is added to the mean sum of occupied site
 						}
+						tp12=clock();
 					}
+
 					//In the other case
 					else{
-						for(auto i : Siteforeacheallele_[zygote[0]]){//for each position
-							double p_occup_hom=cfree_hom*Affinity_[i]/(1+cfree_hom*Affinity_[i]);//the probability of binding is calculated
+						for(auto i : Siteforeacheallele_[z]){//for each position
+							double p_occup=cfree*Affinity_[i]/(1+cfree*Affinity_[i]);//the probability of binding is calculated
 							for(int j=0; j<4; j++){//for each site of this position
 								int chrom=indiv+j/2;
 								if((*population)[parityIndex_][chrom][i]==1){//if the site is active, its probability of binding is added to the mean sum of occupied site
-									sum_p_occup_hom+=p_occup_hom;
+									sum_p_occup+=p_occup;
 								}
 							}
 						}
 					}
 					loop+=1;
+					tp13=clock();
 				}
-				cfree_ctot_hom_final=float(cfree_hom)/float(ctot_hom);
-				cfree_hom=ctot_hom-sum_p_occup_hom;
-				if(abs(cfree_ctot_hom_final-float(cfree_hom)/float(ctot_hom))>0.001){//the difference between the current and the next cfree/ctot is above the thershold
-					is_diff_hom=1;
+				tp9=clock();
+				cfree_ctot_final=float(cfree)/float(ctot);
+				cfree=ctot-sum_p_occup;
+				if(abs(cfree_ctot_final-float(cfree)/float(ctot))>0.001){//the difference between the current and the next cfree/ctot is above the thershold
+					is_diff=1;
 				}
 			}
-			(*infoperallele_hom)[zygote[0]][11]=cfree_hom;
-			(*infoperallele_hom)[zygote[0]][12]+=cfree_hom;
-			//cout<<"cfree_hom : "<<(*infoperallele_hom)[zygote[0]][11]<<endl;
-			//cout<<"sum_p_occup_hom : "<<sum_p_occup_hom<<endl;
-			//cout<<"cfree_ctot_hom_final : "<<cfree_ctot_hom_final<<endl;
+			tp6=clock();
+			//set the right concentration associated to the allele in vectinfo
+			(*vectinfo_hom_het[index_vectinfo_hom_het])[z][11]=cfree;
+			(*vectinfo_hom_het[index_vectinfo_hom_het])[z][12]+=cfree;
+			tp7=clock();
 		}
-		else if(zygote.size()==2){//for heterozygots
-			for(auto z : zygote){
-				double cfree_ctot_het_final;
-				double is_diff_het=1;
-				double ctot_het=ctot_;
-				double cfree_het;
-				if((*infoperallele_het)[z][11]==0){
-					cfree_het=1/float(1000)*ctot_het;
-				}else{
-					cfree_het=(*infoperallele_het)[z][11];
+		tp2=clock();*/
+		vector<map<int,vector<double>>*> vectinfo_hom_het = vector<map<int,vector<double>>*> {infoperallele_hom, infoperallele_het};
+		for(auto z : zygote){
+			double is_diff=1;
+			double ctot=ctot_;
+			double cfree;
+			double threshold=0.0001;
+			double index_vectinfo_hom_het=1;
+			if (zygote.size()==1){
+				//cout<<"homozygote"<<endl;////////////////////////
+				if(zygosity_){
+					ctot=2*ctot_;
 				}
-				double sum_p_occup_het=0;
-				int loop=0;
-				double diff_step = 1;
-				
-				//Two cases possible :
-				//1) If we want to take the affinity categories map (quantilenb_!=0) :
-				for(auto quantile_index : nbsitesperquantile_){
-					nbsitesperquantile_[quantile_index.first][1]=0;
-				}
-				if(quantilenb_!=0){
-					for(auto i : Siteforeacheallele_[z]){
-						for(int j=0; j<4; j++){
-							int chrom=indiv+j/2;
-							if((*population)[parityIndex_][chrom][i]==1){
-								bool is_quantile=0;
-								for(auto quantile_index : nbsitesperquantile_){
-									if(Affinity_[i]<=quantile_index.first and is_quantile==0){
-										nbsitesperquantile_[quantile_index.first][1]+=1;
-										is_quantile=1;
-									}
-								}
-							}
-						}
-					}
-				}
-				//2) If we want to be completely exact, all the affinity of the sites are considered as they are and not in an affinity category
-				while(is_diff_het==1){
-					diff_step=diff_step/double(10);
-					is_diff_het=0;
-					loop=0;
-					while(loop==0 or ctot_het-sum_p_occup_het < 0 or sum_p_occup_het+cfree_het>ctot_het){
-						if(loop!=0 and (ctot_het-sum_p_occup_het < 0 or sum_p_occup_het+cfree_het>ctot_het) and cfree_het-diff_step>0){
-							cfree_het=cfree_het-diff_step;
-						}else{
-							while(cfree_het-diff_step<0){
-								diff_step=diff_step/double(10);
-							}
-							cfree_het=cfree_het-diff_step;
-						}
-						sum_p_occup_het=0;
-						if(quantilenb_!=0){
-							for(auto quantile_index : nbsitesperquantile_){
-								sum_p_occup_het+=(nbsitesperquantile_[quantile_index.first][1]*(cfree_het*nbsitesperquantile_[quantile_index.first][0])/(1+cfree_het*nbsitesperquantile_[quantile_index.first][0]));
-							}
-						}else{
-							for(auto i : Siteforeacheallele_[z]){
-								double p_occup_het=cfree_het*Affinity_[i]/(1+cfree_het*Affinity_[i]);
-								for(int j=0; j<4; j++){
-									int chrom=indiv+j/2;
-									if((*population)[parityIndex_][chrom][i]==1){
-										sum_p_occup_het+=p_occup_het;
-									}
-								}
-							}
-						}
-						loop+=1;
-					}
-					cfree_ctot_het_final=float(cfree_het)/float(ctot_het);
-					cfree_het=ctot_het-sum_p_occup_het;
-					if(abs(cfree_ctot_het_final-float(cfree_het)/float(ctot_het))>0.001){
-						is_diff_het=1;
-					}
-				}
-				(*infoperallele_het)[z][11]=cfree_het;
-				(*infoperallele_het)[z][12]+=cfree_het;
-				//cout<<"cfree_het : "<<cfree_het<<endl;
+				index_vectinfo_hom_het=0;
 			}
+			//else{//////////////////////
+				//cout<<"heterozygote"<<endl;//////////////////
+			//}/////////////////////
+			if((*vectinfo_hom_het[index_vectinfo_hom_het])[z][11]==0){
+				cfree=1/float(1000)*ctot;
+			}else{
+				cfree=(*vectinfo_hom_het[index_vectinfo_hom_het])[z][11];
+			}
+			//Two cases possible :
+			//1) If we want to take the affinity categories map (quantilenb_!=0),if the site is active, the category in which the affinity of this site enters gains one site
+			for(auto quantile_index : nbsitesperquantile_){
+				nbsitesperquantile_[quantile_index.first][1]=0;
+			}
+			if(quantilenb_!=0){
+				for(auto i : Siteforeacheallele_[z]){
+					for(int j=0; j<4; j++){
+						int chrom=indiv+j/2;
+						if((*population)[parityIndex_][chrom][i]==1){
+							bool is_quantile=0;
+							for(auto quantile_index : nbsitesperquantile_){
+								if(Affinity_[i]<=quantile_index.first and is_quantile==0){
+									nbsitesperquantile_[quantile_index.first][1]+=1;//if this site is active, the category in which the affinity of this site enters gains one site
+									is_quantile=1;
+								}
+							}
+						}
+					}
+				}
+			}
+			double cfree_min=0;
+			double cfree_max=ctot;
+			double sum_p_occup=0;
+			while(is_diff==1){
+				is_diff=0;
+				sum_p_occup=0;//the mean sum of occupied site
+				//---------------
+				//sum_p_occup
+				//---------------
+				//In the case of affinity categories
+				if(quantilenb_!=0){
+					for(auto quantile_index : nbsitesperquantile_){
+						sum_p_occup+=double(nbsitesperquantile_[quantile_index.first][1]*(cfree*nbsitesperquantile_[quantile_index.first][0])/(1+cfree*nbsitesperquantile_[quantile_index.first][0]));//The probability of binding in each category multiplied by the number of sites in this category is added to the mean sum of occupied site
+					}
+				}
+
+				//In the other case
+				else{
+					for(auto i : Siteforeacheallele_[z]){//for each position
+						double p_occup=cfree*Affinity_[i]/(1+cfree*Affinity_[i]);//the probability of binding is calculated
+						for(int j=0; j<4; j++){//for each site of this position
+							int chrom=indiv+j/2;
+							if((*population)[parityIndex_][chrom][i]==1){//if the site is active, its probability of binding is added to the mean sum of occupied site
+								sum_p_occup+=p_occup;
+							}
+						}
+					}
+				}
+				if(cfree+sum_p_occup>ctot){
+					//if cfree is to high
+					is_diff=1;
+					cfree_max=cfree;
+					cfree=double(cfree_max+cfree_min)/2;
+				}else{
+					//if cfree is to low or the right one
+					double new_cfree=ctot-sum_p_occup;
+					//cout<<"cfree/ctot : "<<double(cfree)/double(ctot)<<endl;
+					//cout<<"cfree/ctot_diff : "<<abs(double(cfree)/double(ctot)-double(new_cfree)/double(ctot))<<endl;
+					if(abs(double(cfree)/double(ctot)-double(new_cfree)/double(ctot))<=threshold){
+						//the difference between the current and the next cfree/ctot is below or equal to the thershold
+						is_diff=0;
+					}else{
+						//the difference between the current and the next cfree/ctot is above the thershold
+						is_diff=1;
+						cfree_min=cfree;
+						cfree=double(cfree_max+cfree_min)/2;
+					}
+				}
+			}
+			(*vectinfo_hom_het[index_vectinfo_hom_het])[z][11]=cfree;
+			(*vectinfo_hom_het[index_vectinfo_hom_het])[z][12]+=cfree;
 		}
 	}
+	/*if (zygote.size()==1){
+		cout<<"infoperallele_hom_after"<<endl;
+		printinfoallele(infoperallele_hom);
+	}else{
+		cout<<"infoperallele_het_after"<<endl;
+		printinfoallele(infoperallele_het);
+	}*/
 	
 	
+
 	
 	//----------------------------//
 	//	PRDM9 binding         //
@@ -1099,7 +1158,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 		return-1;
 	}
 	
-	//Statistics calculation
+	//Statistics computation
 	
 	//*qnum=*qnum+double(vect_CO.size())
 	//*qdenom=*qdenom+double((vectsitedsb.size()))
@@ -1306,7 +1365,6 @@ void Model::manygenerations(){
     allelefile.flush();
 	//Params file : contains all the parameters values for this simulation
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//double sig=sigma_0();
 	double tps_cfree;
 	//clock_t tps_1, tps_2;
 	//tps_1=clock();
@@ -1625,7 +1683,7 @@ void Model::manygenerations(){
 					q_fertility = vector<double>{0,0};
 				}
 				//if(isanalytic_==true){}else{}
-				analytic_indiv=q_fert_individual_analytique(&genotypes_,&populations_);
+				analytic_indiv=q_fert_individual_analytique(&genotypes_, &populations_, &infoperallele_hom_, &infoperallele_het_);
 				//mean_fertnewall = Mean_fert_new_allele(&genotypes_,&populations_);
 				mean_fertnewall = log(Mean_fert_new_allele(&genotypes_,&populations_))-log(analytic_indiv[0][-1][1]);////////////
 				//q_fertility = get_q_fertility_indep(vectpop, vectgen, nbloop_, 1);//utile pour migration
@@ -1811,7 +1869,7 @@ void Model::manygenerations(){
 vector<int> Model::get_allele_number(vector<vector<vector<int>>*> vectgen, bool nbtot){
 	if(vectgen.size()==1 or nbtot){
 		return vector<int>{int(Siteforeacheallele_.size()-2)};
-	}else if(vectgen.size()==2){
+	}else{
 		vector<int> allnb=vector<int>(3,0);
 		for(int i=0; i<2; i++){
 			for(auto &it : Siteforeacheallele_){
@@ -1863,6 +1921,9 @@ vector<double> Model::get_info_allele(int allname, map<int,vector<double>>* info
 			}else{
 				return vector<double>{(*infoperallele)[allname][4],0};
 			}
+		}
+		else{
+			return vector<double>{0};
 		}
 	}
 }
@@ -2162,7 +2223,7 @@ double Model::get_q_hybrid(vector<vector<vector<vector<int>>>*> vectpop, vector<
 }
 
 //give 
-double Model::q_two_hap(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom){ //return q///////////////////////////////////////////////// CHANGER IND_GENE
+double Model::q_two_hap(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom){ //return q///////////////////////////////////////////////// CHANGER IND_GENE (prise en compte concentration)
 	double q;
 	int ind_gen=2;
 	vector<int> zygote{genotype_indiv[0]};
@@ -2425,12 +2486,9 @@ vector<int> Model::get_one_gamete(vector<int> genotype_indiv, vector<vector<int>
 
 
 
-//Fonction calcul du q et fitness de chaque individu de la population (non analytique)
 
 
-
-
-vector<map<int,vector<double>>> Model:: q_fert_individual_analytique(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop){ // vector<map<int,vector<double>>>
+vector<map<int,vector<double>>> Model:: q_fert_individual_analytique(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop , map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het){ 
 //Fonction calcul du q et fitness de chaque individu de la population (analytique)
 /*
 On donne en entree l'individu, son genotype PRDM9 et les sites associes (leur distribution daffinite) aux alleles de l'indiv
@@ -2475,56 +2533,17 @@ Ensuite, on calcul la fitness de l'individus :
 		double qal_hemi1=0;/////
 		double qal_hemi2=0;/////
 		for(int i=0; i<genotype_indiv.size(); i++){
+			double z=genotype_indiv[i];
 			double ind_gen=1;
 			if(zygosity_ and homoz){
 				ind_gen=2;
 			}
 			////////////////////////////
 			if(targetcomp_){
-				ind_gen=infoperallele_het_[genotype_indiv[i]][11];
-				if(zygosity_ and homoz){
-					if(infoperallele_hom_[genotype_indiv[i]][11]!=0){
-						ind_gen=infoperallele_hom_[genotype_indiv[i]][11];
-					}else{
-						double cfree_ctot_hom_final;
-						double is_diff_hom=1;
-						double ctot_hom=ctot_;
-						if (zygosity_){
-							ctot_hom=2*ctot_;
-						}
-						double cfree_hom;
-						cfree_hom=1/float(1000)*ctot_hom;
-						double sum_p_occup_hom=0;
-						int loop=0;
-						double diff_step = 1;
-						while(is_diff_hom==1){
-							diff_step=diff_step/double(10);
-							is_diff_hom=0;
-							loop=0;
-							while(loop==0 or ctot_hom-sum_p_occup_hom < 0 or sum_p_occup_hom+cfree_hom>ctot_hom){
-								if(loop!=0 and (ctot_hom-sum_p_occup_hom < 0 or sum_p_occup_hom+cfree_hom>ctot_hom)){
-									cfree_hom=cfree_hom-diff_step;
-								}
-								sum_p_occup_hom=0;
-								for(auto i : Siteforeacheallele_[genotype_indiv[i]]){
-									double p_occup_hom=cfree_hom*Affinity_[i]/(1+cfree_hom*Affinity_[i]);
-									for(int j=0; j<4; j++){
-										int chrom=indiv+j/2;
-										if((*pop)[parityIndex_][chrom][i]==1){
-											sum_p_occup_hom+=p_occup_hom;
-										}
-									}
-									loop+=1;
-								}
-								cfree_ctot_hom_final=float(cfree_hom)/float(ctot_hom);
-								cfree_hom=ctot_hom-sum_p_occup_hom;
-								if(abs(cfree_ctot_hom_final-float(cfree_hom)/float(ctot_hom))>0.001){
-									is_diff_hom=1;
-								}
-							}
-						}
-						ind_gen=cfree_hom;
-					}
+				if (genotype_indiv.size()==1){
+					ind_gen=(*infoperallele_hom)[z][11];
+				}else{
+					ind_gen=(*infoperallele_het)[z][11];
 				}
 			}
 			////////////////////////////
@@ -2781,6 +2800,8 @@ double Model::Mean_fert_new_allele(vector<vector<int>>* genotype, vector<vector<
 	map<int,double> fertperall;
 	map<int,double> qperall;
 	int ind_gen=1;
+	//////////////////////////////////////////////////if(targetcomp_)
+	
 	double qal;
 	double mean_fert=0;
 	//give the coefficient for the new allele (its a new allele so none of its site has been eroded in any individual, so its the same for everyone)
@@ -2863,6 +2884,7 @@ double Model::sigma_0(){
 	vector<int> freepos = vectfreesites(Alleleforeachpos_, -1);
 	vector<int> newpos = choosemany(2*nbsite_, freepos); 
 	int ind_gen=1;
+	//////////////////////////////////////////if(targetcomp_)
 	//w_het(0,0)
 	vector<double> infonewallele_1;
 	vector<double> infonewallele_2;
@@ -2946,60 +2968,111 @@ vector<double> Model::cfree(){
 	vector<int> freepos = vectfreesites(Alleleforeachpos_, -1);
 	vector<int> newpos = choosemany(2*nbsite_, freepos); 
 	vector<double> res = vector<double>(7,0);
+	double cfree_het=1;
+	double cfree_hom=2;
 	double cfree_ctot_het_final;
 	double cfree_ctot_hom_final;
-	double is_diff_het=1;
-	double is_diff_hom=1;
-	double ctot_het=ctot_;
-	double ctot_hom=ctot_het;
-	if (zygosity_){
-		ctot_hom=2*ctot_het;
-	}
-	double cfree_het=1/float(1000)*ctot_het;
-	double cfree_hom=1/float(1000)*ctot_hom;
-	double sum_p_occup_hom=0;
-	double sum_p_occup_het=0;
-	int loop=0;
-	double diff_step = 1;
 	bool even=0;
-	while(is_diff_het==1 or is_diff_hom==1){
-		diff_step=diff_step/double(10);
-		is_diff_het=0;
-		is_diff_hom=0;
-		loop=0;
-		while( loop==0 or ctot_het-sum_p_occup_het < 0 or sum_p_occup_het+cfree_het>ctot_het or ctot_hom-sum_p_occup_hom < 0 or sum_p_occup_hom+cfree_hom>ctot_hom){
-			if(loop!=0 and (ctot_het-sum_p_occup_het < 0 or sum_p_occup_het+cfree_het>ctot_het)){
-				cfree_het=cfree_het-diff_step;
+	//////////////////////////////////////////////////////if(targetcomp_)
+	if(targetcomp_){
+		for(int allele=0; allele<2; allele++){
+			double is_diff=1;
+			double ctot_het=ctot_;
+			double ctot_hom=ctot_*2;
+			double threshold=0.001;
+			cfree_hom=1/float(1000)*ctot_hom;
+			cfree_het=1/float(1000)*ctot_het;
+			for(auto quantile_index : nbsitesperquantile_){
+				nbsitesperquantile_[quantile_index.first][1]=0;
 			}
-			if(loop!=0 and (ctot_hom-sum_p_occup_hom < 0 or sum_p_occup_hom+cfree_hom>ctot_hom)){
-				cfree_hom=cfree_hom-diff_step;
-			}
-			sum_p_occup_hom=0;
-			sum_p_occup_het=0;
-			for(auto const &it : newpos){
-				if(even==0){
-					sum_p_occup_hom+=4*(cfree_hom*Affinity_[it]/(1+cfree_hom*Affinity_[it]));
-					sum_p_occup_het+=4*(cfree_het*Affinity_[it]/(1+cfree_het*Affinity_[it]));
+			if(quantilenb_!=0){
+				for(auto const &it : newpos){
+					bool is_quantile=0;
+					for(auto quantile_index : nbsitesperquantile_){
+						if(Affinity_[it]<=quantile_index.first and is_quantile==0){
+							nbsitesperquantile_[quantile_index.first][1]+=4;//if this site is active, the category in which the affinity of this site enters gains one site
+							is_quantile=1;
+						}
+					}
 				}
-				even=(even+1)%2;
 			}
-			loop+=1;
-		}	
-		cfree_ctot_het_final=float(cfree_het)/float(ctot_het);
-		cfree_ctot_hom_final=float(cfree_hom)/float(ctot_hom);
-		cfree_hom=ctot_hom-sum_p_occup_hom;
-		cfree_het=ctot_het-sum_p_occup_het;
-		if(abs(cfree_ctot_het_final-float(cfree_het)/float(ctot_het))>0.001){
-			is_diff_het=1;
-		}
-		if(abs(cfree_ctot_hom_final-float(cfree_hom)/float(ctot_hom))>0.001){
-			is_diff_hom=1;
+			double cfree_min_het=0;
+			double cfree_max_het=ctot_het;
+			double cfree_min_hom=0;
+			double cfree_max_hom=ctot_hom;
+			double sum_p_occup_het=0;
+			double sum_p_occup_hom=0;
+			while(is_diff==1){
+				is_diff=0;
+				sum_p_occup_het=0;
+				sum_p_occup_hom=0;
+				//In the case of affinity categories
+				if(quantilenb_!=0){
+					for(auto quantile_index : nbsitesperquantile_){
+						sum_p_occup_het+=double(nbsitesperquantile_[quantile_index.first][1]*(cfree_het*nbsitesperquantile_[quantile_index.first][0])/(1+cfree_het*nbsitesperquantile_[quantile_index.first][0]));//The probability of binding in each category multiplied by the number of sites in this category is added to the mean sum of occupied site
+						sum_p_occup_hom+=double(nbsitesperquantile_[quantile_index.first][1]*(cfree_hom*nbsitesperquantile_[quantile_index.first][0])/(1+cfree_hom*nbsitesperquantile_[quantile_index.first][0]));//The probability of binding in each category multiplied by the number of sites in this category is added to the mean sum of occupied site
+					}
+				}
+				else{
+					for(auto const &it : newpos){//for each position
+						double p_occup_het=cfree_het*Affinity_[it]/(1+cfree_het*Affinity_[it]);//the probability of binding is calculated
+						double p_occup_hom=cfree_hom*Affinity_[it]/(1+cfree_hom*Affinity_[it]);//the probability of binding is calculated
+						if(even==0){
+							sum_p_occup_hom+=4*p_occup_hom;
+							sum_p_occup_het+=4*p_occup_het;
+						}
+						even=(even+1)%2;
+					}
+				}
+				if(cfree_hom+sum_p_occup_hom>ctot_hom){
+					//if cfree is to high
+					is_diff=1;
+					cfree_max_hom=cfree_hom;
+					cfree_hom=double(cfree_max_hom+cfree_min_hom)/2;
+				}else{
+					//if cfree is to low or the right one
+					double new_cfree_hom=ctot_hom-sum_p_occup_hom;
+					cfree_ctot_hom_final=double(new_cfree_hom)/double(ctot_hom);
+					if(abs(double(cfree_hom)/double(ctot_hom)-double(new_cfree_hom)/double(ctot_hom))<=threshold){
+						//the difference between the current and the next cfree/ctot is below or equal to the thershold
+						is_diff=0;
+					}else{
+						//the difference between the current and the next cfree/ctot is above the thershold
+						is_diff=1;
+						cfree_min_hom=cfree_hom;
+						cfree_hom=double(cfree_max_hom+cfree_min_hom)/2;
+					}
+				}
+				if(cfree_het+sum_p_occup_het>ctot_het){
+					//if cfree is to high
+					is_diff=1;
+					cfree_max_het=cfree_het;
+					cfree_het=double(cfree_max_het+cfree_min_het)/2;
+				}else{
+					//if cfree is to low or the right one
+					double new_cfree_het=ctot_het-sum_p_occup_het;
+					cfree_ctot_het_final=double(new_cfree_het)/double(ctot_het);
+					if(abs(double(cfree_het)/double(ctot_het)-double(new_cfree_het)/double(ctot_het))<=threshold){
+						//the difference between the current and the next cfree/ctot is below or equal to the thershold
+						is_diff=0;
+					}else{
+						//the difference between the current and the next cfree/ctot is above the thershold
+						is_diff=1;
+						cfree_min_het=cfree_het;
+						cfree_het=double(cfree_max_het+cfree_min_het)/2;
+					}
+				}
+			}
 		}
 	}
+	/////////////////////////////////////////////////////////////
 	res[0]=cfree_ctot_het_final;
 	res[1]=cfree_ctot_hom_final;
 	
-	//qhet and whet
+	cout<<"cfree_het : "<<cfree_het<<endl;
+	cout<<"cfree_hom : "<<cfree_hom<<endl;
+	
+	//q and w
 	
 	//qhet0 and whet0
 	vector<double> infonewallele_1;
@@ -3043,7 +3116,9 @@ vector<double> Model::cfree(){
 	double qhet=(4*infonewallele_1[0]-infonewallele_1[1]-infonewallele_1[2]+4*infonewallele_2[0]-infonewallele_2[1]-infonewallele_2[2])/(infonewallele_1[3]+infonewallele_1[4]+infonewallele_2[3]+infonewallele_2[4]);
 	double whet=1-exp(-nbDSB_*qhet);
 	res[2]=qhet;
+	cout<<"qhet : "<<qhet<<endl;
 	res[4]=whet;
+	cout<<"whet : "<<whet<<endl;
 	
 	
 	//qhom0 and whom0
@@ -3076,10 +3151,13 @@ vector<double> Model::cfree(){
 	double qhom=(4*infonewallele[0]-infonewallele[1]-infonewallele[2])/(infonewallele[3]+infonewallele[4]);
 	double whom=1-exp(-nbDSB_*qhom);
 	res[3]=qhom;
+	cout<<"qhom : "<<qhom<<endl;
 	res[5]=whom;
+	cout<<"whom : "<<whom<<endl;
 	
 	//sigma0
 	double sigma=(whom-whet)/whet;
+	cout<<"sigma : "<<sigma<<endl;
 	res[6]=sigma;
 
 	return res;
