@@ -137,6 +137,7 @@ class Model {
 	double get_FST_neutral(vector<vector<vector<vector<int>>>*> vectpop);
 	double get_FST_PRDM9(vector<vector<vector<int>>*> vectgen);
 	double get_mean_age(vector<vector<int>>* genotype, map<int,double>* Ageallele);
+	vector<double> get_mean_c_occup(vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het);
 	double get_mean_affinity(int allele, vector<vector<vector<int>>>* pop);
 	double puissance_double(int puiss, double x);
 	int puissance_int(int puiss, int x);
@@ -144,8 +145,8 @@ class Model {
 	//map<int,vector<double>> q_fert_individual_analytique(vector<vector<int>>* genotype);//
 	vector<map<int,vector<double>>> q_fert_individual_analytique(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop, map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het);
 	double Mean_fert_new_allele(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop);
-	double sigma_0();
-	vector<double> cfree();
+	//double sigma_0();
+	vector<double> sigma_q_w_0();
 	
 	protected:
 	//============================
