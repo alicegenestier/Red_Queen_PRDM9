@@ -19,7 +19,7 @@ class Model {
 	// Default	
 	Model();
 	//with arg
-	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,int nbcore,bool isallele,bool issampling,bool isanalytic,double ctot,bool targetcomp,int quantilenb,int nbmeiperind,string name);
+	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,int nbcore,bool isallele,bool issampling,bool isanalytic,double ctot,bool targetcomp,int quantilenb,int nbmeiperind,double cfreethreshold,string name);
 	
 	//============================
 	//        Destructors
@@ -137,14 +137,14 @@ class Model {
 	double get_FST_neutral(vector<vector<vector<vector<int>>>*> vectpop);
 	double get_FST_PRDM9(vector<vector<vector<int>>*> vectgen);
 	double get_mean_age(vector<vector<int>>* genotype, map<int,double>* Ageallele);
-	vector<double> get_mean_c_occup(vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het);
+	vector<double> get_mean_coccup_cfree(vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het);
 	double get_mean_affinity(int allele, vector<vector<vector<int>>>* pop);
 	double puissance_double(int puiss, double x);
 	int puissance_int(int puiss, int x);
 	//////////////////
 	//map<int,vector<double>> q_fert_individual_analytique(vector<vector<int>>* genotype);//
 	vector<map<int,vector<double>>> q_fert_individual_analytique(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop, map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het);
-	double Mean_fert_new_allele(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop);
+	double Mean_fert_new_allele(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop, map<int,vector<double>>* infoperallele_het);
 	//double sigma_0();
 	vector<double> sigma_q_w_0();
 	
@@ -215,4 +215,5 @@ class Model {
 	int quantilenb_;//number of categories for the affinity distribution
 	map<double,vector<double>> nbsitesperquantile_;//[quantile category]{mean of the quantile category, number of active site in each category of quantile}
 	int nbmeiperind_;//number of meiosis that an individual can perform before being caracterizes as steril
+	double cfreethreshold_;//threshold for the determination of cfree
 };
