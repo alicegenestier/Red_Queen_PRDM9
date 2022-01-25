@@ -137,6 +137,7 @@ class Model {
 	double get_FST_neutral(vector<vector<vector<vector<int>>>*> vectpop);
 	double get_FST_PRDM9(vector<vector<vector<int>>*> vectgen);
 	double get_mean_age(vector<vector<int>>* genotype, map<int,double>* Ageallele);
+	double get_mean_sigma(vector<vector<int>>* genotype, vector<map<int,vector<double>>> analytic_indiv);
 	vector<double> get_mean_coccup_cfree(vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het);
 	double get_mean_affinity(int allele, vector<vector<vector<int>>>* pop);
 	double puissance_double(int puiss, double x);
