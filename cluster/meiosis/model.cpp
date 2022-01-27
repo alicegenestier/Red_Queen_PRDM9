@@ -1592,7 +1592,6 @@ void Model::manygenerations(){
 					q_fertility = vector<double>{0,0};
 				}
 				//if(isanalytic_==true){}else{}
-				
 				analytic_indiv=q_fert_individual_analytique(&genotypes_, &populations_, &infoperallele_hom_, &infoperallele_het_);
 				mean_sigma[0]=get_mean_sigma(&genotypes_, analytic_indiv);
 				//mean_fertnewall = Mean_fert_new_allele(&genotypes_,&populations_);
@@ -2511,7 +2510,12 @@ Ensuite, on calcul la fitness de l'individus :
 		
 		for(int i=0; i<nbloop; i++){
 			for(int ind_hom_het=0; ind_hom_het<2; ind_hom_het++){ //2 loops : the first one is what happen normaly (if the individual is homozygous (heterozygous), the cfree and moyprobalinks will be calculated for a homozygous (heterozygous)) , the second loop will be for the contrary (if the indvidual is homozygous, all will be calculated as a heterozygous and vice et versa)
-				double z=genotype_indiv[i];
+				double z;
+				if(i!=genotype_indiv.size()){
+					z=genotype_indiv[i];;
+				}else{
+					z=0;
+				}
 				double ind_gen=1;
 				if((zygosity_ and homoz and ind_hom_het==0) or (zygosity_ and homoz==0 and ind_hom_het==1) ){ //////////////////////////////////////
 					ind_gen=2;
@@ -2972,6 +2976,7 @@ Ensuite, on calcul la fitness de l'individus :
 	////////////////////////////////////////////////////////
 	res[-2].push_back(qmoyallpop/(2*N_));
 	res[-2].push_back(fertmoyallpop/(2*N_));
+	res[-3].push_back(0);
 	res[-3].push_back(0);
 	res[-3].push_back(0);
 	////////////////////////////////////////////////////////
