@@ -2688,6 +2688,9 @@ Ensuite, on calcul la fitness de l'individus :
 				}
 
 				if(indiv==0 and i==genotype_indiv.size()){
+					if(targetcomp_){
+						ind_gen=cfree_newall;
+					}
 					double moyprobalinkab=0;
 					double moyprobalinka2b=0;
 					double moyprobalinkb2a=0;
@@ -2696,8 +2699,8 @@ Ensuite, on calcul la fitness de l'individus :
 					for(auto const &it : newpos){
 						double xa=0;
 						double xb=0;
-						xa=cfree_newall*Affinity_[it]/(1+cfree_newall*Affinity_[it]);
-						xb=cfree_newall*Affinity_[it]/(1+cfree_newall*Affinity_[it]);
+						xa=ind_gen*Affinity_[it]/(1+ind_gen*Affinity_[it]);
+						xb=ind_gen*Affinity_[it]/(1+ind_gen*Affinity_[it]);
 						moyprobalinkab+=xa*xb;
 						moyprobalinka2b+=puissance_double(2,xa)*xb;
 						moyprobalinkb2a+=puissance_double(2,xb)*xa;
