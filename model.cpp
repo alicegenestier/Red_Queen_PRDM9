@@ -1,3 +1,7 @@
+////////////////////////////////////////////////////////////////////////////
+///////// First version of the model before adaptation for cluster /////////
+////////////////////////////////////////////////////////////////////////////
+
 //============================
 //           Includes
 //============================
@@ -631,9 +635,9 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 				//}else if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==2 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==3 or summarysites[i][1]==2){
 				}else if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==2 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==3){
 					//cout<<"B "<<vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]<<endl;
-					if(summarysites[i][1]==2 and (vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=2 and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=3)){
+					/*if(summarysites[i][1]==2 and (vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=2 and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=3)){
 						cout<<"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"<<endl;
-					}
+					}*/
 					//if((summarysites[i][1]==1 or summarysites[i][1]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=0){
 					if(summarysites[i][1]==1 or summarysites[i][1]==2){
 						vco.push_back(0);
