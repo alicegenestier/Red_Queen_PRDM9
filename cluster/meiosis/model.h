@@ -19,7 +19,7 @@ class Model {
 	// Default	
 	Model();
 	//with arg
-	Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen,double m,double alpha,double beta,int nbgenmig,bool popsamesize,int nbloop,int nbcore,bool isallele,bool issampling,bool isanalytic,double ctot,bool targetcomp,int quantilenb,int nbmeiperind,double cfreethreshold,string name);
+	Model(int N, int L, int nbsite, int indPrdm9, int nballele, int parityIndex, double v, double u, double w, double meanaff, double varaff, int nbDSB, int nbGenerations, bool ismigration, bool zygosity, bool withDSB, int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbloop, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, double cfreethreshold, bool affinityUniform, string name);
 	
 	//============================
 	//        Destructors
@@ -126,7 +126,7 @@ class Model {
 	void printageallele(map<int,double>* Ageallele); //
 	double get_age_allele(int allname, map<int,double>* Ageallele); //
 	void printinfoallele(map<int,vector<double>>* infoperallele); //
-	vector<double> get_info_allele(int allname, map<int,vector<double>>* infoperallele); //
+	vector<double> get_info_allele(int allname, map<int,vector<double>>* infoperallele, int index_meiosis_success); //
 	vector<int> choosemanymigration(int k); //
 	double choosebeta(double alpha, double beta); //
 	double q_two_hap(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom); //
@@ -217,4 +217,5 @@ class Model {
 	map<double,vector<double>> nbsitesperquantile_;//[quantile category]{mean of the quantile category, number of active site in each category of quantile}
 	int nbmeiperind_;//number of meiosis that an individual can perform before being caracterizes as steril
 	double cfreethreshold_;//threshold for the determination of cfree
+	bool affinityUniform_;//affinity distribution follows a uniform law
 };

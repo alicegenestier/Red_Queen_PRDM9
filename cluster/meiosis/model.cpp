@@ -26,7 +26,7 @@ using namespace std;
 //============================//
 //         Constructors	      //
 //============================//
-Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbloop, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, double cfreethreshold, string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen), m_(m), alpha_(alpha), beta_(beta), nbgenmig_(nbgenmig), popsamesize_(popsamesize), nbloop_(nbloop), nbcore_(nbcore), isallele_(isallele), issampling_(issampling), isanalytic_(isanalytic), ctot_(ctot), targetcomp_(targetcomp), quantilenb_(quantilenb), nbmeiperind_(nbmeiperind), cfreethreshold_(cfreethreshold), name_(name) {
+Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbloop, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, double cfreethreshold,bool affinityUniform, string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen), m_(m), alpha_(alpha), beta_(beta), nbgenmig_(nbgenmig), popsamesize_(popsamesize), nbloop_(nbloop), nbcore_(nbcore), isallele_(isallele), issampling_(issampling), isanalytic_(isanalytic), ctot_(ctot), targetcomp_(targetcomp), quantilenb_(quantilenb), nbmeiperind_(nbmeiperind), cfreethreshold_(cfreethreshold),affinityUniform_(affinityUniform), name_(name) {
 
 	//Create the model : the population of N individuals with 2 homologous chromosomes per individual, on each chromosome there is a Prdm9 locus (at position indPrdm9_) to witch is associated an allele (number >=0). Each allele recognizes some target sites along the chromosome. Each site is either active (1) or inactive (0) and posess its own binding affinity.
 
@@ -50,8 +50,13 @@ Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,do
 	Affinity_=vector<double>(L_,0);
 	#pragma omp parallel for num_threads(nbcore_)
 	for(int i=0; i<L_; i++){
-		Affinity_[i]=choosegamma(meanaff_, varaff_);
-		//affinity chosen in gamma law
+		if(affinityUniform==0){
+			Affinity_[i]=choosegamma(meanaff_, varaff_);
+			//affinity chosen in gamma law
+		}else{
+			Affinity_[i]=meanaff_;
+			//affinity chosen in uniform law
+		}
 	}
 	
 	// Affinity categories : only if targetcomp_=1 and quantilenb>0
@@ -115,10 +120,10 @@ Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,do
 		Siteforeacheallele_[i]=firstpos;
 		Ageallele_[i]=freqall(i, &genotypes_, &populations_)*(N_*v_*nbDSB_)/(2*nbsite_);
 		double meanaffall = get_mean_affinity(i,&populations_);
-		infoperallele_[i]={0,0,0,0,0,0,meanaffall,0,0,0,0}; // infoperallele{nb failed meiosis, 2 DSB on 1 site, no DSB, no symetrical site, q, nb meiosis with at least 1 DSB, mean affinity of the allele, relative_nb_meiosis, nblinksiteall, nblinkposall, absolute_nb_meiosis}
+		infoperallele_[i]={0,0,0,0,0,0,meanaffall,0,0,0,0,0,0,0}; // infoperallele{nb failed meiosis, 2 DSB on 1 site, no DSB, no symetrical site, q, nb meiosis with at least 1 DSB, mean affinity of the allele, relative_nb_meiosis, nblinksiteall, nblinkposall, absolute_nb_meiosisk, nb_successfull_meiosis_indiv, nb of linked position asymmetrically active, nb of linked site asymmetrically active}
 		
-		infoperallele_hom_[i]={0,0,0,0,0,0,meanaffall,0,0,0,0,0,0,0}; // infoperallele_hom{nb failed meiosis, 2 DSB on 1 site, no DSB, no symetrical site, q, nb meiosis with at least 1 DSB, mean affinity of the allele, relative_nb_meiosis, nblinksiteall, nblinkposall, absolute_nb_meiosis, cfree_moy, cfree_tot, c_occup}
-		infoperallele_het_[i]={0,0,0,0,0,0,meanaffall,0,0,0,0,0,0,0}; // infoperallele_het{nb failed meiosis, 2 DSB on 1 site, no DSB, no symetrical site, q, nb meiosis with at least 1 DSB, mean affinity of the allele, relative_nb_meiosis, nblinksiteall, nblinkposall, absolute_nb_meiosis, cfree_moy, cfree_tot, c_occup}
+		infoperallele_hom_[i]={0,0,0,0,0,0,meanaffall,0,0,0,0,0,0,0,0,0,0}; // infoperallele_hom{nb failed meiosis, 2 DSB on 1 site, no DSB, no symetrical site, q, nb meiosis with at least 1 DSB, mean affinity of the allele, relative_nb_meiosis, nblinksiteall, nblinkposall, absolute_nb_meiosis, cfree_moy, cfree_tot, c_occup, nb_successfull_meiosis_indiv, nb of linked position asymmetrically active, nb of linked site asymmetrically active}
+		infoperallele_het_[i]={0,0,0,0,0,0,meanaffall,0,0,0,0,0,0,0,0,0,0}; // infoperallele_het{nb failed meiosis, 2 DSB on 1 site, no DSB, no symetrical site, q, nb meiosis with at least 1 DSB, mean affinity of the allele, relative_nb_meiosis, nblinksiteall, nblinkposall, absolute_nb_meiosis, cfree_moy, cfree_tot, c_occup, nb_successfull_meiosis_indiv, nb of linked position asymmetrically active, nb of linked site asymmetrically active}
 	}
 	
 	//distribution beta for neutral sites
@@ -485,19 +490,19 @@ void Model::allelemutation(vector<vector<vector<int>>>* population, vector<vecto
 		(*population)[parityIndex_][alltomutate[i]][indPrdm9_]=newallele;//update pop
 		(*Ageallele)[newallele]=freqall(newallele, genotype, population)*(N_*v_*nbDSB_)/(2*nbsite_);//update age of the new allele
 		if(ismigration_){
-			infoperallele1_[newallele]={0,0,0,0,0,0,0,0,0,0,0};
-			infoperallele2_[newallele]={0,0,0,0,0,0,0,0,0,0,0};
+			infoperallele1_[newallele]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+			infoperallele2_[newallele]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 			/*
-			infoperallele1_hom_[newallele]={0,0,0,0,0,0,0,0,0,0};
-			infoperallele2_hom_[newallele]={0,0,0,0,0,0,0,0,0,0};
-			infoperallele1_het_[newallele]={0,0,0,0,0,0,0,0,0,0};
-			infoperallele2_het_[newallele]={0,0,0,0,0,0,0,0,0,0};
+			infoperallele1_hom_[newallele]={0,0,0,0,0,0,0,0,0,0,0}; //+ ,0,0
+			infoperallele2_hom_[newallele]={0,0,0,0,0,0,0,0,0,0,0}; //+ ,0,0
+			infoperallele1_het_[newallele]={0,0,0,0,0,0,0,0,0,0,0}; //+ ,0,0
+			infoperallele2_het_[newallele]={0,0,0,0,0,0,0,0,0,0,0}; //+ ,0,0
 			*/
 		}else{
-			infoperallele_[newallele]={0,0,0,0,0,0,0,0,0,0,0};
+			infoperallele_[newallele]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 			
-			infoperallele_hom_[newallele]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-			infoperallele_het_[newallele]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+			infoperallele_hom_[newallele]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 
+			infoperallele_het_[newallele]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 
 			
 		}
 	}
@@ -677,11 +682,6 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 	double ind_gen=1; //if no target competition
 
 	vector<int> zygote{(*genotype)[parityIndex_][indiv]};
-	
-	/*for (auto zyg : zygote){
-		cout<<zyg<<" ";
-	}
-	cout<<"\n"<<endl;*/
 
 	
 	if((*genotype)[parityIndex_][indiv]==(*genotype)[parityIndex_][indiv+1]){//for homozygous
@@ -715,13 +715,6 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 	//----------------------------//
 	//    If target competition   //
 	//----------------------------//
-	/*if (zygote.size()==1){
-		cout<<"infoperallele_hom_before"<<endl;
-		printinfoallele(infoperallele_hom);
-	}else{
-		cout<<"infoperallele_het_before"<<endl;
-		printinfoallele(infoperallele_het);
-	}*/
 	if(targetcomp_){//option param if we want to take into account target competition
 	
 		vector<map<int,vector<double>>*> vectinfo_hom_het = vector<map<int,vector<double>>*> {infoperallele_hom, infoperallele_het};
@@ -733,15 +726,11 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 			double index_vectinfo_hom_het=1;
 			double sum_p_occup=0;
 			if (zygote.size()==1){
-				//cout<<"homozygote"<<endl;////////////////////////
 				if(zygosity_){
 					ctot=2*ctot_;
 				}
 				index_vectinfo_hom_het=0;
 			}
-			//else{//////////////////////
-				//cout<<"heterozygote"<<endl;//////////////////
-			//}/////////////////////
 			if((*vectinfo_hom_het[index_vectinfo_hom_het])[z][11]==0){
 				cfree=1/float(1000)*ctot;
 			}else{
@@ -803,8 +792,6 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 				}else{
 					//if cfree is to low or the right one
 					double new_cfree=ctot-sum_p_occup;
-					//cout<<"cfree/ctot : "<<double(cfree)/double(ctot)<<endl;
-					//cout<<"cfree/ctot_diff : "<<abs(double(cfree)/double(ctot)-double(new_cfree)/double(ctot))<<endl;
 					if(abs(double(cfree)/double(ctot)-double(new_cfree)/double(ctot))<=threshold){
 						//the difference between the current and the next cfree/ctot is below or equal to the thershold
 						is_diff=0;
@@ -821,19 +808,12 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 			(*vectinfo_hom_het[index_vectinfo_hom_het])[z][13]+=sum_p_occup;
 		}
 	}
-	/*if (zygote.size()==1){
-		cout<<"infoperallele_hom_after"<<endl;
-		printinfoallele(infoperallele_hom);
-	}else{
-		cout<<"infoperallele_het_after"<<endl;
-		printinfoallele(infoperallele_het);
-	}*/
 	
 	
 
 	
 	//----------------------------//
-	//	PRDM9 binding         //
+	//	    PRDM9 binding         //
 	//----------------------------//
 	vector<vector<int>>summarysites;
 	vector<int>Z;
@@ -845,11 +825,9 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 		//If we want to study target competition
 		if(zygote.size()==1 and targetcomp_){
 			ind_gen=(*infoperallele_hom)[z][11];
-			//cout<<"ind_gen_hom : "<<ind_gen<<endl;
 		}
 		else if(zygote.size()==2 and targetcomp_){	
 			ind_gen=(*infoperallele_het)[z][11];
-			//cout<<"ind_gen_het : "<<ind_gen<<endl;
 		}
 		//cout <<ind_gen<<endl;
 		double nblinksiteall = 0; //
@@ -859,6 +837,16 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 			linkedsites[0]=i;
 			double p_occup=ind_gen*Affinity_[i]/(1+ind_gen*Affinity_[i]);
 			bool islinked=false;
+			/////////////////////////////////////////////////////////////////////////////////
+			bool sym_active=false;
+			bool asym_active=false;
+			if((*population)[parityIndex_][indiv][i]==1 and (*population)[parityIndex_][indiv+1][i]==1){
+				sym_active=true;
+			}else if(((*population)[parityIndex_][indiv][i]==1 and (*population)[parityIndex_][indiv+1][i]==0) or ((*population)[parityIndex_][indiv][i]==0 and (*population)[parityIndex_][indiv+1][i]==1)){
+				asym_active=true;
+			}
+			int nblinkedchromatid=0;
+			/////////////////////////////////////////////////////////////////////////////////
 			for(int j=0; j<4; j++){
 				int chrom=indiv+j/2;
 				if((*population)[parityIndex_][chrom][i]==1){
@@ -867,9 +855,23 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 						islinked=true;
 						nblinksite+=1;
 						nblinksiteall+=1; //
+						nblinkedchromatid+=1;
 					}
 				}
 			}
+			/////////////////////////////////////////////////////////////////////////////////
+			if(asym_active==true and islinked==true){
+				(*infoperallele)[z][12]+=1;
+				(*infoperallele)[z][13]+=nblinkedchromatid;
+				if(zygote.size()==1){
+					(*infoperallele_hom)[z][15]+=1;
+					(*infoperallele_hom)[z][16]+=nblinkedchromatid;
+				}else if(zygote.size()==2){
+					(*infoperallele_het)[z][15]+=1;
+					(*infoperallele_het)[z][16]+=nblinkedchromatid;
+				}
+			}
+			/////////////////////////////////////////////////////////////////////////////////
 			if(islinked==true){
 				vectsites.push_back(i);
 				nblinkposall+=1; //
@@ -891,7 +893,6 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 		}
 		(*infoperallele)[z][8]+=nblinksiteall; //
 		(*infoperallele)[z][9]+=nblinkposall; //
-		//cout<<"nblinksiteall : "<<nblinksiteall<<endl;
 	}
 	*qsym=*qsym+double(nblinksitesym)/double(nblinksite);
 	t_2=clock();
@@ -919,7 +920,8 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 				vectsitedsb.push_back({i,j});//vectsitedsb.push_back({line in summarysites of the corresponding position, site undergoing the DSB (1,2,3 or 4)})
 				alleleDSB.push_back(Z[i]);
 				try{
-					if (nbdsbpersite>1 and withDSB_){
+					if (nbdsbpersite>1 and withDSB_){ //do not allow 2 DSB neither on the same chromosome neither on homologous chromosomes
+					//if (nbdsbpersite>1 and withDSB_ and ((summarysites[i][1]==2 or summarysites[i][2]==2) and (summarysites[i][3]==2 or summarysites[i][4]==2))){ 
 						//if (nb_meiosis==nbmeiperind_-1){
 						(*nbfailedmeiosis)[nb_gen][0]+=1; 
 						(*infoperallele)[Z[i]][0]+=1;
@@ -935,6 +937,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 						//}
 						throw int(0);
 					}
+					//}
 				} // assert
 				catch(int const& error_nb){
 					if(error_nb==0){
@@ -1055,69 +1058,92 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 		return-1;
 	}
 	
+	//Meiosis cannot fail anymore
+
 	//Statistics computation
-	
+	///////////////////////////////////////////////////////////////////////////add nb_successfull_meiosis_indiv in infoperallele, infoperallele_hom, infoperallele_het
 	//*qnum=*qnum+double(vect_CO.size())
 	//*qdenom=*qdenom+double((vectsitedsb.size()))
 	*q=*q+double(vect_CO.size())/(vectsitedsb.size());
 	if(zygote.size()==1){
+		(*infoperallele)[zygote[0]][11]+=2;
+		(*infoperallele_hom)[zygote[0]][14]+=2;
 		if(zygosity_){
+			// at least one DSB, we can compute the q :
 			(*infoperallele)[zygote[0]][4]+=(double(count(alleleCO.begin(),alleleCO.end(),zygote[0]))/count(alleleDSB.begin(),alleleDSB.end(),zygote[0]));
+			// meiosis with at least one DSB (with or without symmetrical binding):
 			(*infoperallele)[zygote[0]][5]+=2;//////////////////1 si zygosity_?
-			
+			//same but for the homozygous informations
 			(*infoperallele_hom)[zygote[0]][4]+=(double(count(alleleCO.begin(),alleleCO.end(),zygote[0]))/count(alleleDSB.begin(),alleleDSB.end(),zygote[0]));
 			(*infoperallele_hom)[zygote[0]][5]+=2;//////////////////1 si zygosity_?
-			
 		}else{
+			//same but without genetic dosage
 			(*infoperallele)[zygote[0]][4]+=2*(double(count(alleleCO.begin(),alleleCO.end(),zygote[0]))/count(alleleDSB.begin(),alleleDSB.end(),zygote[0])); 
 			(*infoperallele)[zygote[0]][5]+=2;
-			
+			//same but for the homozygous informations
 			(*infoperallele_hom)[zygote[0]][4]+=2*(double(count(alleleCO.begin(),alleleCO.end(),zygote[0]))/count(alleleDSB.begin(),alleleDSB.end(),zygote[0])); 
 			(*infoperallele_hom)[zygote[0]][5]+=2;
-			
 		}
 	}else if(zygote.size()==2){
+		(*infoperallele)[zygote[0]][11]+=1;
+		(*infoperallele)[zygote[1]][11]+=1;
+		(*infoperallele_het)[zygote[0]][14]+=1;
+		(*infoperallele_het)[zygote[1]][14]+=1;
+		//if at least one DSB at the target sites of allele 0:
 		if (count(alleleDSB.begin(),alleleDSB.end(),zygote[0]) != 0){
+			// at least one DSB, we can compute the q for the allele 0:
 			(*infoperallele)[zygote[0]][4]+=(double(count(alleleCO.begin(),alleleCO.end(),zygote[0]))/count(alleleDSB.begin(),alleleDSB.end(),zygote[0]));
+			// meiosis with at least one DSB (with or without symmetrical binding):
 			(*infoperallele)[zygote[0]][5]+=1;
-			
+			//same but for the heterozygous informations
 			(*infoperallele_het)[zygote[0]][4]+=(double(count(alleleCO.begin(),alleleCO.end(),zygote[0]))/count(alleleDSB.begin(),alleleDSB.end(),zygote[0]));
 			(*infoperallele_het)[zygote[0]][5]+=1;
-			
+			// if no CO found for the allele 0:
 			if(double(count(alleleCO.begin(),alleleCO.end(),zygote[0]))==0){
+				//meiosis fails for this allele due to a lack of CO with this allele:
 				(*infoperallele)[zygote[0]][3]+=1;
+				//meiosis fails for this allele
 				(*infoperallele)[zygote[0]][0]+=1;
-				
+				//same but for the heterozygous informations
+				//(*infoperallele_het)[zygote[0]][0]+=1;
 				(*infoperallele_het)[zygote[0]][3]+=1;
-				
 			}	
 		}else{
+			//meiosis fails for this allele due to a lack of DSB with this allele:
 			(*infoperallele)[zygote[0]][2]+=1;
+			//meiosis fails for this allele
 			(*infoperallele)[zygote[0]][0]+=1;
-			
+			////same but for the heterozygous informations
+			//(*infoperallele_het)[zygote[0]][0]+=1;
 			(*infoperallele_het)[zygote[0]][2]+=1;
-			
 		}
+		//if at least one DSB at the target sites of allele 1:
 		if (count(alleleDSB.begin(),alleleDSB.end(),zygote[1]) != 0){
+			// at least one DSB, we can compute the q for the allele 1:
 			(*infoperallele)[zygote[1]][4]+=(double(count(alleleCO.begin(),alleleCO.end(),zygote[1]))/count(alleleDSB.begin(),alleleDSB.end(),zygote[1]));
+			// meiosis with at least one DSB (with or without symmetrical binding):
 			(*infoperallele)[zygote[1]][5]+=1;
-			
+			//same but for the heterozygous informations
 			(*infoperallele_het)[zygote[1]][4]+=(double(count(alleleCO.begin(),alleleCO.end(),zygote[1]))/count(alleleDSB.begin(),alleleDSB.end(),zygote[1]));
 			(*infoperallele_het)[zygote[1]][5]+=1;
-			
+			// if no CO found for the allele 1:
 			if(double(count(alleleCO.begin(),alleleCO.end(),zygote[1]))==0){
+				//meiosis fails for this allele due to a lack of CO with this allele:
 				(*infoperallele)[zygote[1]][3]+=1;
+				//meiosis fails for this allele
 				(*infoperallele)[zygote[1]][0]+=1;
-				
+				//same but for the heterozygous informations
+				//(*infoperallele_het)[zygote[1]][0]+=1;
 				(*infoperallele_het)[zygote[1]][3]+=1;
-				
 			}
 		}else{
+			//meiosis fails for this allele due to a lack of DSB with this allele:
 			(*infoperallele)[zygote[1]][2]+=1;
+			//meiosis fails for this allele
 			(*infoperallele)[zygote[1]][0]+=1;
-			
-			(*infoperallele_het)[zygote[1]][2]+=1;
-			
+			//same but for the heterozygous informations
+			//(*infoperallele_het)[zygote[1]][0]+=1;
+			(*infoperallele_het)[zygote[1]][2]+=1;	
 		}
 	}
 	
@@ -1258,7 +1284,7 @@ void Model::manygenerations(){
     generalfile.flush();
 	//Allele file : contains all the mean descriptive statistics for each allele segregating in the population for each generation
     ofstream allelefile ((name_+".allele").c_str());
-	allelefile << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" << '\t' << "Fertility_allele" << '\t' << "mean_affinity" << '\t' << "q_analytic" <<  '\t' << "fertility_analytic" << '\t' << "relative_nb_meiosis" <<  '\t' << "nb_linked_site" <<  '\t' << "nb_linked_pos" << '\t' << "absolute_nb_meiosis" << '\t' << "cfree_ctot_hom" << '\t' << "cfree_ctot_het" << '\t' << "q_hom" << '\t' << "q_het" << '\t' << "fertility_hom" << '\t' << "fertility_het" << '\t' << "q_hom_analytic" << '\t' << "q_het_analytique" << '\t' << "fertility_hom_analytic" << '\t' << "fertility_het_analytic" << '\t' << "q_hemi_analytic" << '\t' << "fertility_hemi_analytic" << '\t' << "sigma" <<'\n';//
+	allelefile << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" << '\t' << "Fertility_allele" << '\t' << "mean_affinity" << '\t' << "q_analytic" <<  '\t' << "fertility_analytic" << '\t' << "relative_nb_meiosis" <<  '\t' << "nb_linked_site" <<  '\t' << "nb_linked_pos" << '\t' << "absolute_nb_meiosis" << '\t' << "cfree_ctot_hom" << '\t' << "cfree_ctot_het" << '\t' << "q_hom" << '\t' << "q_het" << '\t' << "fertility_hom" << '\t' << "fertility_het" << '\t' << "q_hom_analytic" << '\t' << "q_het_analytique" << '\t' << "fertility_hom_analytic" << '\t' << "fertility_het_analytic" << '\t' << "q_hemi_analytic" << '\t' << "fertility_hemi_analytic" << '\t' << "sigma" << '\t' << "Fertility_individual" << '\t' << "Fertility_individual_hom" << '\t' << "Fertility_individual_het" << '\t' << "Sym_active_pos" << '\t' << "Asym_active_pos" << '\t' << "Non_active_pos" << '\t' << "nb_linked_pos_asym_active" << '\t' << "nb_linked_site_asym_active" <<'\n';
     allelefile.flush();
 	//Params file : contains all the parameters values for this simulation
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1339,9 +1365,9 @@ void Model::manygenerations(){
 			t14=clock();
 			for (auto const &it : *vectinfo[i_vect]){
 				//(*vectinfo[i_vect])[it.first]=vector<double>{0,0,0,0,0,0,get_mean_affinity(it.first,vectpop[i_vect])}; ////////////////////////prends beaucoup de temps
-				(*vectinfo[i_vect])[it.first]=vector<double>{0,0,0,0,0,0,0,0,0,0,0};
-				(*vectinfo_hom[i_vect])[it.first]=vector<double>{0,0,0,0,0,0,0,0,0,0,0,(*vectinfo_hom[i_vect])[it.first][11],0,0};
-				(*vectinfo_het[i_vect])[it.first]=vector<double>{0,0,0,0,0,0,0,0,0,0,0,(*vectinfo_hom[i_vect])[it.first][11],0,0};
+				(*vectinfo[i_vect])[it.first]=vector<double>{0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+				(*vectinfo_hom[i_vect])[it.first]=vector<double>{0,0,0,0,0,0,0,0,0,0,0,(*vectinfo_hom[i_vect])[it.first][11],0,0,0,0,0};
+				(*vectinfo_het[i_vect])[it.first]=vector<double>{0,0,0,0,0,0,0,0,0,0,0,(*vectinfo_hom[i_vect])[it.first][11],0,0,0,0,0};
 			}
 			t11=clock();
 			temps_settozero=(float)(t11-t14)/CLOCKS_PER_SEC;
@@ -1506,10 +1532,12 @@ void Model::manygenerations(){
 		vector<double> fertilityallele;
 		vector<double> fertilityallele1;
 		vector<double> fertilityallele2;
+		vector<double> fertilityindiv;
+		vector<double> fertilityindiv1;
+		vector<double> fertilityindiv2;
 		vector<double> meanaffinity;
 		vector<double> meanaffinity1;
 		vector<double> meanaffinity2;
-		////////////////////////////////////////////////////////////////////////
 		vector<double> relativenbmeiosisperall;
 		vector<double> relativenbmeiosisperall1;
 		vector<double> relativenbmeiosisperall2;
@@ -1519,6 +1547,14 @@ void Model::manygenerations(){
 		vector<double> nblinkedposall;
 		vector<double> nblinkedposall1;
 		vector<double> nblinkedposall2;
+		////////////////////////////////////////////////////////////////////////
+		vector<double> nblinkedasymsiteall;
+		vector<double> nblinkedasymsiteall1;
+		vector<double> nblinkedasymsiteall2;
+		vector<double> nblinkedasymposall;
+		vector<double> nblinkedasymposall1;
+		vector<double> nblinkedasymposall2;
+		////////////////////////////////////////////////////////////////////////
 		vector<double> absolutenbmeiosisperall;
 		vector<double> absolutenbmeiosisperall1;
 		vector<double> absolutenbmeiosisperall2;
@@ -1552,9 +1588,15 @@ void Model::manygenerations(){
 		vector<double> fertilityallelehet;
 		vector<double> fertilityallelehet1;
 		vector<double> fertilityallelehet2;
-		////////////////////////////////////////////////////////////////////////
+		vector<double> fertilityindivhom;
+		vector<double> fertilityindivhom1;
+		vector<double> fertilityindivhom2;
+		vector<double> fertilityindivhet;
+		vector<double> fertilityindivhet1;
+		vector<double> fertilityindivhet2;
+		
 		//map<int,vector<double>> analytic_allele;
-		vector<map<int,vector<double>>> analytic_indiv;///////////////////////////////////////////////////////////////
+		vector<map<int,vector<double>>> analytic_indiv;
 		double mean_fertnewall;
 		////////////////////////
 		t6=clock();
@@ -1568,7 +1610,7 @@ void Model::manygenerations(){
 					allele_nb_trace[0]=get_allele_number(vectgen,true)[0];
 					current_div[0] = get_current_diversity(&genotypes_);
 					current_act[0] = get_current_activity(&genotypes_, &populations_);
-					Fertility_rate[0] = 1-(double(nbfailedmeiosis_[indgeneration][3])/(2*N_+nbfailedmeiosis_[indgeneration][3]));
+					Fertility_rate[0] = 1-(double(nbfailedmeiosis_[indgeneration][3])/double(2*N_+nbfailedmeiosis_[indgeneration][3]));
 					twoDSB[0] = double(nbfailedmeiosis_[indgeneration][0])/(2*N_+nbfailedmeiosis_[indgeneration][3]);
 					noDSB[0] = double(nbfailedmeiosis_[indgeneration][1])/(2*N_+nbfailedmeiosis_[indgeneration][3]);
 					nosym[0] = double(nbfailedmeiosis_[indgeneration][2])/(2*N_+nbfailedmeiosis_[indgeneration][3]);
@@ -1603,7 +1645,7 @@ void Model::manygenerations(){
 				printf("temps_calcunit = %f\n", temps_calcunit);
 				////////////////////////
 				if(isallele_==true){
-					for (auto const &it : Siteforeacheallele_){//////////////////////////////////////////////////////////////// =========> openMP peut marcher si on enleve auto (for cassique) et push_back (declaration des vecteurs de longueur la taille de Siteforeachallele)
+					for (auto const &it : Siteforeacheallele_){//////////////////////////////////////////////////////////////// =========> openMP peut marcher si on enleve auto (for classique) et push_back (declaration des vecteurs de longueur la taille de Siteforeachallele)
     					if(it.first!=-2){
     						t15=clock();
 							allele_nb.push_back(it.first);
@@ -1618,17 +1660,18 @@ void Model::manygenerations(){
 							ageallele.push_back(get_age_allele(it.first, &Ageallele_));
 							t19=clock();
 							t_ageall=t_ageall+(float)(t19-t18)/CLOCKS_PER_SEC;
-							qfertall=get_info_allele(it.first, &infoperallele_);
+							qfertall=get_info_allele(it.first, &infoperallele_, 11);
 							qallele.push_back(qfertall[0]);
 							fertilityallele.push_back(qfertall[1]);
-							///////////////////////////
-							qfertallhom=get_info_allele(it.first, &infoperallele_hom_);
+							fertilityindiv.push_back(qfertall[2]);
+							qfertallhom=get_info_allele(it.first, &infoperallele_hom_, 14);
 							qallelehom.push_back(qfertallhom[0]);
 							fertilityallelehom.push_back(qfertallhom[1]);
-							qfertallhet=get_info_allele(it.first, &infoperallele_het_);
+							fertilityindivhom.push_back(qfertallhom[2]);
+							qfertallhet=get_info_allele(it.first, &infoperallele_het_, 14);
 							qallelehet.push_back(qfertallhet[0]);
 							fertilityallelehet.push_back(qfertallhet[1]);
-							///////////////////////////
+							fertilityindivhet.push_back(qfertallhet[2]);
 							t20=clock();
 							t_qfertall=t_qfertall+(float)(t20-t19)/CLOCKS_PER_SEC;
 							if(it.first==-3){
@@ -1637,8 +1680,14 @@ void Model::manygenerations(){
 								absolutenbmeiosisperall.push_back(0); //to add in migration
 								nblinkedsiteall.push_back(0); //to add in migration
 								nblinkedposall.push_back(0); //to add in migration
+								////////////////////////////////////////////////////////////////////////
+								nblinkedasymsiteall.push_back(0); //to add in migration
+								nblinkedasymposall.push_back(0); //to add in migration
+								////////////////////////////////////////////////////////////////////////
 								cfreectothom.push_back(0); //to add in migration
 								cfreectothet.push_back(0); //to add in migration
+								coccuphet.push_back(0); //to add in migration
+								coccuphom.push_back(0);
 							}else{
 								//meanaffinity.push_back(infoperallele_[it.first][6]);
 								meanaffinity.push_back(get_mean_affinity(it.first,&populations_));
@@ -1646,6 +1695,10 @@ void Model::manygenerations(){
 								absolutenbmeiosisperall.push_back(infoperallele_[it.first][10]); //to add in migration
 								nblinkedsiteall.push_back(infoperallele_[it.first][8]/infoperallele_[it.first][10]); //to add in migration
 								nblinkedposall.push_back(infoperallele_[it.first][9]/infoperallele_[it.first][10]); //to add in migration
+								////////////////////////////////////////////////////////////////////////
+								nblinkedasymsiteall.push_back(infoperallele_[it.first][13]/infoperallele_[it.first][10]); //to add in migration
+								nblinkedasymposall.push_back(infoperallele_[it.first][12]/infoperallele_[it.first][10]); //to add in migration
+								////////////////////////////////////////////////////////////////////////
 								cfreectothom.push_back(infoperallele_hom_[it.first][11]/(2*ctot_)); //to add in migration
 								cfreectothet.push_back(infoperallele_het_[it.first][11]/ctot_); //to add in migration
 								coccuphet.push_back(infoperallele_het_[it.first][13]); //to add in migration
@@ -1676,6 +1729,7 @@ void Model::manygenerations(){
 					qfertall.push_back(0);
 					qallele.push_back(0);
 					fertilityallele.push_back(0);
+					fertilityindiv.push_back(0);
 					meanaffinity.push_back(0);
 				}
 				////////////////////////
@@ -1710,12 +1764,14 @@ void Model::manygenerations(){
 						activityall2.push_back(actall(it.first, &populations2_));
 						ageallele1.push_back(get_age_allele(it.first, &Ageallele1_));
 						ageallele2.push_back(get_age_allele(it.first, &Ageallele2_));
-						qfertall1=get_info_allele(it.first, &infoperallele1_);
-						qfertall2=get_info_allele(it.first, &infoperallele2_);
+						qfertall1=get_info_allele(it.first, &infoperallele1_, 14);
+						qfertall2=get_info_allele(it.first, &infoperallele2_, 14);
 						qallele1.push_back(qfertall1[0]);
 						qallele2.push_back(qfertall2[0]);
 						fertilityallele1.push_back(qfertall1[1]);
 						fertilityallele2.push_back(qfertall2[1]);
+						fertilityindiv1.push_back(qfertall1[2]);
+						fertilityindiv2.push_back(qfertall2[2]);
 						if(it.first==-3){
 							meanaffinity1.push_back(get_mean_affinity(it.first,&populations1_));
 							meanaffinity2.push_back(get_mean_affinity(it.first,&populations2_));
@@ -1741,7 +1797,7 @@ void Model::manygenerations(){
             	timefile << indgeneration << '\t' << temps_mutations_1 << '\t' << temps_fillnewpop << '\t' << temps_afterfillpop << '\t' << temps_calculstat << '\t' << temps_1 << '\n';
             	timefile.flush();
             	for (int indall = 0; indall<allele_nb.size(); indall++){
-            		allelefile << indgeneration << '\t' << allele_nb[indall] << '\t' << freqallele[indall] << '\t'  << activityall[indall] << '\t' << ageallele[indall] << '\t' << qallele[indall] << '\t' << fertilityallele[indall] << '\t' << meanaffinity[indall] << '\t' <<analytic_indiv[0][int(allele_nb[indall])][0] <<  '\t' << analytic_indiv[0][int(allele_nb[indall])][1] << '\t' << relativenbmeiosisperall[indall] << '\t' << nblinkedsiteall[indall] << '\t' << nblinkedposall[indall] << '\t' << absolutenbmeiosisperall[indall] << '\t' << cfreectothom[indall] << '\t' << cfreectothet[indall] << '\t' << qallelehom[indall] << '\t' << qallelehet[indall] << '\t' << fertilityallelehom[indall] << '\t' << fertilityallelehet[indall] << '\t' << analytic_indiv[1][int(allele_nb[indall])][0] << '\t' << analytic_indiv[2][int(allele_nb[indall])][0] << '\t' << analytic_indiv[1][int(allele_nb[indall])][1] << '\t' << analytic_indiv[2][int(allele_nb[indall])][1] << '\t' << analytic_indiv[3][int(allele_nb[indall])][0] << '\t' << analytic_indiv[3][int(allele_nb[indall])][1] << '\t' << analytic_indiv[0][int(allele_nb[indall])][2] <<'\n';//
+            		allelefile << indgeneration << '\t' << allele_nb[indall] << '\t' << freqallele[indall] << '\t'  << activityall[indall] << '\t' << ageallele[indall] << '\t' << qallele[indall] << '\t' << fertilityallele[indall] << '\t' << meanaffinity[indall] << '\t' <<analytic_indiv[0][int(allele_nb[indall])][0] <<  '\t' << analytic_indiv[0][int(allele_nb[indall])][1] << '\t' << relativenbmeiosisperall[indall] << '\t' << nblinkedsiteall[indall] << '\t' << nblinkedposall[indall] << '\t' << absolutenbmeiosisperall[indall] << '\t' << cfreectothom[indall] << '\t' << cfreectothet[indall] << '\t' << qallelehom[indall] << '\t' << qallelehet[indall] << '\t' << fertilityallelehom[indall] << '\t' << fertilityallelehet[indall] << '\t' << analytic_indiv[1][int(allele_nb[indall])][0] << '\t' << analytic_indiv[2][int(allele_nb[indall])][0] << '\t' << analytic_indiv[1][int(allele_nb[indall])][1] << '\t' << analytic_indiv[2][int(allele_nb[indall])][1] << '\t' << analytic_indiv[3][int(allele_nb[indall])][0] << '\t' << analytic_indiv[3][int(allele_nb[indall])][1] << '\t' << analytic_indiv[0][int(allele_nb[indall])][2] << '\t' << fertilityindiv[indall] << '\t' << fertilityindivhom[indall] << '\t' << fertilityindivhet[indall] << '\t' << analytic_indiv[0][int(allele_nb[indall])][3] << '\t' << analytic_indiv[0][int(allele_nb[indall])][4] << '\t' << analytic_indiv[0][int(allele_nb[indall])][5] << '\t' << nblinkedasymposall[indall] << '\t' << nblinkedasymsiteall[indall] << '\n';//
             		allelefile.flush();
             	}
 			}else if(ismigration_==true){
@@ -1862,16 +1918,21 @@ vector<double> Model::get_mean_coccup_cfree(vector<vector<int>>* genotype, map<i
 
 
 //get the containers for informations for each allele (number of successfull meiosis, number of failed meiosis due to a lack of DSB or symmetrical binding or even a lack of linked sie)
-vector<double> Model::get_info_allele(int allname, map<int,vector<double>>* infoperallele){
+vector<double> Model::get_info_allele(int allname, map<int,vector<double>>* infoperallele, int  index_meiosis_success){
+////////////////////////////////////////////////////////////////////////modifier pour inclure fertilityindiv = double((*infoperallele)[allname][14])/double((*infoperallele)[allname][0]+(*infoperallele)[allname][14])
 	if(allname==-3){
-		return {0,0};
+		return {0,0,0};
 	}else{
 		typedef map<int,vector<double>>::iterator mi;
+		//if allname is found in infoperallele
 		if ( (*infoperallele).find(allname) != (*infoperallele).end() ) {
+			//if the denominator (number of realized meiosis) is different from 0
 			if((*infoperallele)[allname][0]+(*infoperallele)[allname][5]-(*infoperallele)[allname][3]!=0){
-				return vector<double>{(*infoperallele)[allname][4],double((*infoperallele)[allname][5]-(*infoperallele)[allname][3])/((*infoperallele)[allname][0]+(*infoperallele)[allname][5]-(*infoperallele)[allname][3])};
+				//return vector<double>{(*infoperallele)[allname][4],double((*infoperallele)[allname][5]-(*infoperallele)[allname][3])/double((*infoperallele)[allname][0]+(*infoperallele)[allname][5]-(*infoperallele)[allname][3]),double((*infoperallele)[allname][index_meiosis_success])/double((*infoperallele)[allname][index_meiosis_success]+(*infoperallele)[allname][0])};
+				return vector<double>{(*infoperallele)[allname][4],double((*infoperallele)[allname][5]-(*infoperallele)[allname][3])/double((*infoperallele)[allname][7]),double((*infoperallele)[allname][index_meiosis_success])/double((*infoperallele)[allname][7])};
 			}else{
-				return vector<double>{(*infoperallele)[allname][4],0};
+				//return vector<double>{(*infoperallele)[allname][4],0,double((*infoperallele)[allname][index_meiosis_success])/double((*infoperallele)[allname][index_meiosis_success]+(*infoperallele)[allname][0])};
+				return vector<double>{(*infoperallele)[allname][4],0,double((*infoperallele)[allname][index_meiosis_success])/double((*infoperallele)[allname][7])};
 			}
 		}
 		else{
@@ -2471,7 +2532,10 @@ Ensuite, on calcul la fitness de l'individus :
 	
 	map<int,double> fertmoy_sig_het;
 	map<int,double> fertmoy_sig_hom;
-
+	
+	map<int,vector<double>> propactsymmoy;///////////////////////////////////////////////////////
+	map<int,vector<double>> propactasymmoy;///////////////////////////////////////////////////////
+	map<int,vector<double>> propnonactmoy;///////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////
 	double qindmoy=0;
 	double fertindmoy=0;
@@ -2644,6 +2708,9 @@ Ensuite, on calcul la fitness de l'individus :
 					double moyprobalinkb2a=0;
 					double moyprobalinka=0;
 					double moyprobalinkb=0;
+					double propactsym=0;/////////////////////////////////////////////
+					double propactasym=0;//////////////////////////////////////////////
+					double propnonact=0;/////////////////////////////////////////////
 					for(auto const &it : Siteforeacheallele_[genotype_indiv[i]]){
 						double xa=0;
 						double xb=0;
@@ -2662,6 +2729,15 @@ Ensuite, on calcul la fitness de l'individus :
 						moyprobalinkb2a+=puissance_double(2,xb)*xa;
 						moyprobalinka+=xa;
 						moyprobalinkb+=xb;
+						////////////////////////////////////////////////
+						if(xa!=0 and xb!=0){
+							propactsym+=1;
+						}else if(xa!=0 or xb!=0){
+							propactasym+=1;
+						}else{
+							propnonact+=1;
+						}
+						////////////////////////////////////////////////////////
 					}
 					if(ind_hom_het==0){
 						infoallele[genotype_indiv[i]].push_back(moyprobalinkab/nbsite_);
@@ -2669,6 +2745,9 @@ Ensuite, on calcul la fitness de l'individus :
 						infoallele[genotype_indiv[i]].push_back(moyprobalinkb2a/nbsite_);
 						infoallele[genotype_indiv[i]].push_back(moyprobalinka/nbsite_);
 						infoallele[genotype_indiv[i]].push_back(moyprobalinkb/nbsite_);
+						infoallele[genotype_indiv[i]].push_back(propactsym/nbsite_);////////////////////////////////////
+						infoallele[genotype_indiv[i]].push_back(propactasym/nbsite_);///////////////////////////////////
+						infoallele[genotype_indiv[i]].push_back(propnonact/nbsite_);////////////////////////////////////
 					}
 					
 					if((homoz and ind_hom_het==0) or (homoz==0 and ind_hom_het==1)){
@@ -2840,6 +2919,19 @@ Ensuite, on calcul la fitness de l'individus :
 		}
 		qindmoy+=qal;
 		fertindmoy+=(1-exp(-nbDSB_*qal));
+		if(homoz){////////////////////////////////////////////////////////////////////////
+			propactsymmoy[genotype_indiv[0]].push_back(infoallele[genotype_indiv[0]][5]);
+			propactasymmoy[genotype_indiv[0]].push_back(infoallele[genotype_indiv[0]][6]);
+			propnonactmoy[genotype_indiv[0]].push_back(infoallele[genotype_indiv[0]][7]);
+		}else{
+			propactsymmoy[genotype_indiv[0]].push_back(infoallele[genotype_indiv[0]][5]);
+			propactsymmoy[genotype_indiv[1]].push_back(infoallele[genotype_indiv[1]][5]);
+			propactasymmoy[genotype_indiv[0]].push_back(infoallele[genotype_indiv[0]][6]);
+			propactasymmoy[genotype_indiv[1]].push_back(infoallele[genotype_indiv[1]][6]);
+			propnonactmoy[genotype_indiv[0]].push_back(infoallele[genotype_indiv[0]][7]);
+			propnonactmoy[genotype_indiv[1]].push_back(infoallele[genotype_indiv[1]][7]);
+		}
+		//////////////////////////////////////////////////////////////////////
 	}
 	res[-1].push_back(qindmoy/N_);
 	res[-1].push_back(fertindmoy/N_);
@@ -2927,6 +3019,18 @@ Ensuite, on calcul la fitness de l'individus :
 		}else{
 			res[it.first].push_back(0);
 		}
+		////////////////////////////////////////////////////////////////
+		double propactsymmoyall=0;
+		double propactasymmoyall=0;
+		double propnonactmoyall=0;
+		for(int i=0; i<propactsymmoy[it.first].size(); i++){
+			propactsymmoyall+=propactsymmoy[it.first][i];
+			propactasymmoyall+=propactasymmoy[it.first][i];
+			propnonactmoyall+=propnonactmoy[it.first][i];
+		}
+		res[it.first].push_back(propactsymmoyall/ propactsymmoy[it.first].size());
+		res[it.first].push_back(propactasymmoyall/ propactasymmoy[it.first].size());////////////////////////////////////////////////
+		res[it.first].push_back(propnonactmoyall/ propnonactmoy[it.first].size());////////////////////////////////////////////////
 	}
 	
 	
