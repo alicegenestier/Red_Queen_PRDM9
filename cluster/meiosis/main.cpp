@@ -344,9 +344,7 @@ int main(int argc, char* argv[])    {
 	cout<<endl;
 	cout<<"nb of failed meiosis : "<<model1.nbfailedmeiosis()<<endl;*/
 	
-	model1.manygenerations();/////////////////////////////////////////////////////////////////////////////////////
-	
-	/*cout<<"pop1 :"<<endl;
+		/*cout<<"pop1 :"<<endl;
 	model1.printpop(0,model1.populations1());
 	cout<<"pop2 :"<<endl;
 	model1.printpop(0,model1.populations2());
@@ -369,16 +367,22 @@ int main(int argc, char* argv[])    {
 	}
 	*/
 	
-	t3=clock();
-	temps2=(float)(t3-t2)/CLOCKS_PER_SEC;
-	printf("temps2 = %f\n", temps2);
-	
-	/*cout<<"test choosemanymigration :"<<endl;
+		/*cout<<"test choosemanymigration :"<<endl;
 	vector<int> vectsite = model1.choosemanymigration(15);
 	for (auto i : vectsite){
 		cout<<' '<<i;
 	}
 	cout<<'\n';*/
+	
+	model1.manygenerations();
+	
+
+	
+	t3=clock();
+	temps2=(float)(t3-t2)/CLOCKS_PER_SEC;
+	printf("temps2 = %f\n", temps2);
+	
+
 	
 
 return 0;
