@@ -45,7 +45,7 @@ int main(int argc, char* argv[])    {
 	bool zygosity = false;
 	bool withDSB = false;
 	int everygen = 10;
-	double m = 0.1;
+	double m = 0;
 	double alpha = 0.5;
 	double beta = 0.5;
 	int nbgenmig = -1;

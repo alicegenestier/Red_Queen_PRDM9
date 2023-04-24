@@ -60,6 +60,9 @@ class Model {
 	double q();
 	double q1();
 	double q2();
+	double qsym();
+	double qsym1();
+	double qsym2();
 	bool withDSB();
 	double w();
 	string name();
@@ -70,11 +73,11 @@ class Model {
 	map<int,vector<double>> infoperallele1();
 	map<int,vector<double>> infoperallele2();
 	map<int,vector<double>> infoperallele_hom();
-	//map<int,vector<double>> infoperallele1_hom();
-	//map<int,vector<double>> infoperallele2_hom();
+	map<int,vector<double>> infoperallele1_hom();//////////////////
+	map<int,vector<double>> infoperallele2_hom();//////////////////
 	map<int,vector<double>> infoperallele_het();
-	//map<int,vector<double>> infoperallele1_het();
-	//map<int,vector<double>> infoperallele2_het();
+	map<int,vector<double>> infoperallele1_het();//////////////////
+	map<int,vector<double>> infoperallele2_het();//////////////////
 	double alpha();
 	double beta();
 	int nbgenmig();
@@ -86,6 +89,10 @@ class Model {
 	bool isanalytic();
 	double qnum();
 	double qdenom();
+	double qnum1();
+	double qnum2();
+	double qdenom1();
+	double qdenom2();
 	double ctot();
 	int quantilenb();
 	int nbmeiperind(); 
@@ -145,6 +152,13 @@ class Model {
 	vector<map<int,vector<double>>> q_fert_individual_analytique(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop, map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het);//Give the mean q, fertility and sigma for each allele present in the population
 	double Mean_fert_new_allele(vector<vector<int>>* genotype, vector<vector<vector<int>>>* pop, map<int,vector<double>>* infoperallele_het);//Give the mean fertility of a new allele in all possible heterozygot context in the population
 	vector<double> sigma_q_w_0();//Give the mean q, fertility, sigma and cfree/ctot for a new allele : in parameters file
+	double if_allele_print_else_nan(map<int,vector<double>> map_allele, int allele_nb, int third_int);/////////////////////////
+	///////////////////////////////////////////
+	map<int,vector<double>> q_fert_hybrid_analytic_general(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, vector<map<int,vector<double>>*> vectinfo_hom, vector<map<int,vector<double>>*> vectinfo_het);
+	void get_q_fert_hybrid_analytic(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, vector<map<int,vector<double>>*> vectinfo_hom, vector<map<int,vector<double>>*> vectinfo_het, map<int,vector<double>>* res_q, map<int,vector<double>>* res_fert);
+	void q_fert_two_hap_analytic(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom, vector<map<int,vector<double>>*> vectinfo_hom, vector<map<int,vector<double>>*> vectinfo_het, map<int,vector<double>>* res_q, map<int,vector<double>>* res_fert);
+	///////////////////////////////////////////
+	
 	
 	protected:
 	//============================
@@ -180,9 +194,11 @@ class Model {
 	int everygen_; //nb of generation at which we want to print the results in the files
 	bool ismigration_; //is there migration
 	double q_; //probability of symmetrical binding + DSB
-	double qsym_;//
 	double q1_;//probability of symmetrical binding + DSB for pop 1
 	double q2_;//probability of symmetrical binding + DSB for pop 2
+	double qsym_;//
+	double qsym1_;//
+	double qsym2_;//
 	bool withDSB_; //do we take into account the 2 DSB at one site as a cause of failed meiosis
 	double w_; //neutral site mutation rate
 	string name_; //name of the files
@@ -194,10 +210,10 @@ class Model {
 	map<int,vector<double>> infoperallele_het_;//store information for each allele in heterozygous state such as the numer of symetrical binding or the nb of failed meiosis per allele
 	map<int,vector<double>> infoperallele1_; // store information for each allele such as the numer of symetrical binding or the nb of failed meiosis per allele for pop 1
 	map<int,vector<double>> infoperallele2_; // store information for each allele such as the numer of symetrical binding or the nb of failed meiosis per allele for pop 2
-	//map<int,vector<double>> infoperallele1_hom_; // totnbfail, 2dsb, nodsb, nosym, q, totnbok
-	//map<int,vector<double>> infoperallele2_hom_; //
-	//map<int,vector<double>> infoperallele1_het_; // totnbfail, 2dsb, nodsb, nosym, q, totnbok
-	//map<int,vector<double>> infoperallele2_het_; //
+	map<int,vector<double>> infoperallele1_hom_; //////////////////
+	map<int,vector<double>> infoperallele2_hom_; //////////////////
+	map<int,vector<double>> infoperallele1_het_; //////////////////
+	map<int,vector<double>> infoperallele2_het_; //////////////////
 	double alpha_; //first param of the beta distribution
 	double beta_; //second param of the beta distribution
 	int nbgenmig_; //nb of the generation at which we want to split de pop for migration (if = 0 => begin directly with 2 pop)
@@ -208,7 +224,11 @@ class Model {
 	bool issampling_;//do we want the result from the sampling
 	bool isanalytic_;//do we want the analytical results
 	double qdenom_; //denominator of q
+	double qdenom1_; //denominator of q
+	double qdenom2_; //denominator of q
 	double qnum_; //numerator of q
+	double qnum1_; //numerator of q
+	double qnum2_; //numerator of q
 	double ctot_;//total concentration for 1 PRDM9 allele in heterozygot
 	int quantilenb_;//number of categories for the affinity distribution
 	map<double,vector<double>> nbsitesperquantile_;//[quantile category]{mean of the quantile category, number of active site in each category of quantile}
