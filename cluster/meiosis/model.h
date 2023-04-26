@@ -111,7 +111,7 @@ class Model {
 	vector<int> vectfreesites(vector<int> vect, int nb); //return the index, in the vector vect, of all positions equal to nb
 	vector<vector<int>> occupiedsites(vector<int> vect, vector<vector<int>>* genotype); //return the index of all occupied positions
 	void sitemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype); // for each position with allele, probability v to mutate and if mutation, choose randomly 1 chrom to mutate
-	void allelemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,double>* Ageallele, vector<int>vectnbind); // for each chromosome, mutation of allele with probability u
+	void allelemutation(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,double>* Ageallele, vector<int>vectnbind, double num_pop); // for each chromosome, mutation of allele with probability u
 	void updatemissingallele(); //update the map if one allele has gone extinct : allele suppressed in map, all positions of this allele are set to -1 (free position) and all the activations are set to one
 	void printpop(int n, vector<vector<vector<int>>> population); //print popuation
 	void printgen(int n, vector<vector<int>> genotype); //print genotype vector
