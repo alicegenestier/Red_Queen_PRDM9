@@ -50,8 +50,8 @@ int main(int argc, char* argv[])    {
 	double beta = 0.5;
 	int nbgenmig = -1;
 	int popsamesize = true;
-	int nbloop = 1000;
-	int nbcore = 4;
+	int nbhyb = 1000;
+	int nbcore = 1;
 	bool isallele = true;
 	bool issampling = true;
 	bool isanalytic = true;
@@ -157,9 +157,9 @@ int main(int argc, char* argv[])    {
         	i++;
             popsamesize = atoi(argv[i]);
         }
-        else if (s == "-nbloop"){
+        else if (s == "-nbhyb"){
 			i++;
-			nbloop = atoi(argv[i]);
+			nbhyb = atoi(argv[i]);
 		}
 		else if (s == "-nbcore"){
 			i++;
@@ -215,7 +215,7 @@ int main(int argc, char* argv[])    {
 	t1=clock();
 	
 	cout<< "Test for Model constructor" <<endl;
-	Model model1(N, L, nbsite, indPrdm9, nballele, parityIndex, v, u, w, meanaff, varaff, nbDSB, nbGenerations, ismigration, zygosity, withDSB, everygen, m, alpha, beta, nbgenmig, popsamesize, nbloop, nbcore, isallele, issampling, isanalytic, ctot, targetcomp, quantilenb, nbmeiperind, cfreethreshold, affinityUniform, name);
+	Model model1(N, L, nbsite, indPrdm9, nballele, parityIndex, v, u, w, meanaff, varaff, nbDSB, nbGenerations, ismigration, zygosity, withDSB, everygen, m, alpha, beta, nbgenmig, popsamesize, nbhyb, nbcore, isallele, issampling, isanalytic, ctot, targetcomp, quantilenb, nbmeiperind, cfreethreshold, affinityUniform, name);
 	
 	t2=clock();
 	temps1=(float)(t2-t1)/CLOCKS_PER_SEC;

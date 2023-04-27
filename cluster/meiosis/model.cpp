@@ -28,7 +28,7 @@ using namespace std;
 //============================//
 //         Constructors	      //
 //============================//
-Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbloop, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, double cfreethreshold,bool affinityUniform, string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen), m_(m), alpha_(alpha), beta_(beta), nbgenmig_(nbgenmig), popsamesize_(popsamesize), nbloop_(nbloop), nbcore_(nbcore), isallele_(isallele), issampling_(issampling), isanalytic_(isanalytic), ctot_(ctot), targetcomp_(targetcomp), quantilenb_(quantilenb), nbmeiperind_(nbmeiperind), cfreethreshold_(cfreethreshold),affinityUniform_(affinityUniform), name_(name) 
+Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbhyb, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, double cfreethreshold,bool affinityUniform, string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen), m_(m), alpha_(alpha), beta_(beta), nbgenmig_(nbgenmig), popsamesize_(popsamesize), nbhyb_(nbhyb), nbcore_(nbcore), isallele_(isallele), issampling_(issampling), isanalytic_(isanalytic), ctot_(ctot), targetcomp_(targetcomp), quantilenb_(quantilenb), nbmeiperind_(nbmeiperind), cfreethreshold_(cfreethreshold),affinityUniform_(affinityUniform), name_(name) 
 {
 
 	//Create the model : the population of N individuals with 2 homologous chromosomes per individual, on each chromosome there is a Prdm9 locus (at position indPrdm9_) to witch is associated an allele (number >=0). Each allele recognizes some target sites along the chromosome. Each site is either active (1) or inactive (0) and posess its own binding affinity.
@@ -385,9 +385,9 @@ bool Model::popsamesize()
 {
 	return popsamesize_;
 }
-int Model::nbloop()
+int Model::nbhyb()
 {
-	return nbloop_;
+	return nbhyb_;
 }
 int Model::nbcore()
 {
@@ -1598,49 +1598,49 @@ void Model::fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vect
 	//:::::::::::::::::::::::::://
 	//   Fill next generation   //
 	//:::::::::::::::::::::::::://
+	
 	//#pragma omp parallel for num_threads(nbcore_)
-	for(int indnewpop=0; indnewpop<2*N_; indnewpop++)
-	{
-		
-		//#pragma omp critical
-		tps3=clock();
-		int indiv = 2*choose(N_);
-		int nb_meiosis=0;
-		int meiosisState=-1;
-		while(meiosisState==-1 and nb_meiosis<nbmeiperind_)
-		{ //allows an ind to try performing many meiosis (nbmeiperind_) before stopping and choosing another one
-			meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv/*, nb_meiosis*/);
-			nb_meiosis+=1;
-		}
-		tps4=clock();
-		tps_meiosis=(float)(tps4-tps3)/CLOCKS_PER_SEC;
-		//printf("tps_meiosis = %f\n", tps_meiosis);
-		temps_moy+=tps_meiosis;
-		
-		nbmei+=1; //=> count only if one of the meiosis performed for this individual successed, it doesn't count how many meiosis the individual performed before successing
-		while (meiosisState==-1)
-		{//while the meiosis keeps failing, choose a new individual
-			nbmei2+=1;
-			tps5=clock();
+		for(int indnewpop=0; indnewpop<2*N_; indnewpop++)
+		{
+			//#pragma omp critical
+			tps3=clock();
 			int indiv = 2*choose(N_);
-			nb_meiosis=0;
+			int nb_meiosis=0;
+			int meiosisState=-1;
 			while(meiosisState==-1 and nb_meiosis<nbmeiperind_)
 			{ //allows an ind to try performing many meiosis (nbmeiperind_) before stopping and choosing another one
 				meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv/*, nb_meiosis*/);
 				nb_meiosis+=1;
 			}
-			(*nbfailedmeiosis)[nb_gen][3]+=1;
-			tps6=clock();
-			tps_meiosis=(float)(tps6-tps5)/CLOCKS_PER_SEC;
+			tps4=clock();
+			tps_meiosis=(float)(tps4-tps3)/CLOCKS_PER_SEC;
 			//printf("tps_meiosis = %f\n", tps_meiosis);
 			temps_moy+=tps_meiosis;
 			
-			nbmei+=1;
+			nbmei+=1; //=> count only if one of the meiosis performed for this individual successed, it doesn't count how many meiosis the individual performed before successing
+			while (meiosisState==-1)
+			{//while the meiosis keeps failing, choose a new individual
+				nbmei2+=1;
+				tps5=clock();
+				int indiv = 2*choose(N_);
+				nb_meiosis=0;
+				while(meiosisState==-1 and nb_meiosis<nbmeiperind_)
+				{ //allows an ind to try performing many meiosis (nbmeiperind_) before stopping and choosing another one
+					meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv/*, nb_meiosis*/);
+					nb_meiosis+=1;
+				}
+				(*nbfailedmeiosis)[nb_gen][3]+=1;
+				tps6=clock();
+				tps_meiosis=(float)(tps6-tps5)/CLOCKS_PER_SEC;
+				//printf("tps_meiosis = %f\n", tps_meiosis);
+				temps_moy+=tps_meiosis;
+				
+				nbmei+=1;
 
+			}
+			nbmei1+=1;
+			//cout<<nbmei1<<endl;
 		}
-		nbmei1+=1;
-		//cout<<nbmei1<<endl;
-	}
 	
 	temps_moy=temps_moy/nbmei;
 	cout<< "temps_moy = "<<temps_moy<<endl;
@@ -2098,6 +2098,8 @@ void Model::manygenerations(){
 		////////double mean_fertnewall;
 		vector<double> mean_fertnewall = vector<double>(2,0);////////////////////////////////////
 		
+		vector<vector<double>> q_fertility_hybrid_bis;/////////////////////////////////////////////////
+		
 		t6=clock();
 		temps_afterfillpop=(float)(t6-t5)/CLOCKS_PER_SEC;
 		printf("temps_afterfillpop = %f\n", temps_afterfillpop);
@@ -2147,7 +2149,7 @@ void Model::manygenerations(){
 				//mean_fertnewall = Mean_fert_new_allele(&genotypes_,&populations_);
 				//mean_fertnewall = log(Mean_fert_new_allele(&genotypes_,&populations_, &infoperallele_het_))-log(analytic_indiv[0][-1][1]); 
 				mean_fertnewall[0] = log(Mean_fert_new_allele(&genotypes_,&populations_, &infoperallele_het_))-log(analytic_indiv[0][-1][1]); ////////////////////////////////////
-				//q_fertility = get_q_fertility_indep(vectpop, vectgen, nbloop_, 1);//utile pour migration
+				//q_fertility = get_q_fertility_indep(vectpop, vectgen, nbhyb_, 1);//utile pour migration
 				
 				t7=clock();
 				temps_calcunit=(float)(t7-t6)/CLOCKS_PER_SEC;
@@ -2271,13 +2273,15 @@ void Model::manygenerations(){
 					mean_c_occup[indfile] = get_mean_coccup_cfree(vectgen[indfile], vectinfo_hom[indfile], vectinfo_het[indfile]);// mean concentration of PRDM9 protein occupying sites ////////////////////////
 					q_fertility = vector<double>{0,0};// mean symmetrical binding and mean fertility intra population /////// defini apres
 				}
+				
 				tot_allele_nb = get_allele_number(vectgen,true);//total number of allele in both populations
 				//FST : proportion of the total genetic variance contained in a subpopulation relative to the total genetic variance
 				FST_neutral = get_FST_neutral(vectpop);//FST for neutral sites
 				FST_PRDM9 = get_FST_PRDM9(vectgen);//FST for PRDM9 allele 
-				q_fertility_hybrid = get_q_fertility_indep(vectpop, vectgen, nbloop_, 0);//function computing q and fertility for hybrids
-				q_fertility_1 = get_q_fertility_indep(vectpop, vectgen, nbloop_, 1);//function computing q and fertility for population 1
-				q_fertility_2 = get_q_fertility_indep(vectpop, vectgen, nbloop_, 2);//function computing q and fertility for population 2
+				q_fertility_hybrid = get_q_fertility_indep(vectpop, vectgen, nbhyb_, 0);//function computing q and fertility for hybrids
+				q_fertility_1 = get_q_fertility_indep(vectpop, vectgen, nbhyb_, 1);//function computing q and fertility for population 1
+				q_fertility_2 = get_q_fertility_indep(vectpop, vectgen, nbhyb_, 2);//function computing q and fertility for population 2
+				
 				analytic_indiv_1=q_fert_individual_analytique(vectgen[0], vectpop[0], vectinfo_hom[0], vectinfo_het[0]); // mean symmetrical binding and mean fertility analytically calculated////////////////////////////////////
 				analytic_indiv_2=q_fert_individual_analytique(vectgen[1], vectpop[1], vectinfo_hom[1], vectinfo_het[1]); // mean symmetrical binding and mean fertility analytically calculated////////////////////////////////////
 				mean_sigma[0]=get_mean_sigma(vectgen[0], analytic_indiv_1); // mean sigma in the population////////////////////////////////////
@@ -2290,8 +2294,13 @@ void Model::manygenerations(){
 				//////////////////////////////////////
 				/*
 				mean_fertnewall = Mean_fert_new_allele(&genotypes_,&populations_);
-				q_fertility = get_q_fertility_indep(vectpop, vectgen, nbloop_, 1);//utile pour migration
+				q_fertility = get_q_fertility_indep(vectpop, vectgen, nbhyb_, 1);//utile pour migration
 				*/
+				//q_fertility_hybrid_bis=get_q_fertility_indep_bis(vectpop, vectgen, nbhyb_);
+				
+				t7=clock();
+				temps_calcunit=(float)(t7-t6)/CLOCKS_PER_SEC;
+				cout<<"temps_calcunit = " << temps_calcunit<<endl;
 				
 				for (auto const &it : Siteforeacheallele_)
 				{//for each allele
@@ -2387,6 +2396,9 @@ void Model::manygenerations(){
 						}
         			}
         		}
+        		t8=clock();
+				temps_calcloop=(float)(t8-t7)/CLOCKS_PER_SEC;
+				cout<<"temps_calcloop = " << temps_calcloop<<endl;;
         		
 			}
 			
@@ -3007,32 +3019,44 @@ void Model::migration(){
 //----------------------------------------------------------------------------------------------//
 //   give the mean probability of symetrical site and the mean of fertility in the population   //
 //----------------------------------------------------------------------------------------------//
-vector<double> Model::get_q_fertility_indep(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, int nbloop_, int nopop){
+vector<double> Model::get_q_fertility_indep(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, int nbhyb_, int nopop){
 	int nb_good_meiosis = 0;
 	int nb_no_sym = 0;
 	double moy_q = 0;
 	double moy_fertility;
 	double res;
-	for(int i=0; i<nbloop_; i++)
+	
+	clock_t tpsbeforeloop, tpsafterloop;
+	tpsbeforeloop=clock();
+	
+	for(int i=0; i<nbhyb_; i++)
 	{
-		if(vectpop.size()==1)
+		int nb_meiosis=0;
+		res=-1;
+		while((res==-1 or res==-2) and nb_meiosis<nbmeiperind_)
 		{
-			res = get_q(vectpop[0], vectgen[0]);
-		}
-		else if(vectpop.size()==2)
-		{
-			if(nopop==1)
+			if(vectpop.size()==1)
 			{
 				res = get_q(vectpop[0], vectgen[0]);
 			}
-			else if(nopop==2)
+			else if(vectpop.size()==2)
 			{
-				res = get_q(vectpop[1], vectgen[1]);
+				if(nopop==1)
+				{
+					res = get_q(vectpop[0], vectgen[0]);
+				}
+				else if(nopop==2)
+				{
+					res = get_q(vectpop[1], vectgen[1]);
+				}
+				else if(nopop==0)
+				{
+					res = get_q_hybrid(vectpop,vectgen);
+				}
 			}
-			else if(nopop==0)
-			{
-				res = get_q_hybrid(vectpop,vectgen);
-			}
+			cout<<"res_q_indiv : "<<res<<endl;
+			nb_meiosis+=1;
+			cout<<"nb_meiosis : "<<nb_meiosis<<endl;
 		}
 		if(res != -1 and res!= -2)
 		{
@@ -3044,8 +3068,13 @@ vector<double> Model::get_q_fertility_indep(vector<vector<vector<vector<int>>>*>
 			nb_no_sym++;
 		}
 	}
+	
+	tpsafterloop=clock();
+	double temps_boucle_intra_inter=(float)(tpsafterloop-tpsbeforeloop)/CLOCKS_PER_SEC;
+	cout<<"time_loop_intra_inter = "<<temps_boucle_intra_inter<<endl;
+	
 	moy_q=moy_q/double(nb_good_meiosis+nb_no_sym);
-	moy_fertility = double(nb_good_meiosis)/nbloop_;
+	moy_fertility = double(nb_good_meiosis)/nbhyb_;
 	return vector<double> {moy_q,moy_fertility};
 }
 
@@ -3485,6 +3514,8 @@ Then, we calculate the fitness of the individuals :
 	vector<int> newpos = choosemany(nbsite_, freepos);
 	vector<double> infoallele_sig; 
 	
+	clock_t tpsbeforeloop, tpsafterloop, tpsaftermoy;
+	tpsbeforeloop=clock();
 	
 	for (int indiv=0; indiv<2*N_; indiv=indiv+2)
 	{ // for each individual in the population
@@ -3988,6 +4019,10 @@ Then, we calculate the fitness of the individuals :
 	res[-1].push_back(qindmoy/N_); // calculation of mean q in the population
 	res[-1].push_back(fertindmoy/N_); // calculation of mean fertility in the population
 	
+	tpsafterloop=clock();
+	double temps_boucle_intra=(float)(tpsafterloop-tpsbeforeloop)/CLOCKS_PER_SEC;
+	cout<<"time_loop_analytic = "<<temps_boucle_intra<<endl;
+	
 	//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::://
 	//   Calculation of mean q and mean fertility per allele in the population   //
 	//::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::://
@@ -4143,6 +4178,10 @@ Then, we calculate the fitness of the individuals :
 	
 	res_hemi[-3].push_back(0);
 	res_hemi[-3].push_back(0);
+	
+	tpsaftermoy=clock();
+	double temps_moy_intra=(float)(tpsaftermoy-tpsafterloop)/CLOCKS_PER_SEC;
+	cout<<"time_loop_analytic_moy = "<<temps_moy_intra<<endl;
 	
 	return vector<map<int,vector<double>>>{res,res_hom,res_het,res_hemi};
 }
@@ -4698,11 +4737,19 @@ map<int,vector<double>> Model::q_fert_hybrid_analytic_general(vector<vector<vect
 	map<int,vector<double>> res;
 	map<int,vector<double>> res_q;
 	map<int,vector<double>> res_fert;
-	for(int index_hybride=0; index_hybride<nbloop_; index_hybride++)
+	
+	clock_t tpsbeforeloop, tpsafterloop, tpsaftermoy;
+	tpsbeforeloop=clock();
+	
+	for(int index_hybride=0; index_hybride<nbhyb_; index_hybride++)
 	{
 		//cout<<"index hybride : "<<index_hybride<<endl;
 		get_q_fert_hybrid_analytic(vectpop, vectgen, vectinfo_hom, vectinfo_het, &res_q, &res_fert); // size 2 (q, fert)
 	}
+	
+	tpsafterloop=clock();
+	double temps_boucle_intra_inter=(float)(tpsafterloop-tpsbeforeloop)/CLOCKS_PER_SEC;
+	cout<<"time_loop_analytic_hyb = "<<temps_boucle_intra_inter<<endl;
 	
 	for(auto const &it_allele : res_q)
 	{
@@ -4725,7 +4772,11 @@ map<int,vector<double>> Model::q_fert_hybrid_analytic_general(vector<vector<vect
 		res[it_allele.first].push_back(double(sum_fert)/double(it_allele.second.size()));
 	}
 	
-	/*cout<<"Resultat final : "<<endl;
+	tpsaftermoy=clock();
+	double temps_moy_inter=(float)(tpsaftermoy-tpsafterloop)/CLOCKS_PER_SEC;
+	cout<<"time_loop_analytic_hyb = "<<temps_moy_inter<<endl;
+	
+	cout<<"Final result : "<<endl;
 	for(auto const &it_allele : res)
 	{
 		cout<<it_allele.first<< " : ";
@@ -4734,7 +4785,7 @@ map<int,vector<double>> Model::q_fert_hybrid_analytic_general(vector<vector<vect
 			cout<<it_q<<" ";
 		}
 		cout<<endl;
-	}*/
+	}
 	
 	
 	return res;
@@ -4769,7 +4820,15 @@ void Model::get_q_fert_hybrid_analytic(vector<vector<vector<vector<int>>>*> vect
 			cout<<endl;
 		}*/
 		
+		clock_t tpsbeforegamete, tpsaftergamete, tpsafterwhilegamete;
+		tpsbeforegamete=clock();
+		
 		vector<int> gamete = get_one_gamete(genotype_parent,parent_chrom);
+		
+		tpsaftergamete=clock();
+		double temps_gamete=(float)(tpsaftergamete-tpsbeforegamete)/CLOCKS_PER_SEC;
+		//cout<<"temps_gamete = "<<temps_gamete<<endl;
+		
 		/*cout<<"Gamete : "<<endl;
 		for(auto const it_gamete : gamete)
 		{
@@ -4811,6 +4870,11 @@ void Model::get_q_fert_hybrid_analytic(vector<vector<vector<vector<int>>>*> vect
 			cout<<endl;*/
 			
 		}
+		
+		tpsafterwhilegamete=clock();
+		double temps_gamete_while=(float)(tpsafterwhilegamete-tpsaftergamete)/CLOCKS_PER_SEC;
+		//cout<<"temps_gamete_while = "<<temps_gamete_while<<endl;
+		
 		//cout<<"SUCCESS !"<<endl;
 		indiv_chrom.push_back(gamete);
 		genotype_indiv.push_back(gamete[indPrdm9_]);
@@ -5219,4 +5283,291 @@ void Model::q_fert_two_hap_analytic(vector<int> genotype_indiv, vector<vector<in
 	//return vector<map<int,vector<double>>>{qmoy,fertmoy};
 }
 
+
+
+
+
+
+
+
+
+
+
+
+/*vector<vector<double>> Model::get_q_fertility_indep_bis(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, int nbhyb_){
+	vector<int> nb_good_meiosis = vector<int>{0,0,0};
+	vector<int> nb_no_sym = vector<int>{0,0,0};
+	vector<double> moy_q = vector<double>{0,0,0};
+	vector<double> moy_fertility = vector<double>{0,0,0};
+	vector<double> res;
+	
+	clock_t tpsbeforeloop, tpsafterloop;
+	tpsbeforeloop=clock();
+	
+	for(int i=0; i<nbhyb_; i++)
+	{
+	
+		res = get_q_hybrid_bis(vectpop,vectgen);//{q 1, q 2, q hyb}
+		
+		// A CHANGER
+		for(int ind_get_q=0; ind_get_q<3; ind_get_q++)
+		{
+			if(res[ind_get_q]!= -1 and res[ind_get_q]!= -2)
+			{
+				nb_good_meiosis[ind_get_q]=nb_good_meiosis[ind_get_q]+1;
+				moy_q[ind_get_q]=moy_q[ind_get_q]+res[ind_get_q];
+			}
+			else if(res[ind_get_q] == -2)
+			{
+				nb_no_sym[ind_get_q]=nb_no_sym[ind_get_q]+1;
+			}
+		}
+	}
+	
+	tpsafterloop=clock();
+	double temps_boucle_intra_inter=(float)(tpsafterloop-tpsbeforeloop)/CLOCKS_PER_SEC;
+	cout<<"temps_boucle_intra_inter_bis = "<<temps_boucle_intra_inter<<endl;
+	
+	for(int ind_get_q=0; ind_get_q<3; ind_get_q++)
+	{
+		moy_q[ind_get_q]=moy_q[ind_get_q]/double(nb_good_meiosis[ind_get_q]+nb_no_sym[ind_get_q]);
+		moy_fertility[ind_get_q] = double(nb_good_meiosis[ind_get_q])/nbhyb_;
+	}
+	return vector<vector<double>> {moy_q,moy_fertility};
+}
+
+
+vector<double> Model::get_q_hybrid_bis(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen){
+	vector<int> genotype_indiv;
+	vector<vector<int>> indiv_chrom;
+	
+	vector<double> q_indiv;
+	
+	for(int i=0; i<2; i++)
+	{
+		int indiv = 2*choose(N_);
+		vector<int> genotype_parent = vector<int>{(*vectgen[i])[parityIndex_][indiv],(*vectgen[i])[parityIndex_][indiv+1]};
+		vector<vector<int>> parent_chrom = vector<vector<int>>{(*vectpop[i])[parityIndex_][indiv],(*vectpop[i])[parityIndex_][indiv+1]};
+		
+		vector<vector<double>> gamete_double = get_one_gamete_bis(genotype_parent,parent_chrom);
+		vector<int> gamete(gamete_double[0].begin(), gamete_double[0].end());
+		
+		q_indiv.push_back(gamete_double[1][0]);
+		
+		while(gamete_double[0][0] == -1 or gamete_double[0][0] == -2)
+		{
+			indiv = 2*choose(N_);
+			genotype_parent = vector<int> {(*vectgen[i])[parityIndex_][indiv],(*vectgen[i])[parityIndex_][indiv+1]};
+			parent_chrom = vector<vector<int>> {(*vectpop[i])[parityIndex_][indiv],(*vectpop[i])[parityIndex_][indiv+1]};
+			gamete_double = get_one_gamete_bis(genotype_parent,parent_chrom);
+			vector<int> gamete(gamete_double[0].begin(), gamete_double[0].end());
+		}
+		indiv_chrom.push_back(gamete);
+		genotype_indiv.push_back(gamete[indPrdm9_]);
+	}
+	
+	q_indiv.push_back(q_two_hap(genotype_indiv, indiv_chrom));
+	
+	return q_indiv;
+}
+
+//transform(intVec.begin(), intVec.end(), doubleVec.begin(), [](int x) { return (double)x;});
+
+vector<vector<double>> Model::get_one_gamete_bis(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom){ ///////////////////////////////////////////////// CHANGE IND_GENE (take into account concentration)
+	double q;
+	int ind_gen=2;
+	vector<int> zygote{genotype_indiv[0]};
+	if(genotype_indiv[0]!=genotype_indiv[1])
+	{ // if we give only one indiv don't need gen
+		if(zygosity_)
+		{
+			ind_gen=1;
+		}
+		zygote.push_back(genotype_indiv[1]);
+	}
+	vector<vector<int>>summarysites;
+	vector<int>Z;
+	vector<int> vectsites;
+	int nblinksite = 0;
+	for(auto z : zygote)
+	{
+		for(auto i : Siteforeacheallele_[z])
+		{
+			vector<int>linkedsites=vector<int>(5,0);
+			linkedsites[0]=i;
+			double p_occup=ind_gen*Affinity_[i]/(1+ind_gen*Affinity_[i]);
+			bool islinked=false;
+			for(int j=0; j<4; j++)
+			{
+				int chrom=j/2;
+				if(indiv_chrom[chrom][i]==1)
+				{ // if we give only one indiv don't need pop
+					if(bernoulli_draw(p_occup))
+					{
+						linkedsites[j+1]=1;
+						islinked=true;
+						nblinksite+=1;
+					}
+				}
+			}
+			if(islinked==true)
+			{
+				vectsites.push_back(i);
+				summarysites.push_back(linkedsites);
+				Z.push_back(z);
+			}
+		}
+	}
+	double pDSB=double(nbDSB_)/nblinksite;
+	vector<vector<int>>vectsitedsb;
+	vector<vector<int>> vect_CO;
+	//vector<double>alleleDSB;
+	//vector<double>alleleCO;
+	for(int i=0; i<summarysites.size(); i++)
+	{
+		vector<int> link = vectfreesites(vector<int>(summarysites[i].begin()+1, summarysites[i].end()), 1);
+		int nbdsbpersite=0;
+		bool dsb=false;
+		for(auto j : link)
+		{
+			if(bernoulli_draw(pDSB))
+			{
+				dsb=true;
+				summarysites[i][j+1]=2;
+				nbdsbpersite+=1;
+				vectsitedsb.push_back({i,j});
+				//alleleDSB.push_back(Z[i]);
+				try
+				{
+					if (nbdsbpersite>1 and withDSB_)
+					{
+						throw int(0);
+					}
+				}
+				catch(int const& error_nb)
+				{
+					if(error_nb==0)
+					{
+						//cerr << "2 DSB on one site" << endl;
+					}
+					return {{-1},{-1}};
+				}
+			}
+		}
+		vector<int> vco;
+		if (dsb)
+		{
+			for(int indexnbdsb = 0; indexnbdsb<nbdsbpersite; indexnbdsb++)
+			{
+				vco = {summarysites[i][0],vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]};
+				if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==0 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==1)
+				{
+					if((summarysites[i][3]==1 or summarysites[i][3]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=2)
+					{
+						vco.push_back(2);
+					}
+					if((summarysites[i][4]==1 or summarysites[i][4]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=3)
+					{
+						vco.push_back(3);
+					}
+				}
+				else if(vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==2 or vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]==3 or summarysites[i][1]==2)
+				{
+					if((summarysites[i][1]==1 or summarysites[i][1]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=0 )
+					{
+						vco.push_back(0);
+					}
+					if((summarysites[i][2]==1 or summarysites[i][2]==2) and vectsitedsb[vectsitedsb.size()-indexnbdsb-1][1]!=1)
+					{
+						vco.push_back(1);
+					}
+				}
+				if(vco.size()>2)
+				{
+					vect_CO.push_back(vco);
+					//alleleCO.push_back(Z[i]);
+				}
+			}
+		}
+	}
+	try
+	{
+		if(vectsitedsb.size()==0)
+		{
+			throw int(1);
+		}
+		else if(not vect_CO.size())
+		{
+			throw int(2);
+		}
+	}
+	catch(int const& error_nb)
+	{
+		if(error_nb==1)
+		{
+			//cerr << "No DSB" << endl;
+			return {{-1},{-1}};
+		}
+		else if(error_nb==2)
+		{
+			//cerr << "No symmetrical sites (binding + DSB)" << endl;
+			return {{-2},{-2}};
+		}
+	}
+	q=double(vect_CO.size())/(vectsitedsb.size());
+	vector<int> index_CO;
+	int choosevect=choose(vect_CO.size());
+	if(vect_CO[choosevect].size()==4)
+	{
+		if(bernoulli_draw(0.5))
+		{
+			index_CO={vect_CO[choosevect][0],vect_CO[choosevect][1],vect_CO[choosevect][2]};
+		}
+		else
+		{
+			index_CO={vect_CO[choosevect][0],vect_CO[choosevect][1],vect_CO[choosevect][3]};
+		}
+	}
+	else
+	{
+		index_CO=vect_CO[choosevect];	
+	}
+	int no_chromatide=choose(4);
+	int no_current_chrom = 0;
+	int no_homologue_chrom = 1;
+	if(no_chromatide==2 or no_chromatide==3)
+	{
+		no_current_chrom= 1;
+		no_homologue_chrom= 0;
+	}
+	vector<double> new_indiv = vector<double>(L_,0);
+	if(no_chromatide==index_CO[1] or no_chromatide==index_CO[2])
+	{
+		copy( indiv_chrom[no_current_chrom].begin(), indiv_chrom[no_current_chrom].begin()+index_CO[0], new_indiv.begin() );
+		copy( indiv_chrom[no_homologue_chrom].begin()+index_CO[0], indiv_chrom[no_homologue_chrom].end(), new_indiv.begin()+index_CO[0] );
+		for(auto index_dsb : vectsitedsb)
+		{
+			if(index_dsb[1]==no_chromatide and summarysites[index_dsb[0]][0]<index_CO[0])
+			{
+				new_indiv[summarysites[index_dsb[0]][0]]=indiv_chrom[no_homologue_chrom][summarysites[index_dsb[0]][0]];
+			}
+			else if((index_dsb[1]==index_CO[1] or index_dsb[1]==index_CO[2]) and summarysites[index_dsb[0]][0]>index_CO[0])
+			{
+				new_indiv[summarysites[index_dsb[0]][0]]=indiv_chrom[no_current_chrom][summarysites[index_dsb[0]][0]];
+			}
+		}
+	}
+	else
+	{
+		copy( indiv_chrom[no_current_chrom].begin(), indiv_chrom[no_current_chrom].end(), new_indiv.begin() );
+		for(auto index_dsb : vectsitedsb)
+		{
+			if(index_dsb[1]==no_chromatide)
+			{
+				new_indiv[summarysites[index_dsb[0]][0]]=indiv_chrom[no_homologue_chrom][summarysites[index_dsb[0]][0]];				
+			}
+		}
+	}
+	return {new_indiv,{q}};
+}*/
 

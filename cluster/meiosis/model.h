@@ -19,7 +19,7 @@ class Model {
 	// Default	
 	Model();
 	//with arg
-	Model(int N, int L, int nbsite, int indPrdm9, int nballele, int parityIndex, double v, double u, double w, double meanaff, double varaff, int nbDSB, int nbGenerations, bool ismigration, bool zygosity, bool withDSB, int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbloop, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, double cfreethreshold, bool affinityUniform, string name);
+	Model(int N, int L, int nbsite, int indPrdm9, int nballele, int parityIndex, double v, double u, double w, double meanaff, double varaff, int nbDSB, int nbGenerations, bool ismigration, bool zygosity, bool withDSB, int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbhyb, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, double cfreethreshold, bool affinityUniform, string name);
 	
 	//============================
 	//        Destructors
@@ -82,7 +82,7 @@ class Model {
 	double beta();
 	int nbgenmig();
 	bool popsamesize();
-	int nbloop();
+	int nbhyb();
 	int nbcore();
 	bool isallele();
 	bool issampling();
@@ -140,7 +140,7 @@ class Model {
 	double get_q(vector<vector<vector<int>>>* population, vector<vector<int>>* genotype);//give q indepedently from the system (sampling) for the next generation
 	double get_q_hybrid(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen);//give q of hybride
 	vector<int> get_one_gamete(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom);//give one gamete of an individual
-	vector<double> get_q_fertility_indep(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, int nbloop_, int nopop);//give the mean probability of symetrical site and the mean of fertility in the population
+	vector<double> get_q_fertility_indep(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, int hyb_, int nopop);//give the mean probability of symetrical site and the mean of fertility in the population
 	double get_FST_neutral(vector<vector<vector<vector<int>>>*> vectpop);//give the FST of neutral site
 	double get_FST_PRDM9(vector<vector<vector<int>>*> vectgen);//give the PRDM9 FST
 	double get_mean_age(vector<vector<int>>* genotype, map<int,double>* Ageallele);//get the mean age of the alleles segregating in the population
@@ -159,6 +159,11 @@ class Model {
 	void q_fert_two_hap_analytic(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom, vector<map<int,vector<double>>*> vectinfo_hom, vector<map<int,vector<double>>*> vectinfo_het, map<int,vector<double>>* res_q, map<int,vector<double>>* res_fert);
 	///////////////////////////////////////////
 	
+	////////////////////////////////////////////
+	/*vector<vector<double>> get_q_fertility_indep_bis(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, int nbhyb_);
+	vector<double> get_q_hybrid_bis(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen);
+	vector<vector<double>> get_one_gamete_bis(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom);*/
+	//////////////////////////////////////////
 	
 	protected:
 	//============================
@@ -218,7 +223,7 @@ class Model {
 	double beta_; //second param of the beta distribution
 	int nbgenmig_; //nb of the generation at which we want to split de pop for migration (if = 0 => begin directly with 2 pop)
 	bool popsamesize_; //two pop for migration has the same size of the initial pop or devided by two
-	int nbloop_; //nb loop for indep q and fertility
+	int nbhyb_; //nb loop for indep q and fertility
 	int nbcore_;//nb core for open mp
 	bool isallele_;//do we want the result for each allele
 	bool issampling_;//do we want the result from the sampling
