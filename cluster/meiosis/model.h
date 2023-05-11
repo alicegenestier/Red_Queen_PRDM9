@@ -118,7 +118,7 @@ class Model {
 	void printposallele(); //print site positions for each allele
 	void printallelepos(); //print Allele for each position
 	void printaffinity(); //print Affinity
-	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele,map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom, int indiv/*, int nb_meiosis*/); //Perform the meiosis of one individual and return 0 if the meiosis fails somewhere or 1 if the meiosis is successfull
+	int Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele,map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom, int indiv, int nb_meiosis); //Perform the meiosis of one individual and return 0 if the meiosis fails somewhere or 1 if the meiosis is successfull
 	void fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vector<vector<int>>* genotype, map<int,vector<double>>* infoperallele, map<int,vector<double>>* infoperallele_hom, map<int,vector<double>>* infoperallele_het, vector<vector<int>>* nbfailedmeiosis, double* q, double* qsym, double* qnum, double* qdenom); //methode that fill new population (make as many meiosis as it is necessary to fill the entire new population)
 	void manygenerations(); //methode which mix together and runs all the previous functions during X generations 
 	vector<int> get_allele_number(vector<vector<vector<int>>*> vectgen, bool nbtot); //get number of different alleles in the population
@@ -154,9 +154,9 @@ class Model {
 	vector<double> sigma_q_w_0();//Give the mean q, fertility, sigma and cfree/ctot for a new allele : in parameters file
 	double if_allele_print_else_nan(map<int,vector<double>> map_allele, int allele_nb, int third_int);/////////////////////////
 	///////////////////////////////////////////
-	map<int,vector<double>> q_fert_hybrid_analytic_general(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, vector<map<int,vector<double>>*> vectinfo_hom, vector<map<int,vector<double>>*> vectinfo_het);
-	void get_q_fert_hybrid_analytic(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, vector<map<int,vector<double>>*> vectinfo_hom, vector<map<int,vector<double>>*> vectinfo_het, map<int,vector<double>>* res_q, map<int,vector<double>>* res_fert);
-	void q_fert_two_hap_analytic(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom, vector<map<int,vector<double>>*> vectinfo_hom, vector<map<int,vector<double>>*> vectinfo_het, map<int,vector<double>>* res_q, map<int,vector<double>>* res_fert);
+	vector<map<int,vector<double>>> q_fert_hybrid_analytic_general(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, vector<map<int,vector<double>>*> vectinfo_hom, vector<map<int,vector<double>>*> vectinfo_het);
+	void get_q_fert_hybrid_analytic(vector<vector<vector<vector<int>>>*> vectpop, vector<vector<vector<int>>*> vectgen, vector<map<int,vector<double>>*> vectinfo_hom, vector<map<int,vector<double>>*> vectinfo_het, map<int,vector<double>>* res_q, map<int,vector<double>>* res_fert, map<int,vector<double>>* res_number_meiosis);
+	void q_fert_two_hap_analytic(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom, vector<map<int,vector<double>>*> vectinfo_hom, vector<map<int,vector<double>>*> vectinfo_het, map<int,vector<double>>* res_q, map<int,vector<double>>* res_fert, map<int,vector<double>>* res_number_meiosis);
 	///////////////////////////////////////////
 	
 	////////////////////////////////////////////
