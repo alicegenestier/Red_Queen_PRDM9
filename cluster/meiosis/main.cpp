@@ -61,8 +61,9 @@ int main(int argc, char* argv[])    {
 	int nbmeiperind = 1;
 	double cfreethreshold = 0.001;
 	bool affinityUniform = 0;
+	double dosagecoeff = 2;
 	
-
+	
 	int i=1;
 	//cout<<"argc"<<argc<<endl;
     while (i < argc)    {
@@ -179,7 +180,7 @@ int main(int argc, char* argv[])    {
 		}
 		else if (s == "-ctot"){
 			i++;
-			ctot = atoi(argv[i]);
+			ctot = atof(argv[i]);
 		}
 		else if (s == "-targetcomp"){
 			i++;
@@ -195,19 +196,23 @@ int main(int argc, char* argv[])    {
 		}
 		else if (s == "-cfreethreshold"){
 			i++;
-			cfreethreshold = atoi(argv[i]);
+			cfreethreshold = atof(argv[i]);
 		}
 		else if (s == "-affinityUniform"){
 			i++;
 			affinityUniform = atoi(argv[i]);
 		}
-        else {
+		else if (s == "-dosagecoeff"){
+			i++;
+			dosagecoeff = atof(argv[i]);
+		}
+        else 
+        {
         	// name of the run (name will be followed by extensions: <name>.general…);
             name = argv[i];
         }
         i++;
 	}
-	
 	
 	float temps1, temps2;
 	clock_t t1, t2, t3;
@@ -215,7 +220,7 @@ int main(int argc, char* argv[])    {
 	t1=clock();
 	
 	cout<< "Test for Model constructor" <<endl;
-	Model model1(N, L, nbsite, indPrdm9, nballele, parityIndex, v, u, w, meanaff, varaff, nbDSB, nbGenerations, ismigration, zygosity, withDSB, everygen, m, alpha, beta, nbgenmig, popsamesize, nbhyb, nbcore, isallele, issampling, isanalytic, ctot, targetcomp, quantilenb, nbmeiperind, cfreethreshold, affinityUniform, name);
+	Model model1(N, L, nbsite, indPrdm9, nballele, parityIndex, v, u, w, meanaff, varaff, nbDSB, nbGenerations, ismigration, zygosity, withDSB, everygen, m, alpha, beta, nbgenmig, popsamesize, nbhyb, nbcore, isallele, issampling, isanalytic, ctot, targetcomp, quantilenb, nbmeiperind, cfreethreshold, affinityUniform, dosagecoeff, name);
 	
 	t2=clock();
 	temps1=(float)(t2-t1)/CLOCKS_PER_SEC;

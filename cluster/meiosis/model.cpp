@@ -28,9 +28,8 @@ using namespace std;
 //============================//
 //         Constructors	      //
 //============================//
-Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbhyb, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, double cfreethreshold,bool affinityUniform, string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen), m_(m), alpha_(alpha), beta_(beta), nbgenmig_(nbgenmig), popsamesize_(popsamesize), nbhyb_(nbhyb), nbcore_(nbcore), isallele_(isallele), issampling_(issampling), isanalytic_(isanalytic), ctot_(ctot), targetcomp_(targetcomp), quantilenb_(quantilenb), nbmeiperind_(nbmeiperind), cfreethreshold_(cfreethreshold),affinityUniform_(affinityUniform), name_(name) 
+Model::Model(int N,int L,int nbsite,int indPrdm9,int nballele,int parityIndex,double v,double u,double w,double meanaff,double varaff,int nbDSB,int nbGenerations,bool ismigration,bool zygosity,bool withDSB,int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbhyb, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, double cfreethreshold, bool affinityUniform, double dosagecoeff, string name): N_(N), L_(L), nbsite_(nbsite), indPrdm9_(indPrdm9), nballele_(nballele), parityIndex_(parityIndex), v_(v), u_(u), w_(w), meanaff_(meanaff), varaff_(varaff), nbDSB_(nbDSB), nbGenerations_(nbGenerations), ismigration_(ismigration), zygosity_(zygosity), withDSB_(withDSB), everygen_(everygen), m_(m), alpha_(alpha), beta_(beta), nbgenmig_(nbgenmig), popsamesize_(popsamesize), nbhyb_(nbhyb), nbcore_(nbcore), isallele_(isallele), issampling_(issampling), isanalytic_(isanalytic), ctot_(ctot), targetcomp_(targetcomp), quantilenb_(quantilenb), nbmeiperind_(nbmeiperind), cfreethreshold_(cfreethreshold),affinityUniform_(affinityUniform),dosagecoeff_(dosagecoeff), name_(name) 
 {
-
 	//Create the model : the population of N individuals with 2 homologous chromosomes per individual, on each chromosome there is a Prdm9 locus (at position indPrdm9_) to witch is associated an allele (number >=0). Each allele recognizes some target sites along the chromosome. Each site is either active (1) or inactive (0) and posess its own binding affinity.
 	
 	//popluations matrix of N individuals (2N chromosomes) and L positions in the genome
@@ -339,12 +338,10 @@ map<int,vector<double>> Model::infoperallele2()
 {
 	return infoperallele2_;
 }
-
 map<int,vector<double>> Model::infoperallele_hom()
 { 
 	return infoperallele_hom_;
 }
-
 map<int,vector<double>> Model::infoperallele1_hom()//////////////////
 {
 	return infoperallele1_hom_;
@@ -353,13 +350,10 @@ map<int,vector<double>> Model::infoperallele2_hom()//////////////////
 {
 	return infoperallele2_hom_;
 }
-
-
 map<int,vector<double>> Model::infoperallele_het()
 { 
 	return infoperallele_het_;
 }
-
 map<int,vector<double>> Model::infoperallele1_het()//////////////////
 {
 	return infoperallele1_het_;
@@ -368,7 +362,6 @@ map<int,vector<double>> Model::infoperallele2_het()//////////////////
 {
 	return infoperallele2_het_;
 }
-
 double Model::alpha()
 {
 	return alpha_;
@@ -413,7 +406,6 @@ double Model::qnum()
 {
 	return qnum_;
 }
-
 double Model::qnum1()
 {
 	return qnum1_;
@@ -422,12 +414,10 @@ double Model::qnum2()
 {
 	return qnum2_;
 }
-
 double Model::qdenom()
 {
 	return qdenom_;
 }
-
 double Model::qdenom1()
 {
 	return qdenom1_;
@@ -436,7 +426,6 @@ double Model::qdenom2()
 {
 	return qdenom2_;
 }
-
 double Model::qsym()
 {
 	return qsym_;
@@ -449,12 +438,10 @@ double Model::qsym2()
 {
 	return qsym2_;
 }
-
 double Model::ctot()
 {
 	return ctot_;
 }
-
 int Model::quantilenb()
 {
 	return quantilenb_;
@@ -462,6 +449,10 @@ int Model::quantilenb()
 int Model::nbmeiperind()
 {
 	return nbmeiperind_;
+}
+double Model::dosagecoeff()
+{
+	return dosagecoeff_;
 }
 
 //============================//
@@ -928,7 +919,8 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 	{//for homozygous
 		if(zygosity_)
 		{ // if genetic dosage
-			ind_gen=2;
+			//ind_gen=2;
+			ind_gen=dosagecoeff_;
 		}
 		//infoperallele
 		(*infoperallele)[zygote[0]][7]+=2; //relative nb meiosis realised per allele (*2 if hom)
@@ -952,6 +944,7 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 		(*infoperallele_het)[zygote[1]][10]+=1; //absolute nb meiosis realised per allele 2
 	}
 	
+	
 	//cout<<"CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"<<endl;
 	///////////////////////////////
 	//   If target competition   //
@@ -970,7 +963,8 @@ int Model::Meiosis(int no_chrom_ind, int nb_gen, vector<vector<vector<int>>>* po
 			{
 				if(zygosity_)
 				{
-					ctot=2*ctot_;
+					//ctot=2*ctot_;
+					ctot=dosagecoeff_*ctot_;
 				}
 				index_vectinfo_hom_het=0;
 			}
@@ -1613,57 +1607,59 @@ void Model::fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vect
 	//:::::::::::::::::::::::::://
 	//   Fill next generation   //
 	//:::::::::::::::::::::::::://
-	
-	//#pragma omp parallel for num_threads(nbcore_)
-		for(int indnewpop=0; indnewpop<2*N_; indnewpop++)
+	int meiosisState=-1;
+	int indiv = 0;
+	int nb_meiosis=0;
+	//#pragma omp parallel for num_threads(nbcore_) private(meiosisState, indiv, nb_meiosis)
+	for(int indnewpop=0; indnewpop<2*N_; indnewpop++)
+	{
+		//printf("Element %d traité par le thread %d \n",indnewpop,omp_get_thread_num());
+		tps3=clock();
+		indiv = 2*choose(N_);
+		nb_meiosis=0;
+		meiosisState=-1;
+		while(meiosisState==-1 and nb_meiosis<nbmeiperind_)
+		{ //allows an ind to try performing many meiosis (nbmeiperind_) before stopping and choosing another one
+			meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv, nb_meiosis);
+			nb_meiosis+=1;
+		}
+		tps4=clock();
+		tps_meiosis=(float)(tps4-tps3)/CLOCKS_PER_SEC;
+		//printf("tps_meiosis = %f\n", tps_meiosis);
+		temps_moy+=tps_meiosis;
+		
+		if(meiosisState==-1)
 		{
-			//#pragma omp critical
-			tps3=clock();
-			int indiv = 2*choose(N_);
-			int nb_meiosis=0;
-			int meiosisState=-1;
+			(*nbfailedmeiosis)[nb_gen][3]+=1;
+		}
+		
+		nbmei+=1; //=> count only if one of the meiosis performed for this individual successed, it doesn't count how many meiosis the individual performed before successing
+		while (meiosisState==-1)
+		{//while the meiosis keeps failing, choose a new individual
+			nbmei2+=1;
+			tps5=clock();
+			indiv = 2*choose(N_);
+			nb_meiosis=0;
 			while(meiosisState==-1 and nb_meiosis<nbmeiperind_)
 			{ //allows an ind to try performing many meiosis (nbmeiperind_) before stopping and choosing another one
 				meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv, nb_meiosis);
 				nb_meiosis+=1;
 			}
-			tps4=clock();
-			tps_meiosis=(float)(tps4-tps3)/CLOCKS_PER_SEC;
-			//printf("tps_meiosis = %f\n", tps_meiosis);
-			temps_moy+=tps_meiosis;
-			
 			if(meiosisState==-1)
 			{
 				(*nbfailedmeiosis)[nb_gen][3]+=1;
 			}
+			tps6=clock();
+			tps_meiosis=(float)(tps6-tps5)/CLOCKS_PER_SEC;
+			//printf("tps_meiosis = %f\n", tps_meiosis);
+			temps_moy+=tps_meiosis;
 			
-			nbmei+=1; //=> count only if one of the meiosis performed for this individual successed, it doesn't count how many meiosis the individual performed before successing
-			while (meiosisState==-1)
-			{//while the meiosis keeps failing, choose a new individual
-				nbmei2+=1;
-				tps5=clock();
-				int indiv = 2*choose(N_);
-				nb_meiosis=0;
-				while(meiosisState==-1 and nb_meiosis<nbmeiperind_)
-				{ //allows an ind to try performing many meiosis (nbmeiperind_) before stopping and choosing another one
-					meiosisState = Meiosis(indnewpop, nb_gen, population, genotype, infoperallele,infoperallele_hom,infoperallele_het, nbfailedmeiosis, q, qsym, qnum, qdenom, indiv, nb_meiosis);
-					nb_meiosis+=1;
-				}
-				if(meiosisState==-1)
-				{
-					(*nbfailedmeiosis)[nb_gen][3]+=1;
-				}
-				tps6=clock();
-				tps_meiosis=(float)(tps6-tps5)/CLOCKS_PER_SEC;
-				//printf("tps_meiosis = %f\n", tps_meiosis);
-				temps_moy+=tps_meiosis;
-				
-				nbmei+=1;
+			nbmei+=1;
 
-			}
-			nbmei1+=1;
-			//cout<<nbmei1<<endl;
 		}
+		nbmei1+=1;
+		//cout<<nbmei1<<endl;
+	}
 	
 	temps_moy=temps_moy/nbmei;
 	cout<< "temps_moy = "<<temps_moy<<endl;
@@ -1692,14 +1688,13 @@ void Model::fillnewpop(int nb_gen, vector<vector<vector<int>>>* population, vect
 //methode which mix together and runs all the previous functions during X generations 
 void Model::manygenerations(){
 	//Perform the model : Initialisation of files and output statistics, fill population for each generation, compute all the statistics every x generations, write the files
-
 	//:::::::::::::::::::::::::::::::::://
 	//   Initialisation of trace file   //
 	//:::::::::::::::::::::::::::::::::://
 
 	//Trace file : contains all the descriptive statistics averaged in the population for each generation
 	ofstream generalfile ((name_+".trace").c_str());
-	generalfile << "Generation_number" << '\t' << "Total_number_of_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' << "Mean_Age" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" << '\t' << "q_intra" << '\t' << "fertility_intra" << '\t' << "q_analytic_ind" <<  '\t' << "fertility_analytic_ind" << '\t' << "q_analytic_all" << '\t' << "fertility_analytic_all" <<'\t' << "q_sym" << '\t' << "Fert_newall" << '\t' << "Mean_c_occup_hom" << '\t' << "Mean_c_occup_het" << '\t' << "Mean_c_free_hom" << '\t' << "Mean_c_free_het" << '\t' << "Mean_sigma" << '\n';
+	generalfile << "Generation_number" << '\t' << "Total_number_of_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' << "Mean_Age" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" << '\t' << "q_intra" << '\t' << "fertility_intra" << '\t' << "q_analytic_ind" <<  '\t' << "fertility_analytic_ind" << '\t' << "q_analytic_all" << '\t' << "fertility_analytic_all" <<'\t' << "q_sym" << '\t' << "Fert_newall" << '\t' << "Mean_c_occup_hom" << '\t' << "Mean_c_occup_het" << '\t' << "Mean_c_free_hom" << '\t' << "Mean_c_free_het" << '\t' << "Mean_sigma" << '\t' << "4Ns0" << '\n';
     generalfile.flush();
     
     //::::::::::::::::::::::::::::::::::://
@@ -1757,7 +1752,7 @@ void Model::manygenerations(){
 
 	//Params file : contains all the parameters values for this simulation
 	ofstream paramsfile ((name_+".params").c_str());
-	paramsfile << "N" << '\t' << N_ << '\n' << "L" << '\t' << L_ << '\n' << "nbsite" << '\t' << nbsite_ << '\n' << "indPrdm9" << '\t' << indPrdm9_ << '\n' << "nballele" << '\t' << nballele_ << '\n' << "parityIndex" << '\t' << parityIndex_ << '\n' << "u" << '\t' << u_ << '\n' << "v" << '\t' << v_ << '\n' << "w" << '\t' << w_ << '\n' << "meanaff" << '\t' << meanaff_ << '\n' << "varaff" << '\t' << varaff_ << '\n' << "nbDSB" << '\t' << nbDSB_ << '\n' << "nbGenerations" << '\t' << nbGenerations_ << '\n' << "ismigration" << '\t' << ismigration_ << '\n' << "zygosity" << '\t' << zygosity_ << '\n' << "withDSB" << '\t' << withDSB_ << '\n' << "everygen" << '\t' << everygen_ << '\n' << "m" << '\t' << m_ << '\n' << "nbgenmig" << '\t' << nbgenmig_ << '\n' << "nbcore" << '\t' << nbcore_ << '\n' << "isallele" << '\t' << isallele_ << '\n' << "issampling" << '\t' << issampling_ << '\n' << "isanalytic" << '\t' << isanalytic_ << '\n' << "targetcomp" << '\t' << targetcomp_ << '\n' << "quantilenb" << '\t' << quantilenb_ << '\n' << "nbmeiperind" << '\t' << nbmeiperind_ << '\n' << "ctot" << '\t' << ctot_ << '\n' << "qhet_0" << '\t' << qhet_0 << '\n' << "qhom_0" << '\t' << qhom_0 << '\n' << "cfree_ctot_het_0" << '\t' << cfree_ctot_het_0 << '\n' << "cfree_ctot_hom_0" << '\t' << cfree_ctot_hom_0 << '\n' << "sigma_0" << '\t' << sigma_0_c << '\n';
+	paramsfile << "N" << '\t' << N_ << '\n' << "L" << '\t' << L_ << '\n' << "nbsite" << '\t' << nbsite_ << '\n' << "indPrdm9" << '\t' << indPrdm9_ << '\n' << "nballele" << '\t' << nballele_ << '\n' << "parityIndex" << '\t' << parityIndex_ << '\n' << "u" << '\t' << u_ << '\n' << "v" << '\t' << v_ << '\n' << "w" << '\t' << w_ << '\n' << "meanaff" << '\t' << meanaff_ << '\n' << "varaff" << '\t' << varaff_ << '\n' << "nbDSB" << '\t' << nbDSB_ << '\n' << "nbGenerations" << '\t' << nbGenerations_ << '\n' << "ismigration" << '\t' << ismigration_ << '\n' << "zygosity" << '\t' << zygosity_ << '\n' << "withDSB" << '\t' << withDSB_ << '\n' << "everygen" << '\t' << everygen_ << '\n' << "m" << '\t' << m_ << '\n' << "nbgenmig" << '\t' << nbgenmig_ << '\n' << "nbcore" << '\t' << nbcore_ << '\n' << "isallele" << '\t' << isallele_ << '\n' << "issampling" << '\t' << issampling_ << '\n' << "isanalytic" << '\t' << isanalytic_ << '\n' << "targetcomp" << '\t' << targetcomp_ << '\n' << "quantilenb" << '\t' << quantilenb_ << '\n' << "nbmeiperind" << '\t' << nbmeiperind_ << '\n' << "ctot" << '\t' << ctot_ << '\n' << "qhet_0" << '\t' << qhet_0 << '\n' << "qhom_0" << '\t' << qhom_0 << '\n' << "cfree_ctot_het_0" << '\t' << cfree_ctot_het_0 << '\n' << "cfree_ctot_hom_0" << '\t' << cfree_ctot_hom_0 << '\n' << "sigma_0" << '\t' << sigma_0_c <<  '\n' << "dosage_coefficient" << '\t' << dosagecoeff_ <<'\n';
     paramsfile.flush();
     	ofstream timefile ((name_+".time").c_str());
     	timefile << "Generation_number" << '\t' << "Mutations" << '\t' << "Fillnewpop" << '\t' << "afterfillpop" << '\t' << "calculstat" << '\t' << "Totaltime" <<'\n';
@@ -1911,16 +1906,16 @@ void Model::manygenerations(){
 			//Initialise file generalfile et allelefile
 			/////////////////////////////////////////////////add analytical q and fertility
 			generalfile1.open ((name_+"_1.trace").c_str());
-			generalfile1 << "Generation_number" << '\t' << "Number_of_allele" << '\t' << "Total_nb_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' << "Mean_Age" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" << '\t' << "q_intra" << '\t' << "q_inter" << '\t' << "fertility_intra" << '\t' << "fertility_inter" << '\t' << "FST_neutral" << '\t' << "FST_PRDM9" << '\t' << "Fert_newall" << '\t' << "q_analytic_ind" <<  '\t' << "fertility_analytic_ind" << '\t' << "q_analytic_all" <<  '\t' << "fertility_analytic_all" << '\t' << "q_inter_analytique_ind" << '\t' << "fertility_inter_analytique_ind" << '\t' << "q_inter_analytique_all" << '\t' << "fertility_inter_analytique_all" << '\t' << "q_sym" << '\t' << "Mean_c_occup_hom" << '\t' << "Mean_c_occup_het" << '\t' << "Mean_c_free_hom" << '\t' << "Mean_c_free_het" << '\t' << "Mean_sigma" << '\n';
+			generalfile1 << "Generation_number" << '\t' << "Number_of_allele" << '\t' << "Total_nb_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' << "Mean_Age" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" << '\t' << "q_intra" << '\t' << "q_inter" << '\t' << "fertility_intra" << '\t' << "fertility_inter" << '\t' << "FST_neutral" << '\t' << "FST_PRDM9" << '\t' << "Fert_newall" << '\t' << "q_analytic_ind" <<  '\t' << "fertility_analytic_ind" << '\t' << "q_analytic_all" <<  '\t' << "fertility_analytic_all" << '\t' << "q_inter_analytique_ind" << '\t' << "fertility_inter_analytique_ind" << '\t' << "q_inter_analytique_all" << '\t' << "fertility_inter_analytique_all" << '\t' << "q_sym" << '\t' << "Mean_c_occup_hom" << '\t' << "Mean_c_occup_het" << '\t' << "Mean_c_free_hom" << '\t' << "Mean_c_free_het" << '\t' << "Mean_sigma" << '\t' << "4Ns0" << '\n';
     			generalfile1.flush();
     			allelefile1.open ((name_+"_1.allele").c_str());
-			allelefile1 << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" << '\t' << "Fertility_allele" << '\t' << "mean_affinity" << '\t' << "q_analytic" <<  '\t' << "fertility_analytic" << '\t' << "relative_nb_meiosis" <<  '\t' << "nb_linked_site" <<  '\t' << "nb_linked_pos" << '\t' << "absolute_nb_meiosis" << '\t' << "cfree_ctot_hom" << '\t' << "cfree_ctot_het" << '\t' << "q_hom" << '\t' << "q_het" << '\t' << "fertility_hom" << '\t' << "fertility_het" << '\t' << "q_hom_analytic" << '\t' << "q_het_analytique" << '\t' << "fertility_hom_analytic" << '\t' << "fertility_het_analytic" << '\t' << "q_hemi_analytic" << '\t' << "fertility_hemi_analytic" << '\t' << "sigma" << '\t' << "Fertility_individual" << '\t' << "Fertility_individual_hom" << '\t' << "Fertility_individual_het" << '\t' << "Sym_active_pos" << '\t' << "Asym_active_pos" << '\t' << "Non_active_pos" << '\t' << "nb_linked_pos_asym_active" << '\t' << "nb_linked_site_asym_active" << '\t' << "q_hybrid_analytic" << '\t' << "fertility_hybrid_analytic" << '\t' << "relative_nb_meiosis_hyb" << '\t' << "absolute_nb_meiosis" << '\t' << "original_population" << '\n';
+			allelefile1 << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" << '\t' << "Fertility_allele" << '\t' << "mean_affinity" << '\t' << "q_analytic" <<  '\t' << "fertility_analytic" << '\t' << "relative_nb_meiosis" <<  '\t' << "nb_linked_site" <<  '\t' << "nb_linked_pos" << '\t' << "absolute_nb_meiosis" << '\t' << "cfree_ctot_hom" << '\t' << "cfree_ctot_het" << '\t' << "q_hom" << '\t' << "q_het" << '\t' << "fertility_hom" << '\t' << "fertility_het" << '\t' << "q_hom_analytic" << '\t' << "q_het_analytique" << '\t' << "fertility_hom_analytic" << '\t' << "fertility_het_analytic" << '\t' << "q_hemi_analytic" << '\t' << "fertility_hemi_analytic" << '\t' << "sigma" << '\t' << "Fertility_individual" << '\t' << "Fertility_individual_hom" << '\t' << "Fertility_individual_het" << '\t' << "Sym_active_pos" << '\t' << "Asym_active_pos" << '\t' << "Non_active_pos" << '\t' << "nb_linked_pos_asym_active" << '\t' << "nb_linked_site_asym_active" << '\t' << "q_hybrid_analytic" << '\t' << "fertility_hybrid_analytic" << '\t' << "relative_nb_meiosis_hyb" << '\t' << "absolute_nb_meiosis_hyb" << '\t' << "original_population" << '\n';
     			allelefile1.flush();
 			generalfile2.open ((name_+"_2.trace").c_str());
-			generalfile2 << "Generation_number" << '\t' << "Number_of_allele" << '\t' << "Total_nb_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' << "Mean_Age" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" << '\t' << "q_intra" << '\t' << "q_inter" << '\t' << "fertility_intra" << '\t' << "fertility_inter" << '\t' << "FST_neutral" << '\t' << "FST_PRDM9" << '\t' << "Fert_newall" << '\t' << "q_analytic_ind" <<  '\t' << "fertility_analytic_ind" << '\t' << "q_analytic_all" <<  '\t' << "fertility_analytic_all" << '\t' << "q_inter_analytique_ind" << '\t' << "fertility_inter_analytique_ind" << '\t' << "q_inter_analytique_all" << '\t' << "fertility_inter_analytique_all" << '\t' << "q_sym" << '\t' << "Mean_c_occup_hom" << '\t' << "Mean_c_occup_het" << '\t' << "Mean_c_free_hom" << '\t' << "Mean_c_free_het" << '\t' << "Mean_sigma" << '\n';
+			generalfile2 << "Generation_number" << '\t' << "Number_of_allele" << '\t' << "Total_nb_allele" << '\t' << "Diversity" << '\t'  << "Activity" << '\t' << "Mean_Age" << '\t' <<"Time" << '\t' << "Fertility_rate" << '\t' << "2_DSB_on_one_site_rate" << '\t' << "No_DSB_rate" << '\t' << "No_symmetrical_sites_rate" << '\t' << "q" << '\t' << "q_intra" << '\t' << "q_inter" << '\t' << "fertility_intra" << '\t' << "fertility_inter" << '\t' << "FST_neutral" << '\t' << "FST_PRDM9" << '\t' << "Fert_newall" << '\t' << "q_analytic_ind" <<  '\t' << "fertility_analytic_ind" << '\t' << "q_analytic_all" <<  '\t' << "fertility_analytic_all" << '\t' << "q_inter_analytique_ind" << '\t' << "fertility_inter_analytique_ind" << '\t' << "q_inter_analytique_all" << '\t' << "fertility_inter_analytique_all" << '\t' << "q_sym" << '\t' << "Mean_c_occup_hom" << '\t' << "Mean_c_occup_het" << '\t' << "Mean_c_free_hom" << '\t' << "Mean_c_free_het" << '\t' << "Mean_sigma" << '\t' << "4Ns0" << '\n';
     			generalfile2.flush();
     			allelefile2.open ((name_+"_2.allele").c_str());
-			allelefile2 << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" << '\t' << "Fertility_allele" << '\t' << "mean_affinity" << '\t' << "q_analytic" <<  '\t' << "fertility_analytic" << '\t' << "relative_nb_meiosis" <<  '\t' << "nb_linked_site" <<  '\t' << "nb_linked_pos" << '\t' << "absolute_nb_meiosis" << '\t' << "cfree_ctot_hom" << '\t' << "cfree_ctot_het" << '\t' << "q_hom" << '\t' << "q_het" << '\t' << "fertility_hom" << '\t' << "fertility_het" << '\t' << "q_hom_analytic" << '\t' << "q_het_analytique" << '\t' << "fertility_hom_analytic" << '\t' << "fertility_het_analytic" << '\t' << "q_hemi_analytic" << '\t' << "fertility_hemi_analytic" << '\t' << "sigma" << '\t' << "Fertility_individual" << '\t' << "Fertility_individual_hom" << '\t' << "Fertility_individual_het" << '\t' << "Sym_active_pos" << '\t' << "Asym_active_pos" << '\t' << "Non_active_pos" << '\t' << "nb_linked_pos_asym_active" << '\t' << "nb_linked_site_asym_active" << '\t' << "q_hybrid_analytic" << '\t' << "fertility_hybrid_analytic" << '\t' << "relative_nb_meiosis_hyb" << '\t' << "absolute_nb_meiosis" << '\t' << "original_population" << '\n';
+			allelefile2 << "Generation_number" << '\t' << "Allele_number" << '\t' << "Frequency" << '\t'  << "Activity" << '\t' << "Age" << '\t' << "q_allele" << '\t' << "Fertility_allele" << '\t' << "mean_affinity" << '\t' << "q_analytic" <<  '\t' << "fertility_analytic" << '\t' << "relative_nb_meiosis" <<  '\t' << "nb_linked_site" <<  '\t' << "nb_linked_pos" << '\t' << "absolute_nb_meiosis" << '\t' << "cfree_ctot_hom" << '\t' << "cfree_ctot_het" << '\t' << "q_hom" << '\t' << "q_het" << '\t' << "fertility_hom" << '\t' << "fertility_het" << '\t' << "q_hom_analytic" << '\t' << "q_het_analytique" << '\t' << "fertility_hom_analytic" << '\t' << "fertility_het_analytic" << '\t' << "q_hemi_analytic" << '\t' << "fertility_hemi_analytic" << '\t' << "sigma" << '\t' << "Fertility_individual" << '\t' << "Fertility_individual_hom" << '\t' << "Fertility_individual_het" << '\t' << "Sym_active_pos" << '\t' << "Asym_active_pos" << '\t' << "Non_active_pos" << '\t' << "nb_linked_pos_asym_active" << '\t' << "nb_linked_site_asym_active" << '\t' << "q_hybrid_analytic" << '\t' << "fertility_hybrid_analytic" << '\t' << "relative_nb_meiosis_hyb" << '\t' << "absolute_nb_meiosis_hyb" << '\t' << "original_population" << '\n';
     			allelefile2.flush();
 		}
 		
@@ -2129,7 +2124,7 @@ void Model::manygenerations(){
 		vector<map<int,vector<double>>> analytic_hybrid;
 		//vector<vector<map<int,vector<double>>>> analytic_indiv;////////////////////////////////////
 		////////double mean_fertnewall;
-		vector<double> mean_fertnewall = vector<double>(2,0);////////////////////////////////////
+		vector<double> mean_fertnewall = vector<double>(4,0);////////////////////////////////////
 		
 		vector<vector<double>> q_fertility_hybrid_bis;/////////////////////////////////////////////////
 		
@@ -2181,7 +2176,9 @@ void Model::manygenerations(){
 				//mean_sigma[0]=get_mean_sigma(&genotypes_, analytic_indiv[0]); // mean sigma in the population////////////////////////////////////
 				//mean_fertnewall = Mean_fert_new_allele(&genotypes_,&populations_);
 				//mean_fertnewall = log(Mean_fert_new_allele(&genotypes_,&populations_, &infoperallele_het_))-log(analytic_indiv[0][-1][1]); 
-				mean_fertnewall[0] = log(Mean_fert_new_allele(&genotypes_,&populations_, &infoperallele_het_))-log(analytic_indiv[0][-1][1]); ////////////////////////////////////
+				double fertnewall = Mean_fert_new_allele(&genotypes_,&populations_, &infoperallele_het_);
+				mean_fertnewall[0] = log(fertnewall)-log(analytic_indiv[0][-1][1]); ////////////////////////////////////
+				mean_fertnewall[1] = 4*N_*(log(1-puissance_double(nbmeiperind_,(1-fertnewall)))-log(1-puissance_double(nbmeiperind_,(1-analytic_indiv[0][-1][1]))));
 				//q_fertility = get_q_fertility_indep(vectpop, vectgen, nbhyb_, 1);//utile pour migration
 				
 				t7=clock();
@@ -2320,8 +2317,12 @@ void Model::manygenerations(){
 				mean_sigma[0]=get_mean_sigma(vectgen[0], analytic_indiv_1); // mean sigma in the population////////////////////////////////////
 				mean_sigma[1]=get_mean_sigma(vectgen[1], analytic_indiv_2); // mean sigma in the population////////////////////////////////////
 				
-				mean_fertnewall[0] = log(Mean_fert_new_allele(vectgen[0],vectpop[0], vectinfo_het[0]))-log(analytic_indiv_1[0][-1][1]);////////////////////////////////////
-				mean_fertnewall[1] = log(Mean_fert_new_allele(vectgen[1],vectpop[1], vectinfo_het[1]))-log(analytic_indiv_2[0][-1][1]);////////////////////////////////////
+				double fertnewall_1=Mean_fert_new_allele(vectgen[0],vectpop[0], vectinfo_het[0]);
+				double fertnewall_2=Mean_fert_new_allele(vectgen[1],vectpop[1], vectinfo_het[1]);
+				mean_fertnewall[0] = log(fertnewall_1)-log(analytic_indiv_1[0][-1][1]);////////////////////////////////////
+				mean_fertnewall[1] = log(fertnewall_2)-log(analytic_indiv_2[0][-1][1]);////////////////////////////////////
+				mean_fertnewall[2] = 4*N_*(log(1-puissance_double(nbmeiperind_,(1-fertnewall_1)))-log(1-puissance_double(nbmeiperind_,(1-analytic_indiv_1[0][-1][1]))));////////////////////////////////////
+				mean_fertnewall[3] = 4*N_*(log(1-puissance_double(nbmeiperind_,(1-fertnewall_2)))-log(1-puissance_double(nbmeiperind_,(1-analytic_indiv_2[0][-1][1]))));////////////////////////////////////
 				
 				//////////////////////////////////////
 				analytic_hybrid=q_fert_hybrid_analytic_general(vectpop, vectgen, vectinfo_hom, vectinfo_het);/////////////////////////////////////
@@ -2444,7 +2445,7 @@ void Model::manygenerations(){
 			if(ismigration_==false)
 			{//if only one population
 				//write output statistics in general file (.trace)
-				generalfile << indgeneration << '\t' << allele_nb_trace[0] << '\t' << current_div[0] << '\t'  << current_act[0] << '\t' << mean_age[0] << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << Fertility_rate[0] << '\t' << twoDSB[0] << '\t'<< noDSB[0] << '\t' << nosym[0] << '\t' << current_q[0] << '\t' << q_fertility[0] << '\t' << q_fertility[1] << '\t' << analytic_indiv[0][-1][0] <<  '\t' << analytic_indiv[0][-1][1] << '\t' << analytic_indiv[0][-2][0] <<  '\t' << analytic_indiv[0][-2][1] << '\t' << current_qsym[0] << '\t' << /*mean_fertnewall*/mean_fertnewall[0] << '\t' << mean_c_occup[0][0] << '\t' << mean_c_occup[0][1] << '\t' << mean_c_occup[0][2] << '\t' << mean_c_occup[0][3] << '\t' << mean_sigma[0] << '\n';
+				generalfile << indgeneration << '\t' << allele_nb_trace[0] << '\t' << current_div[0] << '\t'  << current_act[0] << '\t' << mean_age[0] << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << Fertility_rate[0] << '\t' << twoDSB[0] << '\t'<< noDSB[0] << '\t' << nosym[0] << '\t' << current_q[0] << '\t' << q_fertility[0] << '\t' << q_fertility[1] << '\t' << analytic_indiv[0][-1][0] <<  '\t' << analytic_indiv[0][-1][1] << '\t' << analytic_indiv[0][-2][0] <<  '\t' << analytic_indiv[0][-2][1] << '\t' << current_qsym[0] << '\t' << /*mean_fertnewall*/mean_fertnewall[0] << '\t' << mean_c_occup[0][0] << '\t' << mean_c_occup[0][1] << '\t' << mean_c_occup[0][2] << '\t' << mean_c_occup[0][3] << '\t' << mean_sigma[0] << '\t' << mean_fertnewall[1] << '\n';
             	generalfile.flush();
             	
             	//write output statistics in time file (.time)
@@ -2490,7 +2491,7 @@ void Model::manygenerations(){
 			cout<<endl;*/
 			
 				//write output statistics in general file 1 (.trace)
-				generalfile1 << indgeneration << '\t' << allele_nb_trace[0] << '\t' << tot_allele_nb[0] << '\t' << current_div[0] << '\t'  << current_act[0] << '\t' << mean_age[0] << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << Fertility_rate[0] << '\t' << twoDSB[0] << '\t'<< noDSB[0] << '\t' << nosym[0] << '\t' << current_q[0] << '\t' << q_fertility_1[0] << '\t' << q_fertility_hybrid[0] << '\t' << q_fertility_1[1] << '\t' << q_fertility_hybrid[1] << '\t' << FST_neutral << '\t' << FST_PRDM9 << '\t' << /*mean_fertnewall*/mean_fertnewall[0] << '\t' << analytic_indiv_1[0][-1][0] <<  '\t' << analytic_indiv_1[0][-1][1] << '\t' << analytic_indiv_1[0][-2][0] <<  '\t' << analytic_indiv_1[0][-2][1] << '\t' << analytic_hybrid[0][-1][0] << '\t' << analytic_hybrid[0][-1][1] << '\t' << analytic_hybrid[0][-2][0] << '\t' << analytic_hybrid[0][-2][1] << '\t' << current_qsym[0] << '\t' << mean_c_occup[0][0] << '\t' << mean_c_occup[0][1] << '\t' << mean_c_occup[0][2] << '\t' << mean_c_occup[0][3] << '\t' << mean_sigma[0] << '\n';
+				generalfile1 << indgeneration << '\t' << allele_nb_trace[0] << '\t' << tot_allele_nb[0] << '\t' << current_div[0] << '\t'  << current_act[0] << '\t' << mean_age[0] << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << Fertility_rate[0] << '\t' << twoDSB[0] << '\t'<< noDSB[0] << '\t' << nosym[0] << '\t' << current_q[0] << '\t' << q_fertility_1[0] << '\t' << q_fertility_hybrid[0] << '\t' << q_fertility_1[1] << '\t' << q_fertility_hybrid[1] << '\t' << FST_neutral << '\t' << FST_PRDM9 << '\t' << /*mean_fertnewall*/mean_fertnewall[0] << '\t' << analytic_indiv_1[0][-1][0] <<  '\t' << analytic_indiv_1[0][-1][1] << '\t' << analytic_indiv_1[0][-2][0] <<  '\t' << analytic_indiv_1[0][-2][1] << '\t' << analytic_hybrid[0][-1][0] << '\t' << analytic_hybrid[0][-1][1] << '\t' << analytic_hybrid[0][-2][0] << '\t' << analytic_hybrid[0][-2][1] << '\t' << current_qsym[0] << '\t' << mean_c_occup[0][0] << '\t' << mean_c_occup[0][1] << '\t' << mean_c_occup[0][2] << '\t' << mean_c_occup[0][3] << '\t' << mean_sigma[0] << '\t' << mean_fertnewall[2] << '\n';
             	generalfile1.flush();
             	
             	//write output statistics in time file (.time)
@@ -2535,7 +2536,7 @@ void Model::manygenerations(){
             	}
             	
             	//write output statistics in general file 2 (.trace)
-            	generalfile2 << indgeneration << '\t' << allele_nb_trace[1] << '\t' << tot_allele_nb[0] << '\t' << current_div[1] << '\t'  << current_act[1] << '\t' << mean_age[1] << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << Fertility_rate[1] << '\t' << twoDSB[0] << '\t'<< noDSB[1] << '\t' << nosym[1] << '\t' << current_q[1] << '\t' << q_fertility_2[0] << '\t' << q_fertility_hybrid[0] << '\t' << q_fertility_2[1] << '\t' << q_fertility_hybrid[1] << '\t' << FST_neutral << '\t' << FST_PRDM9 << '\t' << /*mean_fertnewall*/mean_fertnewall[1] <<'\t' << analytic_indiv_2[0][-1][0] <<  '\t' << analytic_indiv_2[0][-1][1] << '\t' << analytic_indiv_2[0][-2][0] <<  '\t' << analytic_indiv_2[0][-2][1] << '\t' << analytic_hybrid[0][-1][0] << '\t' << analytic_hybrid[0][-1][1] << '\t' << analytic_hybrid[0][-2][0] << '\t' << analytic_hybrid[0][-2][1] << '\t' << current_qsym[1] << '\t' << mean_c_occup[1][0] << '\t' << mean_c_occup[1][1] << '\t' << mean_c_occup[1][2] << '\t' << mean_c_occup[1][3] << '\t' << mean_sigma[1] << '\n';
+            	generalfile2 << indgeneration << '\t' << allele_nb_trace[1] << '\t' << tot_allele_nb[0] << '\t' << current_div[1] << '\t'  << current_act[1] << '\t' << mean_age[1] << '\t' << (float)(t2-t1)/CLOCKS_PER_SEC << '\t' << Fertility_rate[1] << '\t' << twoDSB[0] << '\t'<< noDSB[1] << '\t' << nosym[1] << '\t' << current_q[1] << '\t' << q_fertility_2[0] << '\t' << q_fertility_hybrid[0] << '\t' << q_fertility_2[1] << '\t' << q_fertility_hybrid[1] << '\t' << FST_neutral << '\t' << FST_PRDM9 << '\t' << /*mean_fertnewall*/mean_fertnewall[1] <<'\t' << analytic_indiv_2[0][-1][0] <<  '\t' << analytic_indiv_2[0][-1][1] << '\t' << analytic_indiv_2[0][-2][0] <<  '\t' << analytic_indiv_2[0][-2][1] << '\t' << analytic_hybrid[0][-1][0] << '\t' << analytic_hybrid[0][-1][1] << '\t' << analytic_hybrid[0][-2][0] << '\t' << analytic_hybrid[0][-2][1] << '\t' << current_qsym[1] << '\t' << mean_c_occup[1][0] << '\t' << mean_c_occup[1][1] << '\t' << mean_c_occup[1][2] << '\t' << mean_c_occup[1][3] << '\t' << mean_sigma[1] << '\t' << mean_fertnewall[3] << '\n';
             	generalfile2.flush();
             	
             	//write output statistics in time file (.time)
@@ -3161,14 +3162,14 @@ double Model::get_q_hybrid(vector<vector<vector<vector<int>>>*> vectpop, vector<
 //give q
 double Model::q_two_hap(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom){ ///////////////////////////////////////////////// CHANGE IND_GENE (take into account concentration)
 	double q;
-	int ind_gen=2;
+	double ind_gen=1;
 	vector<int> zygote{genotype_indiv[0]};
 	if(genotype_indiv[0]!=genotype_indiv[1]){ // if we give only one indiv don't need gen
-		if(zygosity_)
-		{
-			ind_gen=1;
-		}
 		zygote.push_back(genotype_indiv[1]);
+	}
+	else if (zygosity_)
+	{
+		ind_gen=dosagecoeff_;
 	}
 	vector<vector<int>>summarysites;
 	vector<int>Z;
@@ -3306,16 +3307,18 @@ double Model::q_two_hap(vector<int> genotype_indiv, vector<vector<int>> indiv_ch
 //--------------------------------------//
 vector<int> Model::get_one_gamete(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom){ ///////////////////////////////////////////////// CHANGE IND_GENE (take into account concentration)
 	double q;
-	int ind_gen=2;
+	double ind_gen=1;
 	vector<int> zygote{genotype_indiv[0]};
 	if(genotype_indiv[0]!=genotype_indiv[1])
 	{ // if we give only one indiv don't need gen
-		if(zygosity_)
-		{
-			ind_gen=1;
-		}
 		zygote.push_back(genotype_indiv[1]);
 	}
+	else if (zygosity_)
+	{
+		ind_gen=dosagecoeff_;
+	}
+	
+	
 	vector<vector<int>>summarysites;
 	vector<int>Z;
 	vector<int> vectsites;
@@ -3545,6 +3548,7 @@ Then, we calculate the fitness of the individuals :
 	
 	map<int,double> fertmoy_sig_het;
 	map<int,double> fertmoy_sig_hom;
+	map<int,double> fertmoy_sig_hemi;
 	
 	map<int,vector<double>> propactsymmoy;
 	map<int,vector<double>> propactasymmoy;
@@ -3587,6 +3591,7 @@ Then, we calculate the fitness of the individuals :
 		double qal_sig_hom_0=0;
 		double qal_sig_hom_1=0;
 		double qal_sig_het=0;
+		double qal_sig_hemi=0;
 
 		
 		int nbloop;
@@ -3603,9 +3608,10 @@ Then, we calculate the fitness of the individuals :
 		{
 			for(int ind_hom_het=0; ind_hom_het<2; ind_hom_het++)
 			{ //2 loops : the first one is what happen normaly (if the individual is homozygous (heterozygous), the cfree and moyprobalinks will be calculated for a homozygous (heterozygous)) , the second loop will be for the contrary (if the indvidual is homozygous, all will be calculated as a heterozygous and vice et versa)
+			
 				double z;
 				if(i!=genotype_indiv.size())
-				{
+				{// allele 1 or 2
 					z=genotype_indiv[i];;
 				}
 				else
@@ -3613,10 +3619,13 @@ Then, we calculate the fitness of the individuals :
 					z=0;
 				}
 				double ind_gen=1;
-				if((zygosity_ and homoz and ind_hom_het==0) or (zygosity_ and homoz==0 and ind_hom_het==1) )
+				//if zygosity and ....
+				if((zygosity_ and homoz and ind_hom_het==0) or (zygosity_ and homoz==0 and ind_hom_het==1) )// first loop and homozygote or second loop and heterozygote
 				{ 
-					ind_gen=2;
+					//ind_gen=2;
+					ind_gen=dosagecoeff_;
 				}
+				
 				
 				//:::::::::::::::::::::::::::://
 				//   If PRDM9 concentration   //
@@ -3640,7 +3649,8 @@ Then, we calculate the fitness of the individuals :
 						{
 							if(zygosity_)
 							{
-								ctot=2*ctot_;
+								//ctot=2*ctot_;
+								ctot=dosagecoeff_*ctot_;
 							}
 							index_vectinfo_hom_het=0;
 						}
@@ -3851,7 +3861,7 @@ Then, we calculate the fitness of the individuals :
 						infoallele_sig_hom[genotype_indiv[i]].push_back(moyprobalinka/nbsite_);
 						infoallele_sig_hom[genotype_indiv[i]].push_back(moyprobalinkb/nbsite_);
 					}
-					else
+					else if ((homoz and ind_hom_het==1) or (homoz==0 and ind_hom_het==0))
 					{// hemizygote case if heterozygote (first loop) or homozygote (second loop) corresponding to the hemizygote state of the allele
 						infoallele_sig_hemi[genotype_indiv[i]].push_back(moyprobalinkab/nbsite_);
 						infoallele_sig_hemi[genotype_indiv[i]].push_back(moyprobalinka2b/nbsite_);
@@ -3900,24 +3910,35 @@ Then, we calculate the fitness of the individuals :
 		// calculation of q
 		if(homoz)
 		{ // if homozygote
+			//HOMOZYOGOTE
 			qal=double(4*infoallele[genotype_indiv[0]][0]-infoallele[genotype_indiv[0]][1]-infoallele[genotype_indiv[0]][2])/double(infoallele[genotype_indiv[0]][3]+infoallele[genotype_indiv[0]][4]);
 			
 			//qal calculate in homozygous and heterozygous context for each allele to compute the sigma(z)
 			qal_sig_hom_0=qal;
+			
 			//qal_sig_het=(4*infoallele[genotype_indiv[0]][0]-infoallele[genotype_indiv[0]][1]-infoallele[genotype_indiv[0]][2]+4*infoallele_sig[0]-infoallele_sig[1]-infoallele_sig[2])/(infoallele[genotype_indiv[0]][3]+infoallele[genotype_indiv[0]][4]+infoallele_sig[3]+infoallele_sig[4]);
-			qal_sig_het=double(4*infoallele_sig_hemi[genotype_indiv[0]][0]-infoallele_sig_hemi[genotype_indiv[0]][1]-infoallele_sig_hemi[genotype_indiv[0]][2])/double(infoallele_sig_hemi[genotype_indiv[0]][3]+infoallele_sig_hemi[genotype_indiv[0]][4]);
+			
+			//HEMIZYOGOTE
+			qal_sig_het=double(4*infoallele_sig_hemi[genotype_indiv[0]][0]-infoallele_sig_hemi[genotype_indiv[0]][1]-infoallele_sig_hemi[genotype_indiv[0]][2])/double(infoallele_sig_hemi[genotype_indiv[0]][3]+infoallele_sig_hemi[genotype_indiv[0]][4]); // in reality is should be qal_sig_HEMI
+			//qal_sig_hemi=double(4*infoallele_sig_hemi[genotype_indiv[0]][0]-infoallele_sig_hemi[genotype_indiv[0]][1]-infoallele_sig_hemi[genotype_indiv[0]][2])/double(infoallele_sig_hemi[genotype_indiv[0]][3]+infoallele_sig_hemi[genotype_indiv[0]][4]);
+			
+			//HETEROZYGOTE => if no heterozygote for this allele in the population : create an heterozygote with a new allele ???
+			
 		}
 		else
 		{ // if heterozygote
+			//HETEROZYGOTE
 			//qal here correspond to the q of the heterozygot and not the hemizygot
 			qal=double(4*infoallele[genotype_indiv[0]][0]-infoallele[genotype_indiv[0]][1]-infoallele[genotype_indiv[0]][2]+4*infoallele[genotype_indiv[1]][0]-infoallele[genotype_indiv[1]][1]-infoallele[genotype_indiv[1]][2])/double(infoallele[genotype_indiv[0]][3]+infoallele[genotype_indiv[0]][4]+infoallele[genotype_indiv[1]][3]+infoallele[genotype_indiv[1]][4]);
 			
 			//qal calculate in homozygous and heterozygous context for each allele to compute the sigma(z)
 			qal_sig_het=qal;
+			
+			//HOMOZYGOTE
 			qal_sig_hom_0=double(4*infoallele_sig_hom[genotype_indiv[0]][0]-infoallele_sig_hom[genotype_indiv[0]][1]-infoallele_sig_hom[genotype_indiv[0]][2])/double(infoallele_sig_hom[genotype_indiv[0]][3]+infoallele_sig_hom[genotype_indiv[0]][4]);
 			qal_sig_hom_1=double(4*infoallele_sig_hom[genotype_indiv[1]][0]-infoallele_sig_hom[genotype_indiv[1]][1]-infoallele_sig_hom[genotype_indiv[1]][2])/double(infoallele_sig_hom[genotype_indiv[1]][3]+infoallele_sig_hom[genotype_indiv[1]][4]);
 
-			
+			//HEMIZYGOTE
 			//for hemizygots : homozygot but with same concentration as heterozygot
 			qal_hemi1=double(4*infoallele[genotype_indiv[0]][0]-infoallele[genotype_indiv[0]][1]-infoallele[genotype_indiv[0]][2])/double(infoallele[genotype_indiv[0]][3]+infoallele[genotype_indiv[0]][4]);
 			qal_hemi2=double(4*infoallele[genotype_indiv[1]][0]-infoallele[genotype_indiv[1]][1]-infoallele[genotype_indiv[1]][2])/double(infoallele[genotype_indiv[1]][3]+infoallele[genotype_indiv[1]][4]);
@@ -3932,15 +3953,21 @@ Then, we calculate the fitness of the individuals :
 				fertmoy[genotype_indiv[0]].push_back(1-exp(-nbDSB_*qal));
 				qmoy_hom[genotype_indiv[0]].push_back(qal);
 				fertmoy_hom[genotype_indiv[0]].push_back(1-exp(-nbDSB_*qal));
+				qmoy_hemi[genotype_indiv[0]].push_back(qal_sig_het);
+				fertmoy_hemi[genotype_indiv[0]].push_back(1-exp(-nbDSB_*qal_sig_het));
 				
 				//fertility for the sigma calculation
 				if(fertmoy_sig_het[genotype_indiv[0]]==0)
 				{
-					fertmoy_sig_het[genotype_indiv[0]]=1-exp(-nbDSB_*qal_sig_het);
+					fertmoy_sig_het[genotype_indiv[0]]=1-exp(-nbDSB_*qal_sig_het);//fert_hemi
 				}
 				if(fertmoy_sig_hom[genotype_indiv[0]]==0)
 				{
-					fertmoy_sig_hom[genotype_indiv[0]]=1-exp(-nbDSB_*qal);
+					fertmoy_sig_hom[genotype_indiv[0]]=1-exp(-nbDSB_*qal);//fert_homo
+				}
+				if(fertmoy_sig_hemi[genotype_indiv[0]]==0)
+				{
+					fertmoy_sig_hemi[genotype_indiv[0]]=1-exp(-nbDSB_*qal_sig_het);//fert_hemi
 				}
 			}
 			else
@@ -3961,21 +3988,28 @@ Then, we calculate the fitness of the individuals :
 				//fertility for the sigma calculation
 				if(fertmoy_sig_het[genotype_indiv[0]]==0)
 				{
-					fertmoy_sig_het[genotype_indiv[0]]=1-exp(-nbDSB_*qal);
+					fertmoy_sig_het[genotype_indiv[0]]=1-exp(-nbDSB_*qal);//fert_het
 				}
 				if(fertmoy_sig_het[genotype_indiv[1]]==0)
 				{
-					fertmoy_sig_het[genotype_indiv[1]]=1-exp(-nbDSB_*qal);
+					fertmoy_sig_het[genotype_indiv[1]]=1-exp(-nbDSB_*qal);//fert_het
 				}
 				if(fertmoy_sig_hom[genotype_indiv[0]]==0)
 				{
-					fertmoy_sig_hom[genotype_indiv[0]]=1-exp(-nbDSB_*qal_sig_hom_0);
+					fertmoy_sig_hom[genotype_indiv[0]]=1-exp(-nbDSB_*qal_sig_hom_0);//fert_hom
 				}
 				if(fertmoy_sig_hom[genotype_indiv[1]]==0)
 				{
-					fertmoy_sig_hom[genotype_indiv[1]]=1-exp(-nbDSB_*qal_sig_hom_1);
+					fertmoy_sig_hom[genotype_indiv[1]]=1-exp(-nbDSB_*qal_sig_hom_1);//fert_hom
 				}
-				
+				if(fertmoy_sig_hemi[genotype_indiv[0]]==0)
+				{
+					fertmoy_sig_hemi[genotype_indiv[0]]=1-exp(-nbDSB_*qal_hemi1);//fert_het
+				}
+				if(fertmoy_sig_hemi[genotype_indiv[1]]==0)
+				{
+					fertmoy_sig_hemi[genotype_indiv[1]]=1-exp(-nbDSB_*qal_hemi2);//fert_het
+				}
 			}
 		}
 		else
@@ -3990,6 +4024,8 @@ Then, we calculate the fitness of the individuals :
 				fertmoy_hom[genotype_indiv[0]].push_back(1-exp(-nbDSB_*qal));
 				qmoy_hom[genotype_indiv[0]].push_back(qal);
 				fertmoy_hom[genotype_indiv[0]].push_back(1-exp(-nbDSB_*qal));
+				qmoy_hemi[genotype_indiv[0]].push_back(qal_sig_het);
+				fertmoy_hemi[genotype_indiv[0]].push_back(1-exp(-nbDSB_*qal_sig_het));
 				
 				//fertility for the sigma calculation
 				if(fertmoy_sig_het[genotype_indiv[0]]==0)
@@ -4000,7 +4036,10 @@ Then, we calculate the fitness of the individuals :
 				{
 					fertmoy_sig_hom[genotype_indiv[0]]=1-exp(-nbDSB_*qal);
 				}
-				
+				if(fertmoy_sig_hemi[genotype_indiv[0]]==0)
+				{
+					fertmoy_sig_hemi[genotype_indiv[0]]=1-exp(-nbDSB_*qal_sig_het);//fert_hemi
+				}
 			}
 			else
 			{
@@ -4034,7 +4073,14 @@ Then, we calculate the fitness of the individuals :
 				{
 					fertmoy_sig_hom[genotype_indiv[1]]=1-exp(-nbDSB_*qal_sig_hom_1);
 				}
-				
+				if(fertmoy_sig_hemi[genotype_indiv[0]]==0)
+				{
+					fertmoy_sig_hemi[genotype_indiv[0]]=1-exp(-nbDSB_*qal_hemi1);//fert_het
+				}
+				if(fertmoy_sig_hemi[genotype_indiv[1]]==0)
+				{
+					fertmoy_sig_hemi[genotype_indiv[1]]=1-exp(-nbDSB_*qal_hemi2);//fert_het
+				}
 			}
 		}
 		qindmoy+=qal;
@@ -4175,7 +4221,8 @@ Then, we calculate the fitness of the individuals :
 		}
 		if(res_hemi[it.first][1]==0)
 		{
-			w_hemi=fertmoy_sig_het[it.first];
+			//w_hemi=fertmoy_sig_het[it.first];
+			w_hemi=fertmoy_sig_hemi[it.first];
 		}
 		else
 		{
@@ -4342,7 +4389,10 @@ double Model::Mean_fert_new_allele(vector<vector<int>>* genotype, vector<vector<
 	//its a new allele so none of its site has been eroded in any individual, so its the same for everyone
 	double qal;
 	double mean_fert=0;
+	double mean_fert_hemi=0;
+	double mean_fert_hom=0;
 	vector<double> infonewallele;
+	vector<double> infonewallele_hom;
 	double xa=0;
 	double xb=0;
 	double moyprobalinkab=0;
@@ -4350,6 +4400,7 @@ double Model::Mean_fert_new_allele(vector<vector<int>>* genotype, vector<vector<
 	double moyprobalinkb2a=0;
 	double moyprobalinka=0;
 	double moyprobalinkb=0;
+	//for heterozygote and hemizygote
 	for(auto const &it1 : newpos)
 	{ //for the allele that does not change
 		xa=ind_gen*Affinity_[it1]/(1+ind_gen*Affinity_[it1]);
@@ -4366,6 +4417,35 @@ double Model::Mean_fert_new_allele(vector<vector<int>>* genotype, vector<vector<
 	infonewallele.push_back(moyprobalinka/nbsite_);
 	infonewallele.push_back(moyprobalinkb/nbsite_);
 	
+	double qal_hemi=0;
+	qal_hemi=(4*infonewallele[0]-infonewallele[1]-infonewallele[2])/(infonewallele[3]+infonewallele[4]);
+	mean_fert_hemi+=(1-exp(-nbDSB_*qal_hemi));
+	
+	//for homozygote
+	moyprobalinkab=0;
+	moyprobalinka2b=0;
+	moyprobalinkb2a=0;
+	moyprobalinka=0;
+	moyprobalinkb=0;
+	for(auto const &it1 : newpos)
+	{ //for the allele that does not change
+		xa=ind_gen*Affinity_[it1]/(1+ind_gen*Affinity_[it1]);
+		xb=ind_gen*Affinity_[it1]/(1+ind_gen*Affinity_[it1]);
+		moyprobalinkab+=xa*xb;
+		moyprobalinka2b+=puissance_double(2,xa)*xb;
+		moyprobalinkb2a+=puissance_double(2,xb)*xa;
+		moyprobalinka+=xa;
+		moyprobalinkb+=xb;
+	}
+	infonewallele_hom.push_back(moyprobalinkab/nbsite_);
+	infonewallele_hom.push_back(moyprobalinka2b/nbsite_);
+	infonewallele_hom.push_back(moyprobalinkb2a/nbsite_);
+	infonewallele_hom.push_back(moyprobalinka/nbsite_);
+	infonewallele_hom.push_back(moyprobalinkb/nbsite_);
+	
+	double qal_hom=0;
+	qal_hom=(4*infonewallele_hom[0]-infonewallele_hom[1]-infonewallele_hom[2])/(infonewallele_hom[3]+infonewallele_hom[4]);
+	mean_fert_hom+=(1-exp(-nbDSB_*qal_hom));
 	
 	//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::://
 	//   Give the coefficient for each allele in the population   //
@@ -4385,7 +4465,21 @@ double Model::Mean_fert_new_allele(vector<vector<int>>* genotype, vector<vector<
 			vector<int>::iterator itv = find((*genotype)[parityIndex_].begin(),(*genotype)[parityIndex_].end(),it.first);
 			if(itv!=(*genotype)[parityIndex_].end())
 			{
-				for(int ind=0; ind<2*N_; ind+=1)
+				//cout<<"it.first : "<<it.first<<endl;
+				//cout<<"*itv : "<<*itv<<endl;
+				//cout<<"distance((*genotype)[parityIndex_].begin(), itv) : "<<distance((*genotype)[parityIndex_].begin(), itv)<<endl;
+				int index_ind=distance((*genotype)[parityIndex_].begin(), itv);
+				if(index_ind%2==0)
+				{
+					simplechrom=index_ind;
+					chromtochange=index_ind+1;
+				}
+				else if (index_ind%2==1)
+				{
+					simplechrom=index_ind-1;
+					chromtochange=index_ind;
+				}
+				/*for(int ind=0; ind<2*N_; ind+=1) //????????????????????
 				{
 					if((*genotype)[parityIndex_][ind]==it.first and ind%2==0)
 					{
@@ -4397,7 +4491,12 @@ double Model::Mean_fert_new_allele(vector<vector<int>>* genotype, vector<vector<
 						simplechrom=ind-1;
 						chromtochange=ind;
 					}
-				}
+				}*/
+				moyprobalinkab=0;
+				moyprobalinka2b=0;
+				moyprobalinkb2a=0;
+				moyprobalinka=0;
+				moyprobalinkb=0;
 				vector<double> infooldallele;
 				for(auto const &it1 : Siteforeacheallele_[it.first])
 				{ //for the allele that does not change
@@ -4459,7 +4558,8 @@ vector<double> Model::sigma_q_w_0(){
 	double cfree_hom=1;
 	if(zygosity_)
 	{
-		cfree_hom=2;
+		//cfree_hom=2;
+		cfree_hom=dosagecoeff_;
 	}
 	double cfree_ctot_het_final;
 	double cfree_ctot_hom_final;
@@ -4616,6 +4716,8 @@ vector<double> Model::sigma_q_w_0(){
 		{
 			ind_gen=cfree_hom;
 		}
+		
+		
 		double xa=0;
 		double xb=0;
 		double moyprobalinkab=0;
@@ -4687,9 +4789,19 @@ vector<double> Model::sigma_q_w_0(){
 	res[3]=qhom;
 	res[5]=whom;
 	
+	//for hemizygote
+	//double qhemi=(4*infonewallele_1[0]-infonewallele_1[1]-infonewallele_1[2])/(infonewallele_1[3]+infonewallele_1[4]);
+	//double whemi=1-exp(-nbDSB_*qhemi);
+	//res[7]=qhemi;
+	//res[8]=whemi;
+	
 	//sigma0
 	double sigma=(whom-whet)/whet;
 	res[6]=sigma;
+	
+	//sigma0 hemi
+	//double sigma_hemi=(whom-whemi)/whemi;
+	//res[9]=sigma_hemi;
 
 	return res;
 }
@@ -5048,9 +5160,11 @@ void Model::q_fert_two_hap_analytic(vector<int> genotype_indiv, vector<vector<in
 		double ind_gen=1;
 		if(zygosity_ and homoz)
 		{ 
-			ind_gen=2;
+			//ind_gen=2;
+			ind_gen=dosagecoeff_;
 		}
 		//cout<<"c = "<<ind_gen<<endl;
+		
 		
 		//:::::::::::::::::::::::::::::::::::::::::::::::::://
 		//   If PRDM9 concentration and target competition  //
@@ -5068,7 +5182,8 @@ void Model::q_fert_two_hap_analytic(vector<int> genotype_indiv, vector<vector<in
 			{
 				if(zygosity_)
 				{
-					ctot=2*ctot_;
+					//ctot=2*ctot_;
+					ctot=dosagecoeff_*ctot_;
 				}
 				index_vectinfo_hom_het=0;
 			}
@@ -5486,15 +5601,15 @@ vector<double> Model::get_q_hybrid_bis(vector<vector<vector<vector<int>>>*> vect
 
 vector<vector<double>> Model::get_one_gamete_bis(vector<int> genotype_indiv, vector<vector<int>> indiv_chrom){ ///////////////////////////////////////////////// CHANGE IND_GENE (take into account concentration)
 	double q;
-	int ind_gen=2;
+	int ind_gen=1;
 	vector<int> zygote{genotype_indiv[0]};
 	if(genotype_indiv[0]!=genotype_indiv[1])
 	{ // if we give only one indiv don't need gen
-		if(zygosity_)
-		{
-			ind_gen=1;
-		}
 		zygote.push_back(genotype_indiv[1]);
+	}
+	if(zygosity_)
+	{
+		ind_gen=dosagecoeff_;
 	}
 	vector<vector<int>>summarysites;
 	vector<int>Z;

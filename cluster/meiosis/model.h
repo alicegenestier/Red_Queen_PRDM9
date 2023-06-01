@@ -19,7 +19,7 @@ class Model {
 	// Default	
 	Model();
 	//with arg
-	Model(int N, int L, int nbsite, int indPrdm9, int nballele, int parityIndex, double v, double u, double w, double meanaff, double varaff, int nbDSB, int nbGenerations, bool ismigration, bool zygosity, bool withDSB, int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbhyb, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, double cfreethreshold, bool affinityUniform, string name);
+	Model(int N, int L, int nbsite, int indPrdm9, int nballele, int parityIndex, double v, double u, double w, double meanaff, double varaff, int nbDSB, int nbGenerations, bool ismigration, bool zygosity, bool withDSB, int everygen, double m, double alpha, double beta, int nbgenmig, bool popsamesize, int nbhyb, int nbcore, bool isallele, bool issampling, bool isanalytic, double ctot, bool targetcomp, int quantilenb, int nbmeiperind, double cfreethreshold, bool affinityUniform, double dosagecoeff, string name);
 	
 	//============================
 	//        Destructors
@@ -96,6 +96,7 @@ class Model {
 	double ctot();
 	int quantilenb();
 	int nbmeiperind(); 
+	double dosagecoeff();
 	//============================
 	//           Setters
 	//============================
@@ -240,4 +241,5 @@ class Model {
 	int nbmeiperind_;//number of meiosis that an individual can perform before being caracterizes as steril
 	double cfreethreshold_;//threshold for the determination of cfree
 	bool affinityUniform_;//affinity distribution follows a uniform law
+	double dosagecoeff_;
 };
